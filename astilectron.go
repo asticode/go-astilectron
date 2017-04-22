@@ -35,8 +35,10 @@ type Astilectron struct {
 	applicationName string
 	canceller       *asticontext.Canceller
 	channelQuit     chan bool
+	dispatcher      *Dispatcher
 	paths           *Paths
 	provisioner     Provisioner
+	reader          *reader
 }
 
 // Options represents Astilectron options
@@ -55,6 +57,7 @@ func New(o Options) (a *Astilectron, err error) {
 	a = &Astilectron{
 		canceller:   asticontext.NewCanceller(),
 		channelQuit: make(chan bool),
+		dispatcher:  newDispatcher(),
 		provisioner: DefaultProvisioner,
 	}
 
@@ -69,6 +72,19 @@ func New(o Options) (a *Astilectron, err error) {
 		err = errors.Wrap(err, "creating new paths failed")
 		return
 	}
+
+	// Set default listeners
+	a.On(EventNameElectronLog, func(p interface{}) {
+		// Parse payload
+		var m, ok = "", false
+		if m, ok = p.(string); !ok {
+			astilog.Errorf("%+v is not a string", p)
+			return
+		}
+
+		// Log
+		astilog.Debugf("Electron says: %s", m)
+	})
 	return
 }
 
@@ -86,13 +102,18 @@ func (a *Astilectron) SetProvisioner(p Provisioner) *Astilectron {
 	return a
 }
 
+// On adds a listener for the main *Astilectron (ID = 0) for a specific event
+func (a *Astilectron) On(eventName string, l Listener) {
+	a.dispatcher.addListener(mainTargetID, eventName, l)
+}
+
 // Start starts Astilectron
 func (a *Astilectron) Start() (err error) {
 	// Log
 	astilog.Debug("Starting...")
 
-	// TODO Start handling events so that we can send provision.start, download.start, unzip.start, provision.done,
-	// etc. events
+	// Start the dispatcher
+	go a.dispatcher.start()
 
 	// Provision
 	if err = a.provision(); err != nil {
@@ -100,24 +121,23 @@ func (a *Astilectron) Start() (err error) {
 	}
 
 	// Execute
-	var stdin io.WriteCloser
-	var stdout io.ReadCloser
-	if stdin, stdout, err = a.execute(); err != nil {
+	if err = a.execute(); err != nil {
 		err = errors.Wrap(err, "executing failed")
 		return
 	}
-	_, _ = stdin, stdout
 	return
 }
 
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
+	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
+	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionStop, TargetID: mainTargetID})
 	return a.provisioner.Provision(a.paths)
 }
 
 // execute executes Astilectron in Electron
-func (a *Astilectron) execute() (stdin io.WriteCloser, stdout io.ReadCloser, err error) {
+func (a *Astilectron) execute() (err error) {
 	// Log
 	astilog.Debug("Executing...")
 
@@ -126,16 +146,23 @@ func (a *Astilectron) execute() (stdin io.WriteCloser, stdout io.ReadCloser, err
 	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication())
 
 	// Pipe StdIn
+	var stdin io.WriteCloser
 	if stdin, err = cmd.StdinPipe(); err != nil {
 		err = errors.Wrap(err, "piping stdin failed")
 		return
 	}
+	_ = stdin
 
 	// Pipe StdOut
+	var stdout io.ReadCloser
 	if stdout, err = cmd.StdoutPipe(); err != nil {
 		err = errors.Wrap(err, "piping stdout failed")
 		return
 	}
+
+	// Read
+	a.reader = newReader(a.dispatcher, stdout)
+	go a.reader.read()
 
 	// Start command
 	astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
@@ -147,34 +174,36 @@ func (a *Astilectron) execute() (stdin io.WriteCloser, stdout io.ReadCloser, err
 }
 
 // Close closes Astilectron properly
-func (t *Astilectron) Close() {
+func (a *Astilectron) Close() {
 	astilog.Debug("Closing...")
-	t.canceller.Cancel()
+	a.canceller.Cancel()
+	a.dispatcher.close()
+	a.reader.close()
 }
 
 // HandleSignals handles signals
-func (t *Astilectron) HandleSignals() {
+func (a *Astilectron) HandleSignals() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGABRT, syscall.SIGKILL, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 	go func() {
 		for sig := range ch {
 			astilog.Debugf("Received signal %s", sig)
-			t.stop()
+			a.Stop()
 		}
 	}()
 }
 
 // Stop orders Astilectron to stop
-func (t *Astilectron) stop() {
+func (a *Astilectron) Stop() {
 	astilog.Debug("Stopping...")
-	close(t.channelQuit)
+	close(a.channelQuit)
 }
 
 // Wait is a blocking pattern
-func (t *Astilectron) Wait() {
+func (a *Astilectron) Wait() {
 	for {
 		select {
-		case <-t.channelQuit:
+		case <-a.channelQuit:
 			return
 		}
 	}

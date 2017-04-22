@@ -1,10 +1,8 @@
 package main
 
 import (
-	"os"
-
 	"flag"
-
+	"os"
 	"path/filepath"
 
 	"github.com/asticode/go-astilectron"
@@ -34,6 +32,7 @@ func main() {
 	}
 	defer a.Close()
 	a.HandleSignals()
+	a.On(astilectron.EventNameElectronStop, func(p interface{}) { a.Stop() })
 
 	// Start
 	if err = a.Start(); err != nil {
