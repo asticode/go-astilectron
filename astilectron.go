@@ -27,6 +27,7 @@ const (
 // Vars
 var (
 	astilectronDirectoryPath = flag.String("astilectron-directory-path", "", "the astilectron directory path")
+	boundary                 = []byte("--++__astilectron_boundary__++--")
 	validOSes                = []string{"darwin", "linux", "windows"}
 )
 
@@ -36,9 +37,11 @@ type Astilectron struct {
 	canceller       *asticontext.Canceller
 	channelQuit     chan bool
 	dispatcher      *Dispatcher
+	identifier      *identifier
 	paths           *Paths
 	provisioner     Provisioner
 	reader          *reader
+	writer          *writer
 }
 
 // Options represents Astilectron options
@@ -58,6 +61,7 @@ func New(o Options) (a *Astilectron, err error) {
 		canceller:   asticontext.NewCanceller(),
 		channelQuit: make(chan bool),
 		dispatcher:  newDispatcher(),
+		identifier:  newIdentifier(),
 		provisioner: DefaultProvisioner,
 	}
 
@@ -72,19 +76,6 @@ func New(o Options) (a *Astilectron, err error) {
 		err = errors.Wrap(err, "creating new paths failed")
 		return
 	}
-
-	// Set default listeners
-	a.On(EventNameElectronLog, func(p interface{}) {
-		// Parse payload
-		var m, ok = "", false
-		if m, ok = p.(string); !ok {
-			astilog.Errorf("%+v is not a string", p)
-			return
-		}
-
-		// Log
-		astilog.Debugf("Electron says: %s", m)
-	})
 	return
 }
 
@@ -102,7 +93,7 @@ func (a *Astilectron) SetProvisioner(p Provisioner) *Astilectron {
 	return a
 }
 
-// On adds a listener for the main *Astilectron (ID = 0) for a specific event
+// On implements the Listenable interface
 func (a *Astilectron) On(eventName string, l Listener) {
 	a.dispatcher.addListener(mainTargetID, eventName, l)
 }
@@ -131,8 +122,8 @@ func (a *Astilectron) Start() (err error) {
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
-	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
-	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionStop, TargetID: mainTargetID})
+	a.dispatcher.Dispatch(Event{Name: EventNameProvision, TargetID: mainTargetID})
+	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
 	return a.provisioner.Provision(a.paths)
 }
 
@@ -151,7 +142,7 @@ func (a *Astilectron) execute() (err error) {
 		err = errors.Wrap(err, "piping stdin failed")
 		return
 	}
-	_ = stdin
+	a.writer = newWriter(stdin)
 
 	// Pipe StdOut
 	var stdout io.ReadCloser
@@ -165,11 +156,13 @@ func (a *Astilectron) execute() (err error) {
 	go a.reader.read()
 
 	// Start command
-	astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
-	if err = cmd.Start(); err != nil {
-		err = errors.Wrapf(err, "starting cmd %s failed", strings.Join(cmd.Args, " "))
-		return
-	}
+	synchronousFunc(a, EventNameElectronReady, func() {
+		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
+		if err = cmd.Start(); err != nil {
+			err = errors.Wrapf(err, "starting cmd %s failed", strings.Join(cmd.Args, " "))
+			return
+		}
+	})
 	return
 }
 
@@ -179,6 +172,7 @@ func (a *Astilectron) Close() {
 	a.canceller.Cancel()
 	a.dispatcher.close()
 	a.reader.close()
+	a.writer.close()
 }
 
 // HandleSignals handles signals
@@ -196,7 +190,10 @@ func (a *Astilectron) HandleSignals() {
 // Stop orders Astilectron to stop
 func (a *Astilectron) Stop() {
 	astilog.Debug("Stopping...")
-	close(a.channelQuit)
+	if a.channelQuit != nil {
+		close(a.channelQuit)
+		a.channelQuit = nil
+	}
 }
 
 // Wait is a blocking pattern

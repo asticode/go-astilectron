@@ -32,12 +32,27 @@ func main() {
 	}
 	defer a.Close()
 	a.HandleSignals()
-	a.On(astilectron.EventNameElectronStop, func(p interface{}) { a.Stop() })
+	a.On(astilectron.EventNameElectronStopped, func(e astilectron.Event) (deleteListener bool) {
+		a.Stop()
+		return
+	})
 
 	// Start
 	if err = a.Start(); err != nil {
 		astilog.Fatal(errors.Wrap(err, "starting failed"))
 	}
+
+	// Create window
+	var w *astilectron.Window
+	if w, err = a.NewWindow(&astilectron.WindowOptions{
+		Center: astilectron.PtrBool(true),
+		Show:   astilectron.PtrBool(false),
+		Height: astilectron.PtrInt(600),
+		Width:  astilectron.PtrInt(600),
+	}); err != nil {
+		astilog.Fatal(errors.Wrap(err, "creating new window failed"))
+	}
+	w.Show()
 
 	// Blocking pattern
 	a.Wait()

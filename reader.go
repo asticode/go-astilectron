@@ -1,17 +1,13 @@
 package astilectron
 
 import (
+	"bufio"
 	"bytes"
 	"io"
 
-	"bufio"
+	"encoding/json"
 
 	"github.com/asticode/go-astilog"
-)
-
-// Vars
-var (
-	boundary = []byte("+++astilectron_boundary+++")
 )
 
 // reader represents an object capable of reading the stdout
@@ -43,20 +39,30 @@ func (r *reader) read() {
 		if b, err = reader.ReadBytes('\n'); err != nil {
 			if err == io.EOF {
 				astilog.Debug("Electron stopped")
-				r.d.Dispatch(Event{Name: EventNameElectronStop, TargetID: mainTargetID})
+				r.d.Dispatch(Event{Name: EventNameElectronStopped, TargetID: mainTargetID})
 				return
 			} else {
 				astilog.Errorf("%s while reading", err)
+				continue
 			}
 		}
-
-		astilog.Debug(string(b))
+		b = bytes.TrimSpace(b)
+		astilog.Debugf("Electron says: %s", b)
 
 		// This is an astilectron message
 		if bytes.HasSuffix(b, boundary) {
-			// TODO
-		} else {
-			r.d.Dispatch(Event{Name: EventNameElectronLog, Payload: string(b), TargetID: mainTargetID})
+			// Trim boundary
+			b = bytes.TrimSuffix(b, boundary)
+
+			// Unmarshal
+			var e Event
+			if err = json.Unmarshal(b, &e); err != nil {
+				astilog.Errorf("%s while unmarshaling %s", err, b)
+				continue
+			}
+
+			// Dispatch
+			r.d.Dispatch(e)
 		}
 	}
 }

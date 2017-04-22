@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	astilog "github.com/asticode/go-astilog"
+	"github.com/asticode/go-astilog"
 	"github.com/pkg/errors"
 )
 
@@ -129,5 +129,49 @@ func Unzip(dst, src string) (err error) {
 			}
 		}
 	}
+	return
+}
+
+// PtrBool transforms a bool into a *bool
+func PtrBool(i bool) *bool {
+	return &i
+}
+
+// PtrInt transforms an int into an *int
+func PtrInt(i int) *int {
+	return &i
+}
+
+// PtrStr transforms a string into a *string
+func PtrStr(i string) *string {
+	return &i
+}
+
+// synchronousFunc executes a function and blocks until it has received a specific event
+func synchronousFunc(l Listenable, eventNameDone string, fn func()) {
+	var c = make(chan bool)
+	defer func() {
+		if c != nil {
+			close(c)
+		}
+	}()
+	l.On(eventNameDone, func(e Event) (deleteListener bool) {
+		close(c)
+		c = nil
+		return true
+	})
+	fn()
+	<-c
+}
+
+// synchronousEvent sends an event and blocks until it has received a specific event
+func synchronousEvent(l Listenable, w *writer, e Event, eventNameDone string) (err error) {
+	synchronousFunc(l, eventNameDone, func() {
+		if err = w.write(e); err != nil {
+			err = errors.Wrapf(err, "writing %+v event failed", e)
+			return
+		}
+		return
+	})
 	return
 }
