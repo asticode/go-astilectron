@@ -9,6 +9,8 @@ import (
 
 	"net/url"
 
+	"strings"
+
 	"github.com/asticode/go-astilog"
 	"github.com/pkg/errors"
 )
@@ -82,6 +84,9 @@ func Download(c *http.Client, dst, src string) (err error) {
 		return errors.Wrapf(err, "copying content from %s to %s failed", src, dst)
 	}
 
+	// We need to close the file manually before removing it
+	fp.Close()
+
 	// Remove dst.processing file
 	if err = os.Remove(dstProcessing); err != nil {
 		return errors.Wrapf(err, "removing %s failed", dstProcessing)
@@ -90,9 +95,18 @@ func Download(c *http.Client, dst, src string) (err error) {
 }
 
 // Unzip unzips a src into a dst
+// Possible src formats are /path/to/zip.zip or /path/to/zip.zip/internal/path
 func Unzip(dst, src string) (err error) {
 	// Log
 	astilog.Debugf("Unzipping %s into %s", src, dst)
+
+	// Parse src path
+	var split = strings.Split(src, ".zip")
+	src = split[0] + ".zip"
+	var internalPath string
+	if len(split) >= 2 {
+		internalPath = split[1]
+	}
 
 	// Open overall reader
 	var r *zip.ReadCloser
@@ -103,15 +117,21 @@ func Unzip(dst, src string) (err error) {
 
 	// Loop through files
 	for _, f := range r.File {
+		// Validate internal path
+		var n = string(os.PathSeparator) + f.Name
+		if internalPath != "" && !strings.HasPrefix(n, internalPath) {
+			continue
+		}
+
 		// Open file reader
 		var fr io.ReadCloser
 		if fr, err = f.Open(); err != nil {
-			return errors.Wrapf(err, "opening zip reader on file %s failed", f.Name)
+			return errors.Wrapf(err, "opening zip reader on file %s failed", n)
 		}
 		defer fr.Close()
 
 		// Only unzip files
-		var p = filepath.Join(dst, f.Name)
+		var p = filepath.Join(dst, strings.TrimPrefix(n, internalPath))
 		if !f.FileInfo().IsDir() {
 			// Make sure the directory of the file exists
 			if err = os.MkdirAll(filepath.Dir(p), 0775); err != nil {
@@ -127,7 +147,7 @@ func Unzip(dst, src string) (err error) {
 
 			// Copy
 			if _, err = io.Copy(fl, fr); err != nil {
-				return errors.Wrapf(err, "copying %s into %s failed", f.Name, p)
+				return errors.Wrapf(err, "copying %s into %s failed", n, p)
 			}
 		}
 	}

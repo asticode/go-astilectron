@@ -15,11 +15,13 @@ type Paths struct {
 	astilectronDirectory   string
 	astilectronDownloadSrc string
 	astilectronDownloadDst string
+	astilectronUnzipSrc    string
 	baseDirectory          string
 	electronDirectory      string
 	electronDownloadSrc    string
 	electronDownloadDst    string
 	electronExecutable     string
+	electronUnzipSrc       string
 	vendorDirectory        string
 }
 
@@ -37,11 +39,13 @@ func newPaths(baseDirectoryPath string) (p *Paths, err error) {
 	p.vendorDirectory = filepath.Join(p.baseDirectory, "vendor")
 	p.initAstilectronDirectory()
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
-	p.astilectronDownloadSrc = fmt.Sprintf("https://github.com/asticode/astilectron/releases/download/v%s/astilectron-v%s.zip", versionAstilectron, versionAstilectron)
-	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, filepath.Base(p.astilectronDownloadSrc))
+	p.astilectronDownloadSrc = fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", versionAstilectron)
+	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", versionAstilectron))
+	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", versionAstilectron))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, "electron")
 	p.initElectronDownloadSrc()
-	p.electronDownloadDst = filepath.Join(p.vendorDirectory, filepath.Base(p.electronDownloadSrc))
+	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", versionElectron))
+	p.electronUnzipSrc = p.electronDownloadDst
 	p.initElectronExecutable()
 	return
 }
@@ -132,6 +136,11 @@ func (p *Paths) AstilectronDownloadSrc() string {
 	return p.astilectronDownloadSrc
 }
 
+// AstilectronUnzipSrc returns the astilectron unzip source path
+func (p *Paths) AstilectronUnzipSrc() string {
+	return p.astilectronUnzipSrc
+}
+
 // ElectronDirectory returns the electron directory path
 func (p *Paths) ElectronDirectory() string {
 	return p.electronDirectory
@@ -150,6 +159,11 @@ func (p *Paths) ElectronDownloadSrc() string {
 // ElectronExecutable returns the electron eecutable path
 func (p *Paths) ElectronExecutable() string {
 	return p.electronExecutable
+}
+
+// ElectronUnzipSrc returns the electron unzip source path
+func (p *Paths) ElectronUnzipSrc() string {
+	return p.electronUnzipSrc
 }
 
 // BaseDirectory returns the vendor directory path

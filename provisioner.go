@@ -41,16 +41,16 @@ func (p *defaultProvisioner) Provision(paths *Paths) (err error) {
 
 // provisionAstilectron provisions astilectron
 func (p *defaultProvisioner) provisionAstilectron(paths *Paths) error {
-	return p.provisionDownloadableZipFile("Astilectron", paths.AstilectronApplication(), paths.AstilectronDownloadSrc(), paths.AstilectronDownloadDst(), paths.AstilectronDirectory())
+	return p.provisionDownloadableZipFile("Astilectron", paths.AstilectronApplication(), paths.AstilectronDownloadSrc(), paths.AstilectronDownloadDst(), paths.AstilectronUnzipSrc(), paths.AstilectronDirectory())
 }
 
 // provisionElectron provisions electron
 func (p *defaultProvisioner) provisionElectron(paths *Paths) error {
-	return p.provisionDownloadableZipFile("Electron", paths.ElectronExecutable(), paths.ElectronDownloadSrc(), paths.ElectronDownloadDst(), paths.ElectronDirectory())
+	return p.provisionDownloadableZipFile("Electron", paths.ElectronExecutable(), paths.ElectronDownloadSrc(), paths.ElectronDownloadDst(), paths.ElectronUnzipSrc(), paths.ElectronDirectory())
 }
 
 // provisionDownloadableZipFile provisions a downloadable .zip file
-func (p *defaultProvisioner) provisionDownloadableZipFile(name, pathExists, pathDownloadSrc, pathDownloadDst, pathDirectory string) (err error) {
+func (p *defaultProvisioner) provisionDownloadableZipFile(name, pathExists, pathDownloadSrc, pathDownloadDst, pathUnzipSrc, pathDirectory string) (err error) {
 	// Log
 	astilog.Debugf("Provisioning %s...", name)
 
@@ -68,8 +68,8 @@ func (p *defaultProvisioner) provisionDownloadableZipFile(name, pathExists, path
 		}
 
 		// Unzip
-		if err = Unzip(pathDirectory, pathDownloadDst); err != nil {
-			return errors.Wrapf(err, "unzipping %s into %s failed", pathDownloadDst, pathDirectory)
+		if err = Unzip(pathDirectory, pathUnzipSrc); err != nil {
+			return errors.Wrapf(err, "unzipping %s into %s failed", pathUnzipSrc, pathDirectory)
 		}
 	} else if err != nil {
 		return errors.Wrapf(err, "stating %s failed", pathExists)

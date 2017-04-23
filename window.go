@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Vars
+// Window errors
 var (
 	ErrWindowDestroyed = errors.New("window.destroyed")
 )
@@ -128,9 +128,19 @@ func (w *Window) Close() (err error) {
 	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdClose, TargetID: w.id}, EventNameWindowEventClosed)
 }
 
+// CloseDevTools closes the dev tools
+func (w *Window) CloseDevTools() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return w.w.write(Event{Name: EventNameWindowCmdWebContentsCloseDevTools, TargetID: w.id})
+}
+
 // Create creates the window
+// We wait for EventNameWindowEventDidFinishLoad since we need the web content to be fully loaded before being able to
+// send messages to it
 func (w *Window) Create() error {
-	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowDoneCreate)
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
 }
 
 // Destroy destroys the window
@@ -155,6 +165,14 @@ func (w *Window) Hide() (err error) {
 		return
 	}
 	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
+}
+
+// OpenDevTools opens the dev tools
+func (w *Window) OpenDevTools() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return w.w.write(Event{Name: EventNameWindowCmdWebContentsOpenDevTools, TargetID: w.id})
 }
 
 // Maximize maximizes the window
@@ -199,6 +217,14 @@ func (w *Window) Restore() (err error) {
 		return
 	}
 	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdRestore, TargetID: w.id}, EventNameWindowEventRestore)
+}
+
+// Send sends a message to the inner JS of the Web content of the window
+func (w *Window) Send(message interface{}) (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return w.w.write(Event{Message: newEventMessage(message), Name: EventNameWindowCmdMessage, TargetID: w.id})
 }
 
 // Show shows the window
