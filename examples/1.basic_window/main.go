@@ -44,15 +44,14 @@ func main() {
 
 	// Create window
 	var w *astilectron.Window
-	if w, err = a.NewWindow(&astilectron.WindowOptions{
+	if w, err = a.NewWindow(os.Getenv("GOPATH")+"/src/github.com/asticode/go-astilectron/examples/1.basic_window/index.html", &astilectron.WindowOptions{
 		Center: astilectron.PtrBool(true),
-		Show:   astilectron.PtrBool(false),
 		Height: astilectron.PtrInt(600),
 		Width:  astilectron.PtrInt(600),
 	}); err != nil {
-		astilog.Fatal(errors.Wrap(err, "creating new window failed"))
+		astilog.Fatal(errors.Wrap(err, "new window failed"))
 	}
-	w.Show()
+	w.Create()
 
 	// Blocking pattern
 	a.Wait()

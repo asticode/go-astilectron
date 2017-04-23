@@ -1,11 +1,18 @@
 package astilectron
 
+import (
+	"net/url"
+
+	"github.com/pkg/errors"
+)
+
 // Window represents a window
 type Window struct {
-	d  *Dispatcher
-	id string
-	o  *WindowOptions
-	w  *writer
+	d   *Dispatcher
+	id  string
+	o   *WindowOptions
+	url *url.URL
+	w   *writer
 }
 
 // WindowOptions represents window options
@@ -50,20 +57,31 @@ type WindowOptions struct {
 }
 
 // NewWindow creates a new window
-func (a *Astilectron) NewWindow(o *WindowOptions) (w *Window, err error) {
+func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err error) {
+	// Init
 	w = &Window{
 		d:  a.dispatcher,
 		id: a.identifier.new(),
 		o:  o,
 		w:  a.writer,
 	}
-	err = synchronousEvent(w, w.w, Event{Name: EventNameWindowCreate, TargetID: w.id, WindowOptions: w.o}, EventNameWindowCreateDone)
+
+	// Parse url
+	if w.url, err = parseURL(url); err != nil {
+		err = errors.Wrapf(err, "parsing url %s failed", url)
+		return
+	}
 	return
 }
 
 // On implements the Listenable interface
 func (w *Window) On(eventName string, l Listener) {
 	w.d.addListener(w.id, eventName, l)
+}
+
+// Create creates the window
+func (w *Window) Create() error {
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowCreateDone)
 }
 
 // Show shows the window

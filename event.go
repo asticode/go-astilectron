@@ -28,5 +28,6 @@ type Event struct {
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
 	Message       string         `json:"message,omitempty"`
+	URL           string         `json:"url,omitempty"`
 	WindowOptions *WindowOptions `json:"windowOptions,omitempty"`
 }
