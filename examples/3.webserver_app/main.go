@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
 
 	"github.com/asticode/go-astilectron"
@@ -15,6 +16,21 @@ func main() {
 
 	// Set up logger
 	astilog.SetLogger(astilog.New(astilog.FlagConfig()))
+
+	// Start server
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`<!DOCTYPE html>
+		<html lang="en">
+		<head>
+		    <meta charset="UTF-8">
+		    <title>Hello world</title>
+		</head>
+		<body>
+		    Hello world
+		</body>
+		</html>`))
+	})
+	go http.ListenAndServe("127.0.0.1:4000", nil)
 
 	// Create astilectron
 	var a *astilectron.Astilectron
@@ -36,7 +52,7 @@ func main() {
 
 	// Create window
 	var w *astilectron.Window
-	if w, err = a.NewWindow(os.Getenv("GOPATH")+"/src/github.com/asticode/go-astilectron/examples/1.basic_window/index.html", &astilectron.WindowOptions{
+	if w, err = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
 		Center: astilectron.PtrBool(true),
 		Height: astilectron.PtrInt(600),
 		Width:  astilectron.PtrInt(600),

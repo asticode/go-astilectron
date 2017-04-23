@@ -39,7 +39,7 @@ func (r *reader) read() {
 		if b, err = reader.ReadBytes('\n'); err != nil {
 			if err == io.EOF {
 				astilog.Debug("Electron stopped")
-				r.d.Dispatch(Event{Name: EventNameElectronStopped, TargetID: mainTargetID})
+				r.d.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
 				return
 			} else {
 				astilog.Errorf("%s while reading", err)

@@ -1,25 +1,35 @@
 package astilectron
 
 import (
+	"context"
 	"net/url"
 
 	"github.com/pkg/errors"
 )
 
+// Vars
+var (
+	ErrWindowDestroyed = errors.New("window.destroyed")
+)
+
 // Window represents a window
+// https://github.com/electron/electron/blob/master/docs/api/browser-window.md
+// TODO Add missing window options
+// TODO Add missing window methods
+// TODO Add missing window events
 type Window struct {
-	d   *Dispatcher
-	id  string
-	o   *WindowOptions
-	url *url.URL
-	w   *writer
+	cancel context.CancelFunc
+	ctx    context.Context
+	d      *Dispatcher
+	id     string
+	o      *WindowOptions
+	url    *url.URL
+	w      *writer
 }
 
 // WindowOptions represents window options
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use PtrBool, PtrInt or PtrStr
 // to fill the struct
-// https://github.com/electron/electron/blob/master/docs/api/browser-window.md#new-browserwindowoptions
-// TODO Add missing attributes
 type WindowOptions struct {
 	AcceptFirstMouse       *bool   `json:"acceptFirstMouse,omitempty"`
 	AlwaysOnTop            *bool   `json:"alwaysOnTop,omitempty"`
@@ -65,6 +75,13 @@ func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err er
 		o:  o,
 		w:  a.writer,
 	}
+	w.ctx, w.cancel = context.WithCancel(context.Background())
+
+	// Make sure the window's context is cancelled once the closed event is received
+	w.On(EventNameWindowEventClosed, func(e Event) (deleteListener bool) {
+		w.cancel()
+		return true
+	})
 
 	// Parse url
 	if w.url, err = parseURL(url); err != nil {
@@ -79,12 +96,123 @@ func (w *Window) On(eventName string, l Listener) {
 	w.d.addListener(w.id, eventName, l)
 }
 
+// isWindowDestroyed checks whether the window has been destroyed
+func (w *Window) isWindowDestroyed() error {
+	if w.ctx.Err() != nil {
+		return ErrWindowDestroyed
+	}
+	return nil
+}
+
+// Blur blurs the window
+func (w *Window) Blur() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdBlur, TargetID: w.id}, EventNameWindowEventBlur)
+}
+
+// Center centers the window
+func (w *Window) Center() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdCenter, TargetID: w.id}, EventNameWindowEventMove)
+}
+
+// Close closes the window
+func (w *Window) Close() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdClose, TargetID: w.id}, EventNameWindowEventClosed)
+}
+
 // Create creates the window
 func (w *Window) Create() error {
-	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowCreateDone)
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowDoneCreate)
+}
+
+// Destroy destroys the window
+func (w *Window) Destroy() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdDestroy, TargetID: w.id}, EventNameWindowEventClosed)
+}
+
+// Focus focuses on the window
+func (w *Window) Focus() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdFocus, TargetID: w.id}, EventNameWindowEventFocus)
+}
+
+// Hide hides the window
+func (w *Window) Hide() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
+}
+
+// Maximize maximizes the window
+func (w *Window) Maximize() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdMaximize, TargetID: w.id}, EventNameWindowEventMaximize)
+}
+
+// Minimize minimizes the window
+func (w *Window) Minimize() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdMinimize, TargetID: w.id}, EventNameWindowEventMinimize)
+}
+
+// Move moves the window
+func (w *Window) Move(x, y int) (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	w.o.X = PtrInt(x)
+	w.o.Y = PtrInt(y)
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: w.o.X, Y: w.o.Y}}, EventNameWindowEventMove)
+}
+
+// Resize resizes the window
+func (w *Window) Resize(width, height int) (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	w.o.Height = PtrInt(height)
+	w.o.Width = PtrInt(width)
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: w.o.Height, Width: w.o.Width}}, EventNameWindowEventResize)
+}
+
+// Restore restores the window
+func (w *Window) Restore() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdRestore, TargetID: w.id}, EventNameWindowEventRestore)
 }
 
 // Show shows the window
-func (w *Window) Show() error {
-	return synchronousEvent(w, w.w, Event{Name: EventNameWindowShow, TargetID: w.id}, EventNameWindowShowDone)
+func (w *Window) Show() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
+}
+
+// Unmaximize unmaximize the window
+func (w *Window) Unmaximize() (err error) {
+	if err = w.isWindowDestroyed(); err != nil {
+		return
+	}
+	return synchronousEvent(w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
 }

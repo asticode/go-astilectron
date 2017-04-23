@@ -5,8 +5,8 @@ import "sync"
 // Listener represents a listener executed when an event is dispatched
 type Listener func(e Event) (deleteListener bool)
 
-// Listenable represents an object that can listen
-type Listenable interface {
+// listenable represents an object that can listen
+type listenable interface {
 	On(eventName string, l Listener)
 }
 
@@ -54,6 +54,10 @@ func (d *Dispatcher) delListener(targetID, eventName string, index int) {
 		return
 	}
 	if _, ok := d.l[targetID][eventName]; !ok {
+		return
+	}
+	if len(d.l[targetID][eventName]) <= 1 {
+		d.l[targetID][eventName] = []Listener{}
 		return
 	}
 	d.l[targetID][eventName] = append(d.l[targetID][eventName][:index], d.l[targetID][eventName][index+1:]...)

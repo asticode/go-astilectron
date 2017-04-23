@@ -19,9 +19,8 @@ import (
 
 // Constants
 const (
-	defaultApplicationName = "Astilectron"
-	versionAstilectron     = "0.1.0"
-	versionElectron        = "1.6.5"
+	versionAstilectron = "0.1.0"
+	versionElectron    = "1.6.5"
 )
 
 // Vars
@@ -33,20 +32,18 @@ var (
 
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
-	applicationName string
-	canceller       *asticontext.Canceller
-	channelQuit     chan bool
-	dispatcher      *Dispatcher
-	identifier      *identifier
-	paths           *Paths
-	provisioner     Provisioner
-	reader          *reader
-	writer          *writer
+	canceller   *asticontext.Canceller
+	channelQuit chan bool
+	dispatcher  *Dispatcher
+	identifier  *identifier
+	paths       *Paths
+	provisioner Provisioner
+	reader      *reader
+	writer      *writer
 }
 
 // Options represents Astilectron options
 type Options struct {
-	ApplicationName   string
 	BaseDirectoryPath string
 }
 
@@ -63,12 +60,6 @@ func New(o Options) (a *Astilectron, err error) {
 		dispatcher:  newDispatcher(),
 		identifier:  newIdentifier(),
 		provisioner: DefaultProvisioner,
-	}
-
-	// Set application name
-	a.applicationName = defaultApplicationName
-	if len(o.ApplicationName) > 0 {
-		a.applicationName = o.ApplicationName
 	}
 
 	// Set paths
@@ -122,7 +113,7 @@ func (a *Astilectron) Start() (err error) {
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
-	a.dispatcher.Dispatch(Event{Name: EventNameProvision, TargetID: mainTargetID})
+	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
 	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
 	return a.provisioner.Provision(a.paths)
 }
@@ -156,7 +147,7 @@ func (a *Astilectron) execute() (err error) {
 	go a.reader.read()
 
 	// Start command
-	synchronousFunc(a, EventNameElectronReady, func() {
+	synchronousFunc(a, EventNameAppEventReady, func() {
 		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
 		if err = cmd.Start(); err != nil {
 			err = errors.Wrapf(err, "starting cmd %s failed", strings.Join(cmd.Args, " "))
