@@ -11,12 +11,16 @@ import (
 
 	"strings"
 
+	"context"
+
 	"github.com/asticode/go-astilog"
+	"github.com/asticode/go-astitools/http"
 	"github.com/pkg/errors"
 )
 
-// Download downloads a src into a dst using a specific *http.Client
-func Download(c *http.Client, dst, src string) (err error) {
+// Download is a cancellable function that downloads a src into a dst using a specific *http.Client and deals with
+// failed downloads
+func Download(ctx context.Context, c *http.Client, dst, src string) (err error) {
 	// Log
 	astilog.Debugf("Downloading %s into %s", src, dst)
 
@@ -60,28 +64,9 @@ func Download(c *http.Client, dst, src string) (err error) {
 	}
 	defer fp.Close()
 
-	// Create the dst file
-	var f *os.File
-	if f, err = os.Create(dst); err != nil {
-		return errors.Wrapf(err, "creating file %s failed", dst)
-	}
-	defer f.Close()
-
-	// Send request
-	var resp *http.Response
-	if resp, err = c.Get(src); err != nil {
-		return errors.Wrapf(err, "getting %s failed", src)
-	}
-	defer resp.Body.Close()
-
-	// Validate status code
-	if resp.StatusCode != http.StatusOK {
-		return errors.Wrapf(err, "getting %s returned %d status code", src, resp.StatusCode)
-	}
-
-	// Copy
-	if _, err = io.Copy(f, resp.Body); err != nil {
-		return errors.Wrapf(err, "copying content from %s to %s failed", src, dst)
+	// Download
+	if err = astihttp.Download(ctx, c, src, dst); err != nil {
+		return errors.Wrap(err, "astihttp.Download failed")
 	}
 
 	// We need to close the file manually before removing it
