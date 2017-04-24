@@ -31,6 +31,12 @@ func (r *reader) close() error {
 	return r.r.Close()
 }
 
+// isEOFErr checks whether the error is an EOF error
+// wsarecv is the error sent on Windows when the client closes its connection
+func (r *reader) isEOFErr(err error) bool {
+	return err == io.EOF || strings.Contains(strings.ToLower(err.Error()), "wsarecv:")
+}
+
 // read reads from stdout
 func (r *reader) read() {
 	var reader = bufio.NewReader(r.r)
@@ -39,10 +45,7 @@ func (r *reader) read() {
 		var b []byte
 		var err error
 		if b, err = reader.ReadBytes('\n'); err != nil {
-			// wsarecv is the error sent on Windows when the client closes its connection
-			if err == io.EOF || strings.Contains(strings.ToLower(err.Error()), "wsarecv:") {
-				astilog.Debug("Astilectron stopped")
-				r.d.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
+			if r.isEOFErr(err) {
 				return
 			} else {
 				astilog.Errorf("%s while reading", err)

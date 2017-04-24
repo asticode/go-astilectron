@@ -40,7 +40,8 @@ type Astilectron struct {
 	paths        *Paths
 	provisioner  Provisioner
 	reader       *reader
-	stdoutWriter *astiexec.StdoutWriter
+	stderrWriter *astiexec.StdWriter
+	stdoutWriter *astiexec.StdWriter
 	writer       *writer
 }
 
@@ -124,7 +125,7 @@ func (a *Astilectron) provision() error {
 	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
 	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, a.paths)
+	return a.provisioner.Provision(ctx, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -162,17 +163,38 @@ func (a *Astilectron) execute() (err error) {
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
 	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
-	a.stdoutWriter = astiexec.NewStdoutWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
+	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Errorf("Stderr says: %s", i) })
+	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
+	cmd.Stderr = a.stderrWriter
 	cmd.Stdout = a.stdoutWriter
 
 	// Start command
-	synchronousFunc(a, EventNameAppEventReady, func() {
+	// TODO If app crashes right away, process is blocked here: fix
+	synchronousFunc(a, func() {
+		// Start command
 		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
 		if err = cmd.Start(); err != nil {
 			err = errors.Wrapf(err, "starting cmd %s failed", strings.Join(cmd.Args, " "))
 			return
 		}
-	})
+
+		// Watch command
+		go func() {
+			// Wait
+			cmd.Wait()
+
+			// Check the canceller to check whether it was a crash
+			if !a.canceller.Cancelled() {
+				astilog.Debug("App has crashed")
+				a.dispatcher.Dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
+			} else {
+				astilog.Debug("App has closed")
+				a.dispatcher.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
+			}
+			a.dispatcher.Dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
+		}()
+	}, EventNameAppEventReady)
+	astilog.Debug("App is ready")
 	return
 }
 
@@ -182,11 +204,18 @@ func (a *Astilectron) Close() {
 	a.canceller.Cancel()
 	a.dispatcher.close()
 	a.listener.Close()
-	a.reader.close()
+	if a.reader != nil {
+		a.reader.close()
+	}
+	if a.stderrWriter != nil {
+		a.stderrWriter.Close()
+	}
 	if a.stdoutWriter != nil {
 		a.stdoutWriter.Close()
 	}
-	a.writer.close()
+	if a.writer != nil {
+		a.writer.close()
+	}
 }
 
 // HandleSignals handles signals

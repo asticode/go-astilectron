@@ -12,7 +12,7 @@ import (
 
 // Provisioner represents an object capable of provisioning Astilectron
 type Provisioner interface {
-	Provision(ctx context.Context, p *Paths) error
+	Provision(ctx context.Context, p Paths) error
 }
 
 // Default provisioner
@@ -26,7 +26,7 @@ type defaultProvisioner struct {
 }
 
 // Provision implements the provisioner interface
-func (p *defaultProvisioner) Provision(ctx context.Context, paths *Paths) (err error) {
+func (p *defaultProvisioner) Provision(ctx context.Context, paths Paths) (err error) {
 	// Provision astilectron
 	if err = p.provisionAstilectron(ctx, paths); err != nil {
 		err = errors.Wrap(err, "provisioning astilectron failed")
@@ -42,12 +42,12 @@ func (p *defaultProvisioner) Provision(ctx context.Context, paths *Paths) (err e
 }
 
 // provisionAstilectron provisions astilectron
-func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths *Paths) error {
+func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths) error {
 	return p.provisionDownloadableZipFile(ctx, "Astilectron", paths.AstilectronApplication(), paths.AstilectronDownloadSrc(), paths.AstilectronDownloadDst(), paths.AstilectronUnzipSrc(), paths.AstilectronDirectory())
 }
 
 // provisionElectron provisions electron
-func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths *Paths) error {
+func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths) error {
 	return p.provisionDownloadableZipFile(ctx, "Electron", paths.ElectronExecutable(), paths.ElectronDownloadSrc(), paths.ElectronDownloadDst(), paths.ElectronUnzipSrc(), paths.ElectronDirectory())
 }
 

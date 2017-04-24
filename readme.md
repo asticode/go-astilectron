@@ -1,4 +1,4 @@
-With `go-astilectron` create a beautiful cross-platform GUI for you GO app. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
+Thanks to `go-astilectron` build cross platform GUI apps with GO and Electron (HTML/JS/CSS). It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
 # Quick start
 
@@ -27,7 +27,7 @@ In case you want to embed the sources in the binary to keep a unique binary you 
     type myProvisioner struct {}
     
     // Provision implements the Provisioner interface
-    func (p myProvisioner) Provision(ctx context.Context, p *Paths) error {
+    func (p myProvisioner) Provision(ctx context.Context, p Paths) error {
     	// TODO Extract the .zip files embeded in GO. It will depend on the solution you choose to embed data in GO.
     	
     	// Call the default provisioner to finish the work
@@ -55,7 +55,7 @@ This is pretty straightforward except the `astilectron.Ptr*` methods so let me e
 ### Add listeners
 
     // Add a listener on Astilectron
-    a.On(astilectron.EventNameAppClose, func(e astilectron.Event) (deleteListener bool) {
+    a.On(astilectron.EventNameAppStop, func(e astilectron.Event) (deleteListener bool) {
         a.Stop()
         return
     })
@@ -79,14 +79,15 @@ Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#
 
 ### Send messages between GO and your webserver
 
-In your webserver add the following script to any of the pages you want to interact with:
+In your webserver add the following javascript to any of the pages you want to interact with:
 
     <script>
         // This will wait for the astilectron namespace to be ready
         document.addEventListener('astilectron-ready', function() {
+        
             // This will listen to messages sent by GO
             astilectron.listen(function(message) {
-                document.getElementById('message').innerHTML = message
+                                
                 // This will send a message back to GO
                 astilectron.send("I'm good bro")
             });
@@ -108,7 +109,7 @@ In your GO app add the following:
     
 And that's it!
 
-NOTE: needless to say that the message can be something other than a string. JSON is used to exchange data between GO and the webserver so any type will do!*
+NOTE: needless to say that the message can be something other than a string. A custom struct for instance!
 
 ### Final code
 
@@ -148,7 +149,7 @@ NOTE: needless to say that the message can be something other than a string. JSO
     
     // Handle quit
     a.HandleSignals()
-    a.On(astilectron.EventNameAppClose, func(e astilectron.Event) (deleteListener bool) {
+    a.On(astilectron.EventNameAppStop, func(e astilectron.Event) (deleteListener bool) {
         a.Stop()
         return
     })
@@ -204,7 +205,7 @@ Here's a list of the examples:
 # Features and roadmap
 
 - [x] window basic methods (create, show, close, resize, minimize, maximize, ...)
-- [x] window basic events (close, blur, focud, unresponsive, crashed, ...)
+- [x] window basic events (close, blur, focus, unresponsive, crashed, ...)
 - [x] remote messaging (messages between GO and the JS in the webserver)
 - [ ] menu methods
 - [ ] menu events
