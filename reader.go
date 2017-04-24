@@ -7,37 +7,40 @@ import (
 
 	"encoding/json"
 
+	"strings"
+
 	"github.com/asticode/go-astilog"
 )
 
 // reader represents an object capable of reading the stdout
 type reader struct {
 	d *Dispatcher
-	s io.ReadCloser
+	r io.ReadCloser
 }
 
 // newReader creates a new reader
-func newReader(d *Dispatcher, stdout io.ReadCloser) *reader {
+func newReader(d *Dispatcher, r io.ReadCloser) *reader {
 	return &reader{
 		d: d,
-		s: stdout,
+		r: r,
 	}
 }
 
 // close closes the reader properly
 func (r *reader) close() error {
-	return r.s.Close()
+	return r.r.Close()
 }
 
 // read reads from stdout
 func (r *reader) read() {
-	var reader = bufio.NewReader(r.s)
+	var reader = bufio.NewReader(r.r)
 	for {
 		// Read next line
 		var b []byte
 		var err error
 		if b, err = reader.ReadBytes('\n'); err != nil {
-			if err == io.EOF {
+			// wsarecv is the error sent on Windows when the client closes its connection
+			if err == io.EOF || strings.Contains(strings.ToLower(err.Error()), "wsarecv:") {
 				astilog.Debug("Electron stopped")
 				r.d.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
 				return
