@@ -35,11 +35,9 @@ func (r *writer) write(e Event) (err error) {
 	}
 
 	// Write
-	var m = append(b, boundary...)
-	m = append(m, '\n')
-	astilog.Debugf("Sending to Electron: %s", m)
-	if _, err = r.w.Write(m); err != nil {
-		return errors.Wrapf(err, "Writing %s failed", string(m))
+	astilog.Debugf("Sending to Astilectron: %s", b)
+	if _, err = r.w.Write(append(b, '\n')); err != nil {
+		return errors.Wrapf(err, "Writing %s failed", b)
 	}
 	return
 }

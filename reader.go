@@ -41,7 +41,7 @@ func (r *reader) read() {
 		if b, err = reader.ReadBytes('\n'); err != nil {
 			// wsarecv is the error sent on Windows when the client closes its connection
 			if err == io.EOF || strings.Contains(strings.ToLower(err.Error()), "wsarecv:") {
-				astilog.Debug("Electron stopped")
+				astilog.Debug("Astilectron stopped")
 				r.d.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
 				return
 			} else {
@@ -50,22 +50,16 @@ func (r *reader) read() {
 			}
 		}
 		b = bytes.TrimSpace(b)
-		astilog.Debugf("Electron says: %s", b)
+		astilog.Debugf("Astilectron says: %s", b)
 
-		// This is an astilectron message
-		if bytes.HasSuffix(b, boundary) {
-			// Trim boundary
-			b = bytes.TrimSuffix(b, boundary)
-
-			// Unmarshal
-			var e Event
-			if err = json.Unmarshal(b, &e); err != nil {
-				astilog.Errorf("%s while unmarshaling %s", err, b)
-				continue
-			}
-
-			// Dispatch
-			r.d.Dispatch(e)
+		// Unmarshal
+		var e Event
+		if err = json.Unmarshal(b, &e); err != nil {
+			astilog.Errorf("%s while unmarshaling %s", err, b)
+			continue
 		}
+
+		// Dispatch
+		r.d.Dispatch(e)
 	}
 }

@@ -26,7 +26,6 @@ const (
 // Vars
 var (
 	astilectronDirectoryPath = flag.String("astilectron-directory-path", "", "the astilectron directory path")
-	boundary                 = []byte("--++__astilectron_boundary__++--")
 	validOSes                = []string{"darwin", "linux", "windows"}
 )
 
@@ -160,6 +159,8 @@ func (a *Astilectron) execute() (err error) {
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
 	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
+
+	// TODO Capture stdout
 
 	// Start command
 	synchronousFunc(a, EventNameAppEventReady, func() {
