@@ -43,7 +43,9 @@ func main() {
 	}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "new window failed"))
 	}
-	w.Create()
+	if err = w.Create(); err != nil {
+		astilog.Fatal(errors.Wrap(err, "creating window failed"))
+	}
 
 	// Blocking pattern
 	a.Wait()

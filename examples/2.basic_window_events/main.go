@@ -44,7 +44,9 @@ func main() {
 	}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "new window failed"))
 	}
-	w.Create()
+	if err = w.Create(); err != nil {
+		astilog.Fatal(errors.Wrap(err, "creating window failed"))
+	}
 
 	// Add listener
 	w.On(astilectron.EventNameWindowEventMove, func(e astilectron.Event) (deleteListener bool) {
@@ -55,20 +57,36 @@ func main() {
 	// Simulate actions
 	go func() {
 		time.Sleep(time.Second)
-		w.Move(0, 0)
+		if err = w.Move(0, 0); err != nil {
+			astilog.Fatal(errors.Wrap(err, "moving window failed"))
+		}
 		time.Sleep(time.Second)
-		w.Resize(200, 200)
+		if err = w.Resize(200, 200); err != nil {
+			astilog.Fatal(errors.Wrap(err, "resizing window failed"))
+		}
 		time.Sleep(time.Second)
-		w.Maximize()
+		if err = w.Maximize(); err != nil {
+			astilog.Fatal(errors.Wrap(err, "maximizing window failed"))
+		}
 		time.Sleep(time.Second)
-		w.Unmaximize()
+		if err = w.Unmaximize(); err != nil {
+			astilog.Fatal(errors.Wrap(err, "unmaximizing window failed"))
+		}
 		time.Sleep(time.Second)
-		w.Minimize()
+		if err = w.Minimize(); err != nil {
+			astilog.Fatal(errors.Wrap(err, "minimizing window failed"))
+		}
 		time.Sleep(time.Second)
-		w.Restore()
+		if err = w.Restore(); err != nil {
+			astilog.Fatal(errors.Wrap(err, "restoring window failed"))
+		}
 		time.Sleep(time.Second)
-		w.Resize(600, 600)
-		w.Center()
+		if err = w.Resize(600, 600); err != nil {
+			astilog.Fatal(errors.Wrap(err, "resizing window failed"))
+		}
+		if err = w.Center(); err != nil {
+			astilog.Fatal(errors.Wrap(err, "centering window failed"))
+		}
 	}()
 
 	// Blocking pattern

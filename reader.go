@@ -14,12 +14,12 @@ import (
 
 // reader represents an object capable of reading in the TCP server
 type reader struct {
-	d *Dispatcher
+	d *dispatcher
 	r io.ReadCloser
 }
 
 // newReader creates a new reader
-func newReader(d *Dispatcher, r io.ReadCloser) *reader {
+func newReader(d *dispatcher, r io.ReadCloser) *reader {
 	return &reader{
 		d: d,
 		r: r,
@@ -63,6 +63,6 @@ func (r *reader) read() {
 		}
 
 		// Dispatch
-		r.d.Dispatch(e)
+		r.d.dispatch(e)
 	}
 }
