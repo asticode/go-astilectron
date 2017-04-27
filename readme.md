@@ -12,17 +12,20 @@ To import `go-astilectron` run:
 
 ### Start `go-astilectron`
 
+```go
     // Initialize astilectron
     var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
     defer a.Close()
     
     // Start astilectron
     a.Start()
+```
 
 For everything to work properly we need to fetch 2 dependencies : [astilectron](https://github.com/asticode/astilectron) and [Electron](https://github.com/electron/electron). `.Start()` takes care of it by downloading the sources and setting them up properly.
 
 In case you want to embed the sources in the binary to keep a unique binary you can implement your own **Provisioner** and attach it to `go-astilectron` with `.SetProvisioner(p Provisioner)`. Your custom **Provisioner** would look something like :
 
+```go
     // myProvisioner represents your custom provisioner
     type myProvisioner struct {}
     
@@ -33,6 +36,7 @@ In case you want to embed the sources in the binary to keep a unique binary you 
     	// Call the default provisioner to finish the work
     	return astilectron.DefaultProvisioner.Provision(ctx, p)
     }
+```
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
 
@@ -40,6 +44,7 @@ The majority of methods are synchrone which means that when executing them `go-a
 
 ### Create a window
 
+```go
     // Create a new window
     var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
         Center: astilectron.PtrBool(true),
@@ -47,6 +52,7 @@ The majority of methods are synchrone which means that when executing them `go-a
         Width:  astilectron.PtrInt(600),
     })
     w.Create()
+```
     
 When creating a window you need to indicate a URL as well as options that fit Electron's window options.
 
@@ -54,6 +60,7 @@ This is pretty straightforward except the `astilectron.Ptr*` methods so let me e
 
 ### Add listeners
 
+```go
     // Add a listener on Astilectron
     a.On(astilectron.EventNameAppStop, func(e astilectron.Event) (deleteListener bool) {
         a.Stop()
@@ -65,15 +72,18 @@ This is pretty straightforward except the `astilectron.Ptr*` methods so let me e
         astilog.Info("Window resized")
         return
     })
+```
     
 Nothing much to say here either except that you can add listeners to Astilectron as well.
 
 ### Play with the window
 
+```go
     // Play with the window
     w.Resize(200, 200)
     time.Sleep(time.Second)
     w.Maximize()
+```
     
 Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#Window) for a list of all exported methods
 
@@ -81,6 +91,7 @@ Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#
 
 In your webserver add the following javascript to any of the pages you want to interact with:
 
+```html
     <script>
         // This will wait for the astilectron namespace to be ready
         document.addEventListener('astilectron-ready', function() {
@@ -93,9 +104,11 @@ In your webserver add the following javascript to any of the pages you want to i
             });
         })
     </script>
+```
     
 In your GO app add the following:
     
+```go
     // Listen to messages sent by webserver
     w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteListener bool) {
         var m string
@@ -106,6 +119,7 @@ In your GO app add the following:
     
     // Send message to webserver
     w.Send("What's up?")
+```
     
 And that's it!
 
@@ -113,6 +127,7 @@ NOTE: needless to say that the message can be something other than a string. A c
 
 ### Final code
 
+```go
     // Set up the logger
     var l <your logger type>
     astilog.SetLogger(l)
@@ -184,8 +199,9 @@ NOTE: needless to say that the message can be something other than a string. A c
     time.Sleep(time.Second)
     w.Send("What's up?")
 
-	// Blocking pattern
-	a.Wait()
+    // Blocking pattern
+    a.Wait()
+```
 
 # I want to see it in actions!
 
