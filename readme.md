@@ -1,4 +1,4 @@
-With `go-astilectron` create a beautiful GUI for you GO app. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
+With `go-astilectron` create a beautiful cross-platform GUI for you GO app. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
 # Quick start
 
@@ -36,7 +36,7 @@ In case you want to embed the sources in the binary to keep a unique binary you 
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
 
-The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event. This is the case of `.Start()` which will block until it receives the `did-finish-load` Electron WebContents event.
+The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event.
 
 ### Create a window
 
