@@ -69,8 +69,14 @@ func (p *defaultProvisioner) provisionDownloadableZipFile(ctx context.Context, n
 			return errors.Wrapf(err, "removing %s failed", pathDirectory)
 		}
 
+		// Create directory
+		astilog.Debugf("Creating %s", pathDirectory)
+		if err = os.MkdirAll(pathDirectory, 0755); err != nil {
+			return errors.Wrapf(err, "mkdirall %s failed", pathDirectory)
+		}
+
 		// Unzip
-		if err = Unzip(pathDirectory, pathUnzipSrc); err != nil {
+		if err = Unzip(ctx, pathDirectory, pathUnzipSrc); err != nil {
 			return errors.Wrapf(err, "unzipping %s into %s failed", pathUnzipSrc, pathDirectory)
 		}
 	} else if err != nil {
