@@ -11,19 +11,19 @@ import (
 
 // writer represents an object capable of writing in the stdin
 type writer struct {
-	s io.WriteCloser
+	w io.WriteCloser
 }
 
 // newWriter creates a new writer
-func newWriter(stdin io.WriteCloser) *writer {
+func newWriter(w io.WriteCloser) *writer {
 	return &writer{
-		s: stdin,
+		w: w,
 	}
 }
 
 // close closes the writer properly
 func (r *writer) close() error {
-	return r.s.Close()
+	return r.w.Close()
 }
 
 // write writes to the stdin
@@ -38,7 +38,7 @@ func (r *writer) write(e Event) (err error) {
 	var m = append(b, boundary...)
 	m = append(m, '\n')
 	astilog.Debugf("Sending to Electron: %s", m)
-	if _, err = r.s.Write(m); err != nil {
+	if _, err = r.w.Write(m); err != nil {
 		return errors.Wrapf(err, "Writing %s failed", string(m))
 	}
 	return

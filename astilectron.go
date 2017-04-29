@@ -3,7 +3,7 @@ package astilectron
 import (
 	"flag"
 	"fmt"
-	"io"
+	"net"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -36,6 +36,7 @@ type Astilectron struct {
 	channelQuit chan bool
 	dispatcher  *Dispatcher
 	identifier  *identifier
+	listener    net.Listener
 	paths       *Paths
 	provisioner Provisioner
 	reader      *reader
@@ -102,6 +103,12 @@ func (a *Astilectron) Start() (err error) {
 		return errors.Wrap(err, "provisioning failed")
 	}
 
+	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
+	// will be done through TCP
+	if err = a.listenTCP(); err != nil {
+		return errors.Wrap(err, "listening failed")
+	}
+
 	// Execute
 	if err = a.execute(); err != nil {
 		err = errors.Wrap(err, "executing failed")
@@ -118,6 +125,33 @@ func (a *Astilectron) provision() error {
 	return a.provisioner.Provision(a.paths)
 }
 
+// listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
+func (a *Astilectron) listenTCP() (err error) {
+	// Log
+	astilog.Debug("Listening...")
+
+	// Listen
+	if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
+		return errors.Wrap(err, "tcp net.Listen failed")
+	}
+	go func() {
+		// We only accept the first connection which should be Astilectron
+		var conn net.Conn
+		var err error
+		if conn, err = a.listener.Accept(); err != nil {
+			// TODO Send event and handle it since it's a deal-breaker error
+			astilog.Errorf("%s while TCP accepting, not accepting anymore connections", err)
+			return
+		}
+
+		// Create reader and writer
+		a.writer = newWriter(conn)
+		a.reader = newReader(a.dispatcher, conn)
+		go a.reader.read()
+	}()
+	return
+}
+
 // execute executes Astilectron in Electron
 func (a *Astilectron) execute() (err error) {
 	// Log
@@ -125,26 +159,7 @@ func (a *Astilectron) execute() (err error) {
 
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
-	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication())
-
-	// Pipe StdIn
-	var stdin io.WriteCloser
-	if stdin, err = cmd.StdinPipe(); err != nil {
-		err = errors.Wrap(err, "piping stdin failed")
-		return
-	}
-	a.writer = newWriter(stdin)
-
-	// Pipe StdOut
-	var stdout io.ReadCloser
-	if stdout, err = cmd.StdoutPipe(); err != nil {
-		err = errors.Wrap(err, "piping stdout failed")
-		return
-	}
-
-	// Read
-	a.reader = newReader(a.dispatcher, stdout)
-	go a.reader.read()
+	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
 
 	// Start command
 	synchronousFunc(a, EventNameAppEventReady, func() {
@@ -162,6 +177,7 @@ func (a *Astilectron) Close() {
 	astilog.Debug("Closing...")
 	a.canceller.Cancel()
 	a.dispatcher.close()
+	a.listener.Close()
 	a.reader.close()
 	a.writer.close()
 }

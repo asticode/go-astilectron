@@ -4,13 +4,13 @@ With `go-astilectron` create a beautiful GUI for you GO app. It is the official 
 
 WARNING: the code below doesn't handle errors for readibility purposes. However you SHOULD!
 
-### Import astilectron
+### Import `go-astilectron`
 
-To import astilectron run:
+To import `go-astilectron` run:
 
     $ go get -u github.com/asticode/go-astilectron
 
-### Start astilectron
+### Start `go-astilectron`
 
     // Initialize astilectron
     var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
@@ -21,11 +21,22 @@ To import astilectron run:
 
 For everything to work properly we need to fetch 2 dependencies : [astilectron](https://github.com/asticode/astilectron) and [Electron](https://github.com/electron/electron). `.Start()` takes care of it by downloading the sources and setting them up properly.
 
-In case you want to embed the sources in the binary to keep a unique binary you can implement your own **Provisioner** and attach it to **Astilectron** with `.SetProvisioner(p Provisioner)`.
+In case you want to embed the sources in the binary to keep a unique binary you can implement your own **Provisioner** and attach it to `go-astilectron` with `.SetProvisioner(p Provisioner)`. Your custom **Provisioner** would look something like :
+
+    // myProvisioner represents your custom provisioner
+    type myProvisioner struct {}
+    
+    // Provision implements the Provisioner interface
+    func (p myProvisioner) Provision(p *Paths) error {
+    	// TODO Extract the .zip files embeded in GO. It will depend on the solution you choose to embed data in GO.
+    	
+    	// Call the default provisioner to finish the work
+    	return astilectron.DefaultProvisioner.Provision(p)
+    }
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
 
-The majority of methods are synchrone which means that when executing them **Astilectron** will block until it receives a specific Electron event. This is the case of `.Start()` which will block until it receives the `did-finish-load` Electron WebContents event.
+The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event. This is the case of `.Start()` which will block until it receives the `did-finish-load` Electron WebContents event.
 
 ### Create a window
 
@@ -39,7 +50,7 @@ The majority of methods are synchrone which means that when executing them **Ast
     
 When creating a window you need to indicate a URL as well as options that fit Electron's window options.
 
-This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers.
+This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers and used pointers in structs sent to Electron.
 
 ### Add listeners
 
