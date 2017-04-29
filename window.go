@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/asticode/go-astitools/url"
 	"github.com/pkg/errors"
 )
 
@@ -84,7 +85,7 @@ func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err er
 	})
 
 	// Parse url
-	if w.url, err = parseURL(url); err != nil {
+	if w.url, err = astiurl.Parse(url); err != nil {
 		err = errors.Wrapf(err, "parsing url %s failed", url)
 		return
 	}
