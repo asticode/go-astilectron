@@ -10,7 +10,9 @@ const (
 	EventNameAppEventReady                     = "app.event.ready"
 	EventNameAppClose                          = "app.close"
 	EventNameAppCrash                          = "app.crash"
-	EventNameAppStop                           = "app.stop" // This event is equal to EventNameAppClose || EventNameAppCrash
+	EventNameAppErrorAccept                    = "app.error.accept"
+	EventNameAppNoAccept                       = "app.no.accept"
+	EventNameAppStop                           = "app.stop"
 	EventNameProvisionStart                    = "provision.start"
 	EventNameProvisionDone                     = "provision.done"
 	EventNameWindowCmdBlur                     = "window.cmd.blur"

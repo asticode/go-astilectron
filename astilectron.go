@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/context"
@@ -70,6 +71,12 @@ func New(o Options) (a *Astilectron, err error) {
 		err = errors.Wrap(err, "creating new paths failed")
 		return
 	}
+
+	// Add listeners
+	a.On(EventNameAppStop, func(e Event) (deleteListener bool) {
+		a.Stop()
+		return
+	})
 	return
 }
 
@@ -137,20 +144,45 @@ func (a *Astilectron) listenTCP() (err error) {
 	if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
 		return errors.Wrap(err, "tcp net.Listen failed")
 	}
+
+	// Accept
+	var chanAccepted = make(chan bool)
 	go func() {
 		// We only accept the first connection which should be Astilectron
 		var conn net.Conn
 		var err error
 		if conn, err = a.listener.Accept(); err != nil {
-			// TODO Send event and handle it since it's a deal-breaker error
-			astilog.Errorf("%s while TCP accepting, not accepting anymore connections", err)
+			astilog.Errorf("%s while TCP accepting", err)
+			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
 			return
 		}
+
+		// Let the timer know a connection has been accepted
+		chanAccepted <- true
 
 		// Create reader and writer
 		a.writer = newWriter(conn)
 		a.reader = newReader(a.dispatcher, conn)
 		go a.reader.read()
+	}()
+
+	// We check a connection has been accepted
+	go func() {
+		const timeout = 30 * time.Second
+		var t = time.NewTimer(timeout)
+		defer t.Stop()
+		for {
+			select {
+			case <-chanAccepted:
+				return
+			case <-t.C:
+				astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
+				a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
+				a.dispatcher.dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
+				return
+			}
+		}
 	}()
 	return
 }
