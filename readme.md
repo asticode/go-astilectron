@@ -27,11 +27,11 @@ In case you want to embed the sources in the binary to keep a unique binary you 
     type myProvisioner struct {}
     
     // Provision implements the Provisioner interface
-    func (p myProvisioner) Provision(p *Paths) error {
+    func (p myProvisioner) Provision(ctx context.Context, p *Paths) error {
     	// TODO Extract the .zip files embeded in GO. It will depend on the solution you choose to embed data in GO.
     	
     	// Call the default provisioner to finish the work
-    	return astilectron.DefaultProvisioner.Provision(p)
+    	return astilectron.DefaultProvisioner.Provision(ctx, p)
     }
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.

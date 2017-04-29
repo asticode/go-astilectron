@@ -121,7 +121,8 @@ func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
 	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
-	return a.provisioner.Provision(a.paths)
+	var ctx, _ = a.canceller.NewContext()
+	return a.provisioner.Provision(ctx, a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -198,6 +199,7 @@ func (a *Astilectron) HandleSignals() {
 // Stop orders Astilectron to stop
 func (a *Astilectron) Stop() {
 	astilog.Debug("Stopping...")
+	a.canceller.Cancel()
 	if a.channelQuit != nil {
 		close(a.channelQuit)
 		a.channelQuit = nil

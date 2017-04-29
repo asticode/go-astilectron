@@ -12,7 +12,7 @@ import (
 	"github.com/asticode/go-astilog"
 )
 
-// reader represents an object capable of reading the stdout
+// reader represents an object capable of reading in the TCP server
 type reader struct {
 	d *Dispatcher
 	r io.ReadCloser

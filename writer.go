@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// writer represents an object capable of writing in the stdin
+// writer represents an object capable of writing in the TCP server
 type writer struct {
 	w io.WriteCloser
 }
