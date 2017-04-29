@@ -9,10 +9,11 @@ import (
 const (
 	EventNameAppEventReady                     = "app.event.ready"
 	EventNameAppClose                          = "app.close"
+	EventNameAppCmdStop                        = "app.cmd.stop"
 	EventNameAppCrash                          = "app.crash"
 	EventNameAppErrorAccept                    = "app.error.accept"
 	EventNameAppNoAccept                       = "app.no.accept"
-	EventNameAppStop                           = "app.stop"
+	EventNameAppTooManyAccept                  = "app.too.many.accept"
 	EventNameProvisionStart                    = "provision.start"
 	EventNameProvisionDone                     = "provision.done"
 	EventNameWindowCmdBlur                     = "window.cmd.blur"
