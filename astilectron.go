@@ -13,6 +13,7 @@ import (
 
 	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/context"
+	"github.com/asticode/go-astitools/exec"
 	"github.com/asticode/go-astitools/slice"
 	"github.com/pkg/errors"
 )
@@ -31,15 +32,16 @@ var (
 
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
-	canceller   *asticontext.Canceller
-	channelQuit chan bool
-	dispatcher  *Dispatcher
-	identifier  *identifier
-	listener    net.Listener
-	paths       *Paths
-	provisioner Provisioner
-	reader      *reader
-	writer      *writer
+	canceller    *asticontext.Canceller
+	channelQuit  chan bool
+	dispatcher   *Dispatcher
+	identifier   *identifier
+	listener     net.Listener
+	paths        *Paths
+	provisioner  Provisioner
+	reader       *reader
+	stdoutWriter *astiexec.StdoutWriter
+	writer       *writer
 }
 
 // Options represents Astilectron options
@@ -160,8 +162,8 @@ func (a *Astilectron) execute() (err error) {
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
 	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
-
-	// TODO Capture stdout
+	a.stdoutWriter = astiexec.NewStdoutWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
+	cmd.Stdout = a.stdoutWriter
 
 	// Start command
 	synchronousFunc(a, EventNameAppEventReady, func() {
@@ -181,6 +183,9 @@ func (a *Astilectron) Close() {
 	a.dispatcher.close()
 	a.listener.Close()
 	a.reader.close()
+	if a.stdoutWriter != nil {
+		a.stdoutWriter.Close()
+	}
 	a.writer.close()
 }
 
