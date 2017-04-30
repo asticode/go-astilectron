@@ -12,12 +12,14 @@ To import `go-astilectron` run:
 
 ### Start `go-astilectron`
 
-    // Initialize astilectron
-    var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
-    defer a.Close()
-    
-    // Start astilectron
-    a.Start()
+```go
+// Initialize astilectron
+var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
+defer a.Close()
+
+// Start astilectron
+a.Start()
+```
 
 For everything to work properly we need to fetch 2 dependencies : [astilectron](https://github.com/asticode/astilectron) and [Electron](https://github.com/electron/electron). `.Start()` takes care of it by downloading the sources and setting them up properly.
 
@@ -29,14 +31,16 @@ The majority of methods are synchrone which means that when executing them `go-a
 
 ### Create a window
 
-    // Create a new window
-    var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
-        Center: astilectron.PtrBool(true),
-        Height: astilectron.PtrInt(600),
-        Icon:   astilectron.PtrStr(<your icon path>),
-        Width:  astilectron.PtrInt(600),
-    })
-    w.Create()
+```go
+// Create a new window
+var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
+    Center: astilectron.PtrBool(true),
+    Height: astilectron.PtrInt(600),
+    Icon:   astilectron.PtrStr(<your icon path>),
+    Width:  astilectron.PtrInt(600),
+})
+w.Create()
+```
     
 When creating a window you need to indicate a URL as well as options such as position, size, icon, etc.
 
@@ -44,26 +48,30 @@ This is pretty straightforward except the `astilectron.Ptr*` methods so let me e
 
 ### Add listeners
 
-    // Add a listener on Astilectron
-    a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bool) {
-        astilog.Error("App has crashed")
-        return
-    })
-    
-    // Add a listener on the window
-    w.On(astilectron.EventNameWindowEventResize, func(e astilectron.Event) (deleteListener bool) {
-        astilog.Info("Window resized")
-        return
-    })
+```go
+// Add a listener on Astilectron
+a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bool) {
+    astilog.Error("App has crashed")
+    return
+})
+
+// Add a listener on the window
+w.On(astilectron.EventNameWindowEventResize, func(e astilectron.Event) (deleteListener bool) {
+    astilog.Info("Window resized")
+    return
+})
+```
     
 Nothing much to say here either except that you can add listeners to Astilectron as well.
 
 ### Play with the window
 
-    // Play with the window
-    w.Resize(200, 200)
-    time.Sleep(time.Second)
-    w.Maximize()
+```go
+// Play with the window
+w.Resize(200, 200)
+time.Sleep(time.Second)
+w.Maximize()
+```
     
 Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#Window) for a list of all exported methods
 
@@ -71,112 +79,140 @@ Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#
 
 In your webserver add the following javascript to any of the pages you want to interact with:
 
-    <script>
-        // This will wait for the astilectron namespace to be ready
-        document.addEventListener('astilectron-ready', function() {
-        
-            // This will listen to messages sent by GO
-            astilectron.listen(function(message) {
-                                
-                // This will send a message back to GO
-                astilectron.send("I'm good bro")
-            });
-        })
-    </script>
+```html
+<script>
+    // This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+    
+        // This will listen to messages sent by GO
+        astilectron.listen(function(message) {
+                            
+            // This will send a message back to GO
+            astilectron.send("I'm good bro")
+        });
+    })
+</script>
+```
     
 In your GO app add the following:
-    
-    // Listen to messages sent by webserver
-    w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteListener bool) {
-        var m string
-        e.Message.Unmarshal(&m)
-        astilog.Infof("Received message %s", m)
-        return
-    })
-    
-    // Send message to webserver
-    w.Send("What's up?")
+
+```go
+// Listen to messages sent by webserver
+w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteListener bool) {
+    var m string
+    e.Message.Unmarshal(&m)
+    astilog.Infof("Received message %s", m)
+    return
+})
+
+// Send message to webserver
+w.Send("What's up?")
+```
     
 And that's it!
 
 NOTE: needless to say that the message can be something other than a string. A custom struct for instance!
 
+### Handle several screens/displays
+
+```go
+// If several displays, move the window to the second display
+var displays = a.Displays()
+if len(displays) > 1 {
+    time.Sleep(time.Second)
+    if err = w.MoveInDisplay(displays[1], 50, 50); err != nil {
+        astilog.Fatal(errors.Wrap(err, "moving window to second display failed"))
+    }
+}
+```
+
 ### Final code
 
-    // Set up the logger
-    var l <your logger type>
-    astilog.SetLogger(l)
-    
-    // Start an http server
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        w.Write([]byte(`<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Hello world</title>
-        </head>
-        <body>
-            <span id="message">Hello world</span>
-            <script>
-                // This will wait for the astilectron namespace to be ready
-                document.addEventListener('astilectron-ready', function() {
-                    // This will listen to messages sent by GO
-                    astilectron.listen(function(message) {
-                        document.getElementById('message').innerHTML = message
-                        // This will send a message back to GO
-                        astilectron.send("I'm good bro")
-                    });
-                })
-            </script>
-        </body>
-        </html>`))
-    })
-    go http.ListenAndServe("127.0.0.1:4000", nil)
-    
-    // Initialize astilectron
-    var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
-    defer a.Close()
-    
-    // Handle quit
-    a.HandleSignals()
-    a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bool) {
-        astilog.Error("App has crashed")
-        return
-    })
-    
-    // Start astilectron: this will download and set up the dependencies, and start the Electron app
-    a.Start()
-    
-    // Create a new window with a listener on resize
-    var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
-        Center: astilectron.PtrBool(true),
-        Height: astilectron.PtrInt(600),
-        Icon:   astilectron.PtrStr(<your icon path>),
-        Width:  astilectron.PtrInt(600),
-    })
-    w.On(astilectron.EventNameWindowEventResize, func(e astilectron.Event) (deleteListener bool) {
-        astilog.Info("Window resized")
-        return
-    })
-	w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteListener bool) {
-		var m string
-		e.Message.Unmarshal(&m)
-		astilog.Infof("Received message %s", m)
-		return
-	})
-    w.Create()
-    
-    // Play with the window
-    w.Resize(200, 200)
-    time.Sleep(time.Second)
-    w.Maximize()
-    
-    // Send a message to the server
-    time.Sleep(time.Second)
-    w.Send("What's up?")
+```go
+// Set up the logger
+var l <your logger type>
+astilog.SetLogger(l)
 
-	// Blocking pattern
-	a.Wait()
+// Start an http server
+http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte(`<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Hello world</title>
+    </head>
+    <body>
+        <span id="message">Hello world</span>
+        <script>
+            // This will wait for the astilectron namespace to be ready
+            document.addEventListener('astilectron-ready', function() {
+                // This will listen to messages sent by GO
+                astilectron.listen(function(message) {
+                    document.getElementById('message').innerHTML = message
+                    // This will send a message back to GO
+                    astilectron.send("I'm good bro")
+                });
+            })
+        </script>
+    </body>
+    </html>`))
+})
+go http.ListenAndServe("127.0.0.1:4000", nil)
+
+// Initialize astilectron
+var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
+defer a.Close()
+
+// Handle quit
+a.HandleSignals()
+a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bool) {
+    astilog.Error("App has crashed")
+    return
+})
+
+// Start astilectron: this will download and set up the dependencies, and start the Electron app
+a.Start()
+
+// Create a new window with a listener on resize
+var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
+    Center: astilectron.PtrBool(true),
+    Height: astilectron.PtrInt(600),
+    Icon:   astilectron.PtrStr(<your icon path>),
+    Width:  astilectron.PtrInt(600),
+})
+w.On(astilectron.EventNameWindowEventResize, func(e astilectron.Event) (deleteListener bool) {
+    astilog.Info("Window resized")
+    return
+})
+w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteListener bool) {
+    var m string
+    e.Message.Unmarshal(&m)
+    astilog.Infof("Received message %s", m)
+    return
+})
+w.Create()
+
+// Play with the window
+w.Resize(200, 200)
+time.Sleep(time.Second)
+w.Maximize()
+
+// If several displays, move the window to the second display
+var displays = a.Displays()
+if len(displays) > 1 {
+    time.Sleep(time.Second)
+    if err = w.MoveInDisplay(displays[1], 50, 50); err != nil {
+        astilog.Fatal(errors.Wrap(err, "moving window to second display failed"))
+    }
+}
+
+// Send a message to the server
+time.Sleep(time.Second)
+w.Send("What's up?")
+
+// Blocking pattern
+a.Wait()
+```
 
 # I want to see it in actions!
 
@@ -200,6 +236,7 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 ```
 
 - [6.icons](https://github.com/asticode/go-astilectron/tree/master/examples/6.icons/main.go) show you how to add an icon to your window
+- [7.screens_and_displays](https://github.com/asticode/go-astilectron/tree/master/examples/7.screens_and_displays/main.go) plays around with screens and displays
 
 # Features and roadmap
 
@@ -207,6 +244,7 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 - [x] window basic events (close, blur, focus, unresponsive, crashed, ...)
 - [x] remote messaging (messages between GO and the JS in the webserver)
 - [x] single binary distribution
+- [x] multi screens/displays
 - [ ] menu methods
 - [ ] menu events
 - [ ] session methods

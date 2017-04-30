@@ -28,6 +28,7 @@ type defaultProvisioner struct {
 }
 
 // Provision implements the provisioner interface
+// TODO Keep track of provisioned versions + handle upgrades
 func (p *defaultProvisioner) Provision(ctx context.Context, paths Paths) (err error) {
 	// Provision astilectron
 	if err = p.provisionAstilectron(ctx, paths); err != nil {
