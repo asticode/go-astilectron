@@ -21,7 +21,7 @@ import (
 
 // Constants
 const (
-	versionAstilectron = "0.1.0"
+	versionAstilectron = "0.2.0"
 	versionElectron    = "1.6.5"
 )
 
@@ -36,6 +36,7 @@ type Astilectron struct {
 	canceller    *asticontext.Canceller
 	channelQuit  chan bool
 	dispatcher   *dispatcher
+	displayPool  *displayPool
 	identifier   *identifier
 	listener     net.Listener
 	paths        *Paths
@@ -62,6 +63,7 @@ func New(o Options) (a *Astilectron, err error) {
 		canceller:   asticontext.NewCanceller(),
 		channelQuit: make(chan bool),
 		dispatcher:  newDispatcher(),
+		displayPool: newDisplayPool(),
 		identifier:  newIdentifier(),
 		provisioner: DefaultProvisioner,
 	}
@@ -75,6 +77,18 @@ func New(o Options) (a *Astilectron, err error) {
 	// Add default listeners
 	a.On(EventNameAppCmdStop, func(e Event) (deleteListener bool) {
 		a.Stop()
+		return
+	})
+	a.On(EventNameDisplayEventAdded, func(e Event) (deleteListener bool) {
+		a.displayPool.update(e.Displays)
+		return
+	})
+	a.On(EventNameDisplayEventMetricsChanged, func(e Event) (deleteListener bool) {
+		a.displayPool.update(e.Displays)
+		return
+	})
+	a.On(EventNameDisplayEventRemoved, func(e Event) (deleteListener bool) {
+		a.displayPool.update(e.Displays)
 		return
 	})
 	return
@@ -213,7 +227,7 @@ func (a *Astilectron) execute() (err error) {
 	cmd.Stdout = a.stdoutWriter
 
 	// Start command
-	synchronousFunc(a.canceller, a, func() {
+	var e = synchronousFunc(a.canceller, a, func() {
 		// Start command
 		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
 		if err = cmd.Start(); err != nil {
@@ -237,7 +251,20 @@ func (a *Astilectron) execute() (err error) {
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 		}()
 	}, EventNameAppEventReady)
+
+	// Update display pool
+	a.displayPool.update(e.Displays)
 	return
+}
+
+// Displays returns the displays
+func (a *Astilectron) Displays() []*Display {
+	return a.displayPool.all()
+}
+
+// PrimaryDisplay returns the primary display
+func (a *Astilectron) PrimaryDisplay() *Display {
+	return a.displayPool.primary()
 }
 
 // Close closes Astilectron properly

@@ -14,6 +14,9 @@ const (
 	EventNameAppErrorAccept                    = "app.error.accept"
 	EventNameAppNoAccept                       = "app.no.accept"
 	EventNameAppTooManyAccept                  = "app.too.many.accept"
+	EventNameDisplayEventAdded                 = "display.event.added"
+	EventNameDisplayEventMetricsChanged        = "display.event.metrics.changed"
+	EventNameDisplayEventRemoved               = "display.event.removed"
 	EventNameProvisionStart                    = "provision.start"
 	EventNameProvisionDone                     = "provision.done"
 	EventNameWindowCmdBlur                     = "window.cmd.blur"
@@ -64,9 +67,16 @@ type Event struct {
 	// This is a list of all possible payloads.
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
+	Displays      *EventDisplays `json:"displays,omitempty"`
 	Message       *EventMessage  `json:"message,omitempty"`
 	URL           string         `json:"url,omitempty"`
 	WindowOptions *WindowOptions `json:"windowOptions,omitempty"`
+}
+
+// EventDisplays represents events displays
+type EventDisplays struct {
+	All     []*DisplayOptions `json:"all,omitempty"`
+	Primary *DisplayOptions   `json:"primary,omitempty"`
 }
 
 // EventMessage represents an event message

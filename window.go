@@ -15,7 +15,6 @@ var (
 )
 
 // Window represents a window
-// https://github.com/electron/electron/blob/master/docs/api/browser-window.md
 // TODO Add missing window options
 // TODO Add missing window methods
 // TODO Add missing window events
@@ -33,6 +32,7 @@ type Window struct {
 // WindowOptions represents window options
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use PtrBool, PtrInt or PtrStr
 // to fill the struct
+// https://github.com/electron/electron/blob/v1.6.5/docs/api/browser-window.md
 type WindowOptions struct {
 	AcceptFirstMouse       *bool   `json:"acceptFirstMouse,omitempty"`
 	AlwaysOnTop            *bool   `json:"alwaysOnTop,omitempty"`
@@ -95,6 +95,22 @@ func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err er
 	return
 }
 
+// NewWindowInDisplay creates a new window in a specific display
+// This overrides the center attribute
+func (a *Astilectron) NewWindowInDisplay(url string, o *WindowOptions, d *Display) (*Window, error) {
+	if o.X != nil {
+		*o.X += d.Bounds().X
+	} else {
+		o.X = PtrInt(d.Bounds().X)
+	}
+	if o.Y != nil {
+		*o.Y += d.Bounds().Y
+	} else {
+		o.Y = PtrInt(d.Bounds().Y)
+	}
+	return a.NewWindow(url, o)
+}
+
 // isActionable checks whether any type of action is allowed on the window
 func (w *Window) isActionable() error {
 	if w.isWindowDestroyed() {
@@ -120,7 +136,8 @@ func (w *Window) Blur() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdBlur, TargetID: w.id}, EventNameWindowEventBlur)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdBlur, TargetID: w.id}, EventNameWindowEventBlur)
+	return
 }
 
 // Center centers the window
@@ -128,7 +145,8 @@ func (w *Window) Center() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCenter, TargetID: w.id}, EventNameWindowEventMove)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCenter, TargetID: w.id}, EventNameWindowEventMove)
+	return
 }
 
 // Close closes the window
@@ -136,7 +154,8 @@ func (w *Window) Close() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdClose, TargetID: w.id}, EventNameWindowEventClosed)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdClose, TargetID: w.id}, EventNameWindowEventClosed)
+	return
 }
 
 // CloseDevTools closes the dev tools
@@ -154,7 +173,8 @@ func (w *Window) Create() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
+	return
 }
 
 // Destroy destroys the window
@@ -162,7 +182,8 @@ func (w *Window) Destroy() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdDestroy, TargetID: w.id}, EventNameWindowEventClosed)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdDestroy, TargetID: w.id}, EventNameWindowEventClosed)
+	return
 }
 
 // Focus focuses on the window
@@ -170,7 +191,8 @@ func (w *Window) Focus() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdFocus, TargetID: w.id}, EventNameWindowEventFocus)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdFocus, TargetID: w.id}, EventNameWindowEventFocus)
+	return
 }
 
 // Hide hides the window
@@ -178,7 +200,8 @@ func (w *Window) Hide() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
+	return
 }
 
 // OpenDevTools opens the dev tools
@@ -194,7 +217,8 @@ func (w *Window) Maximize() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMaximize, TargetID: w.id}, EventNameWindowEventMaximize)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMaximize, TargetID: w.id}, EventNameWindowEventMaximize)
+	return
 }
 
 // Minimize minimizes the window
@@ -202,7 +226,8 @@ func (w *Window) Minimize() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMinimize, TargetID: w.id}, EventNameWindowEventMinimize)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMinimize, TargetID: w.id}, EventNameWindowEventMinimize)
+	return
 }
 
 // Move moves the window
@@ -212,7 +237,13 @@ func (w *Window) Move(x, y int) (err error) {
 	}
 	w.o.X = PtrInt(x)
 	w.o.Y = PtrInt(y)
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: w.o.X, Y: w.o.Y}}, EventNameWindowEventMove)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: w.o.X, Y: w.o.Y}}, EventNameWindowEventMove)
+	return
+}
+
+// MoveInDisplay moves the window in the proper display
+func (w *Window) MoveInDisplay(d *Display, x, y int) error {
+	return w.Move(d.Bounds().X+x, d.Bounds().Y+y)
 }
 
 // Resize resizes the window
@@ -222,7 +253,8 @@ func (w *Window) Resize(width, height int) (err error) {
 	}
 	w.o.Height = PtrInt(height)
 	w.o.Width = PtrInt(width)
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: w.o.Height, Width: w.o.Width}}, EventNameWindowEventResize)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: w.o.Height, Width: w.o.Width}}, EventNameWindowEventResize)
+	return
 }
 
 // Restore restores the window
@@ -230,7 +262,8 @@ func (w *Window) Restore() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdRestore, TargetID: w.id}, EventNameWindowEventRestore)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdRestore, TargetID: w.id}, EventNameWindowEventRestore)
+	return
 }
 
 // Send sends a message to the inner JS of the Web content of the window
@@ -246,7 +279,8 @@ func (w *Window) Show() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
+	return
 }
 
 // Unmaximize unmaximize the window
@@ -254,5 +288,6 @@ func (w *Window) Unmaximize() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	return
 }

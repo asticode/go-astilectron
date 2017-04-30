@@ -97,24 +97,27 @@ func PtrStr(i string) *string {
 	return &i
 }
 
-// synchronousFunc executes a function and blocks until it has received a specific event or the canceller has been
-// cancelled
-func synchronousFunc(c *asticontext.Canceller, l listenable, fn func(), eventNameDone string) {
+// synchronousFunc executes a function, blocks until it has received a specific event or the canceller has been
+// cancelled and returns the corresponding event
+func synchronousFunc(c *asticontext.Canceller, l listenable, fn func(), eventNameDone string) (e Event) {
 	var ctx, cancel = c.NewContext()
 	defer cancel()
-	l.On(eventNameDone, func(e Event) (deleteListener bool) {
+	l.On(eventNameDone, func(i Event) (deleteListener bool) {
+		e = i
 		cancel()
 		return true
 	})
 	fn()
 	<-ctx.Done()
+	return
 }
 
-// synchronousEvent sends an event and blocks until it has received a specific event or the canceller has been cancelled
-func synchronousEvent(c *asticontext.Canceller, l listenable, w *writer, e Event, eventNameDone string) (err error) {
-	synchronousFunc(c, l, func() {
-		if err = w.write(e); err != nil {
-			err = errors.Wrapf(err, "writing %+v event failed", e)
+// synchronousEvent sends an event, blocks until it has received a specific event or the canceller has been cancelled
+// and returns the corresponding event
+func synchronousEvent(c *asticontext.Canceller, l listenable, w *writer, i Event, eventNameDone string) (o Event, err error) {
+	o = synchronousFunc(c, l, func() {
+		if err = w.write(i); err != nil {
+			err = errors.Wrapf(err, "writing %+v event failed", i)
 			return
 		}
 		return
