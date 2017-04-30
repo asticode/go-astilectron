@@ -9,6 +9,8 @@ import (
 const (
 	EventNameAppEventReady                     = "app.event.ready"
 	EventNameAppClose                          = "app.close"
+	EventNameAppCrash                          = "app.crash"
+	EventNameAppStop                           = "app.stop" // This event is equal to EventNameAppClose || EventNameAppCrash
 	EventNameProvisionStart                    = "provision.start"
 	EventNameProvisionDone                     = "provision.done"
 	EventNameWindowCmdBlur                     = "window.cmd.blur"

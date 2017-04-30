@@ -97,7 +97,7 @@ func PtrStr(i string) *string {
 }
 
 // synchronousFunc executes a function and blocks until it has received a specific event
-func synchronousFunc(l listenable, eventNameDone string, fn func()) {
+func synchronousFunc(l listenable, fn func(), eventNameDone string) {
 	var c = make(chan bool)
 	defer func() {
 		if c != nil {
@@ -115,12 +115,12 @@ func synchronousFunc(l listenable, eventNameDone string, fn func()) {
 
 // synchronousEvent sends an event and blocks until it has received a specific event
 func synchronousEvent(l listenable, w *writer, e Event, eventNameDone string) (err error) {
-	synchronousFunc(l, eventNameDone, func() {
+	synchronousFunc(l, func() {
 		if err = w.write(e); err != nil {
 			err = errors.Wrapf(err, "writing %+v event failed", e)
 			return
 		}
 		return
-	})
+	}, eventNameDone)
 	return
 }

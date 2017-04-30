@@ -88,6 +88,7 @@ func (p *Paths) initAstilectronDirectory() {
 }
 
 // initElectronDownloadSrc initializes the electron download source path
+// TODO Handle all available links (32bits, 64bits, ...)
 func (p *Paths) initElectronDownloadSrc() {
 	switch runtime.GOOS {
 	case "darwin":
