@@ -1,12 +1,14 @@
 package astilectron
 
 import (
+	"bytes"
+	"context"
 	"net/http"
 	"os"
-
-	"context"
+	"path/filepath"
 
 	"github.com/asticode/go-astilog"
+	"github.com/asticode/go-astitools/io"
 	"github.com/pkg/errors"
 )
 
@@ -29,13 +31,13 @@ type defaultProvisioner struct {
 func (p *defaultProvisioner) Provision(ctx context.Context, paths Paths) (err error) {
 	// Provision astilectron
 	if err = p.provisionAstilectron(ctx, paths); err != nil {
-		err = errors.Wrap(err, "provisioning astilectron failed")
+		err = errors.Wrap(err, "default provisioning astilectron failed")
 		return
 	}
 
 	// Provision electron
 	if err = p.provisionElectron(ctx, paths); err != nil {
-		err = errors.Wrap(err, "provisioning electron failed")
+		err = errors.Wrap(err, "default provisioning electron failed")
 		return
 	}
 	return
@@ -54,7 +56,7 @@ func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths)
 // provisionDownloadableZipFile provisions a downloadable .zip file
 func (p *defaultProvisioner) provisionDownloadableZipFile(ctx context.Context, name, pathExists, pathDownloadSrc, pathDownloadDst, pathUnzipSrc, pathDirectory string) (err error) {
 	// Log
-	astilog.Debugf("Provisioning %s...", name)
+	astilog.Debugf("Default provisioning %s...", name)
 
 	// We need to provision
 	if _, err = os.Stat(pathExists); os.IsNotExist(err) {
@@ -82,7 +84,94 @@ func (p *defaultProvisioner) provisionDownloadableZipFile(ctx context.Context, n
 	} else if err != nil {
 		return errors.Wrapf(err, "stating %s failed", pathExists)
 	} else {
-		astilog.Debugf("%s already exists, skipping %s provision...", pathExists, name)
+		astilog.Debugf("%s already exists, skipping %s default provision...", pathExists, name)
+	}
+	return
+}
+
+// Disembedder is a functions that allows to disembed data from a path
+type Disembedder func(src string) ([]byte, error)
+
+// NewDisembedderProvisioner creates a provisioner that can provision based on embedded data
+func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron string) Provisioner {
+	return &disembedderProvisioner{d: d, pathAstilectron: pathAstilectron, pathElectron: pathElectron}
+}
+
+// disembedderProvisioner represents the disembedder provisioner
+type disembedderProvisioner struct {
+	d                             Disembedder
+	pathAstilectron, pathElectron string
+}
+
+// Provision implements the provisioner interface
+func (p *disembedderProvisioner) Provision(ctx context.Context, paths Paths) (err error) {
+	// Disembed astilectron
+	if err = p.disembedAstilectron(ctx, paths); err != nil {
+		err = errors.Wrap(err, "disembedding astilectron failed")
+		return
+	}
+
+	// Disembed electron
+	if err = p.disembedElectron(ctx, paths); err != nil {
+		err = errors.Wrap(err, "disembedding electron failed")
+		return
+	}
+
+	// Default provisioner
+	return DefaultProvisioner.Provision(ctx, paths)
+}
+
+// disembedAstilectron provisions astilectron
+func (p *disembedderProvisioner) disembedAstilectron(ctx context.Context, paths Paths) error {
+	return p.disembed(ctx, "Astilectron", p.pathAstilectron, paths.AstilectronDownloadDst())
+}
+
+// provisionElectron provisions electron
+func (p *disembedderProvisioner) disembedElectron(ctx context.Context, paths Paths) error {
+	return p.disembed(ctx, "Electron", p.pathElectron, paths.ElectronDownloadDst())
+}
+
+// disembed disembeds data from a src to a dst
+func (p *disembedderProvisioner) disembed(ctx context.Context, name, src, dst string) (err error) {
+	// Log
+	astilog.Debugf("Disembedding %s...", name)
+
+	// We need to disembed
+	if _, err = os.Stat(dst); os.IsNotExist(err) {
+		// Create directory
+		var dirPath = filepath.Dir(dst)
+		astilog.Debugf("Creating %s", dirPath)
+		if err = os.MkdirAll(dirPath, 0755); err != nil {
+			return errors.Wrapf(err, "mkdirall %s failed", dirPath)
+		}
+
+		// Create dst
+		var f *os.File
+		astilog.Debugf("Creating %s", dst)
+		if f, err = os.Create(dst); err != nil {
+			err = errors.Wrapf(err, "creating %s failed", dst)
+			return
+		}
+		defer f.Close()
+
+		// Disembed
+		var b []byte
+		astilog.Debugf("Disembedding %s", src)
+		if b, err = p.d(src); err != nil {
+			err = errors.Wrapf(err, "disembedding %s failed", src)
+			return
+		}
+
+		// Copy
+		astilog.Debugf("Copying disembedded data to %s", dst)
+		if _, err = astiio.Copy(ctx, bytes.NewReader(b), f); err != nil {
+			err = errors.Wrapf(err, "copying disembedded data into %s failed", dst)
+			return
+		}
+	} else if err != nil {
+		return errors.Wrapf(err, "stating %s failed", dst)
+	} else {
+		astilog.Debugf("%s already exists, skipping %s disembed...", dst, name)
 	}
 	return
 }

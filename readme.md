@@ -1,4 +1,4 @@
-Thanks to `go-astilectron` build cross platform GUI apps with GO and Electron (HTML/JS/CSS). It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
+Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS (powered by Electron). It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
 # Quick start
 
@@ -21,18 +21,7 @@ To import `go-astilectron` run:
 
 For everything to work properly we need to fetch 2 dependencies : [astilectron](https://github.com/asticode/astilectron) and [Electron](https://github.com/electron/electron). `.Start()` takes care of it by downloading the sources and setting them up properly.
 
-In case you want to embed the sources in the binary to keep a unique binary you can implement your own **Provisioner** and attach it to `go-astilectron` with `.SetProvisioner(p Provisioner)`. Your custom **Provisioner** would look something like :
-
-    // myProvisioner represents your custom provisioner
-    type myProvisioner struct {}
-    
-    // Provision implements the Provisioner interface
-    func (p myProvisioner) Provision(ctx context.Context, p Paths) error {
-    	// TODO Extract the .zip files embeded in GO. It will depend on the solution you choose to embed data in GO.
-    	
-    	// Call the default provisioner to finish the work
-    	return astilectron.DefaultProvisioner.Provision(ctx, p)
-    }
+In case you want to embed the sources in the binary to keep a unique binary you can use the **NewDisembedderProvisioner** function to get the proper **Provisioner** and attach it to `go-astilectron` with `.SetProvisioner(p Provisioner)`. Check out the [example](https://github.com/asticode/go-astilectron/tree/master/examples/5.single_binary_distribution/main.go) to see how to use it with [go-bindata](https://github.com/jteeuwen/go-bindata).
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
 
@@ -201,12 +190,19 @@ Here's a list of the examples:
 - [2.basic_window_events](https://github.com/asticode/go-astilectron/tree/master/examples/2.basic_window_events/main.go) plays with basic window methods and shows you how to set up your own listeners
 - [3.webserver_app](https://github.com/asticode/go-astilectron/tree/master/examples/3.webserver_app/main.go) sets up a basic webserver app
 - [4.remote_messaging](https://github.com/asticode/go-astilectron/tree/master/examples/4.remote_messaging/main.go) sends a message to the webserver and listens for any response
+- [5.single_binary_distribution](https://github.com/asticode/go-astilectron/tree/master/examples/5.single_binary_distribution/main.go) shows how to use `go-astilectron` in a unique binary. For this example you have to run one of the previous examples (so that the .zip files exist) and run the following commands:
+
+```
+$ go generate examples/5.single_binary_distribution/main.go
+$ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_distribution/vendor.go -v
+```
 
 # Features and roadmap
 
 - [x] window basic methods (create, show, close, resize, minimize, maximize, ...)
 - [x] window basic events (close, blur, focus, unresponsive, crashed, ...)
 - [x] remote messaging (messages between GO and the JS in the webserver)
+- [x] single binary distribution
 - [ ] menu methods
 - [ ] menu events
 - [ ] session methods
