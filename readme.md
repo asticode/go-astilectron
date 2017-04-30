@@ -55,8 +55,8 @@ This is pretty straightforward except the `astilectron.Ptr*` methods so let me e
 ### Add listeners
 
     // Add a listener on Astilectron
-    a.On(astilectron.EventNameAppStop, func(e astilectron.Event) (deleteListener bool) {
-        a.Stop()
+    a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bool) {
+        astilog.Error("App has crashed")
         return
     })
     
@@ -149,8 +149,8 @@ NOTE: needless to say that the message can be something other than a string. A c
     
     // Handle quit
     a.HandleSignals()
-    a.On(astilectron.EventNameAppStop, func(e astilectron.Event) (deleteListener bool) {
-        a.Stop()
+    a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bool) {
+        astilog.Error("App has crashed")
         return
     })
     
