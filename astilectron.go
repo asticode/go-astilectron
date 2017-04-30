@@ -72,8 +72,8 @@ func New(o Options) (a *Astilectron, err error) {
 		return
 	}
 
-	// Add listeners
-	a.On(EventNameAppStop, func(e Event) (deleteListener bool) {
+	// Add default listeners
+	a.On(EventNameAppCmdStop, func(e Event) (deleteListener bool) {
 		a.Stop()
 		return
 	})
@@ -148,23 +148,35 @@ func (a *Astilectron) listenTCP() (err error) {
 	// Accept
 	var chanAccepted = make(chan bool)
 	go func() {
-		// We only accept the first connection which should be Astilectron
-		var conn net.Conn
-		var err error
-		if conn, err = a.listener.Accept(); err != nil {
-			astilog.Errorf("%s while TCP accepting", err)
-			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
-			a.dispatcher.dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
-			return
+		for i := 0; i <= 1; i++ {
+			// Accept
+			var conn net.Conn
+			var err error
+			if conn, err = a.listener.Accept(); err != nil {
+				astilog.Errorf("%s while TCP accepting", err)
+				a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
+				a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+				return
+			}
+
+			// We only accept the first connection which should be Astilectron, close the next one and stop
+			// the app
+			if i > 0 {
+				astilog.Errorf("Too many TCP connections")
+				a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: mainTargetID})
+				a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+				conn.Close()
+				return
+			}
+
+			// Let the timer know a connection has been accepted
+			chanAccepted <- true
+
+			// Create reader and writer
+			a.writer = newWriter(conn)
+			a.reader = newReader(a.dispatcher, conn)
+			go a.reader.read()
 		}
-
-		// Let the timer know a connection has been accepted
-		chanAccepted <- true
-
-		// Create reader and writer
-		a.writer = newWriter(conn)
-		a.reader = newReader(a.dispatcher, conn)
-		go a.reader.read()
 	}()
 
 	// We check a connection has been accepted
@@ -179,7 +191,7 @@ func (a *Astilectron) listenTCP() (err error) {
 			case <-t.C:
 				astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
 				a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
-				a.dispatcher.dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
+				a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 				return
 			}
 		}
@@ -222,7 +234,7 @@ func (a *Astilectron) execute() (err error) {
 				astilog.Debug("App has closed")
 				a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
 			}
-			a.dispatcher.dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 		}()
 	}, EventNameAppEventReady)
 	return
