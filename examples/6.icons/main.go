@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:generate go-bindata -pkg $GOPACKAGE -o vendor.go ../vendor/
 func main() {
 	// Parse flags
 	flag.Parse()
@@ -39,7 +38,6 @@ func main() {
 	if a, err = astilectron.New(astilectron.Options{BaseDirectoryPath: os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples"}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "creating new astilectron failed"))
 	}
-	a.SetProvisioner(astilectron.NewDisembedderProvisioner(Asset, "../vendor/astilectron-v0.1.0.zip", "../vendor/electron-v1.6.5.zip"))
 	defer a.Close()
 	a.HandleSignals()
 
@@ -52,6 +50,7 @@ func main() {
 	var w *astilectron.Window
 	if w, err = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
 		Center: astilectron.PtrBool(true),
+		Icon:   astilectron.PtrStr(os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples/6.icons/gopher.png"),
 		Height: astilectron.PtrInt(600),
 		Width:  astilectron.PtrInt(600),
 	}); err != nil {

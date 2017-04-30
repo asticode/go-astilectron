@@ -33,11 +33,12 @@ The majority of methods are synchrone which means that when executing them `go-a
     var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
         Center: astilectron.PtrBool(true),
         Height: astilectron.PtrInt(600),
+        Icon:   astilectron.PtrStr(<your icon path>),
         Width:  astilectron.PtrInt(600),
     })
     w.Create()
     
-When creating a window you need to indicate a URL as well as options that fit Electron's window options.
+When creating a window you need to indicate a URL as well as options such as position, size, icon, etc.
 
 This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers and used pointers in structs sent to Electron.
 
@@ -150,6 +151,7 @@ NOTE: needless to say that the message can be something other than a string. A c
     var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
         Center: astilectron.PtrBool(true),
         Height: astilectron.PtrInt(600),
+        Icon:   astilectron.PtrStr(<your icon path>),
         Width:  astilectron.PtrInt(600),
     })
     w.On(astilectron.EventNameWindowEventResize, func(e astilectron.Event) (deleteListener bool) {
@@ -196,6 +198,8 @@ Here's a list of the examples:
 $ go generate examples/5.single_binary_distribution/main.go
 $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_distribution/vendor.go -v
 ```
+
+- [6.icons](https://github.com/asticode/go-astilectron/tree/master/examples/6.icons/main.go) show you how to add an icon to your window
 
 # Features and roadmap
 
