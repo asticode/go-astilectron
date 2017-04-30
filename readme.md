@@ -36,7 +36,7 @@ In case you want to embed the sources in the binary to keep a unique binary you 
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
 
-The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event.
+The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
 
 ### Create a window
 
@@ -191,7 +191,7 @@ NOTE: needless to say that the message can be something other than a string. A c
 
 To make things clearer I've tried to split features in different [examples](https://github.com/asticode/go-astilectron/tree/master/examples).
 
-To run any of the examples, run the following command:
+To run any of the examples, run the following commands:
 
     $ go run examples/<name of the example>/main.go -v
     

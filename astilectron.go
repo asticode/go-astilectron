@@ -34,7 +34,7 @@ var (
 type Astilectron struct {
 	canceller    *asticontext.Canceller
 	channelQuit  chan bool
-	dispatcher   *Dispatcher
+	dispatcher   *dispatcher
 	identifier   *identifier
 	listener     net.Listener
 	paths        *Paths
@@ -122,8 +122,8 @@ func (a *Astilectron) Start() (err error) {
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
-	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
-	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
+	a.dispatcher.dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
+	defer a.dispatcher.dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
 	var ctx, _ = a.canceller.NewContext()
 	return a.provisioner.Provision(ctx, *a.paths)
 }
@@ -169,8 +169,7 @@ func (a *Astilectron) execute() (err error) {
 	cmd.Stdout = a.stdoutWriter
 
 	// Start command
-	// TODO If app crashes right away, process is blocked here: fix
-	synchronousFunc(a, func() {
+	synchronousFunc(a.canceller, a, func() {
 		// Start command
 		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
 		if err = cmd.Start(); err != nil {
@@ -186,15 +185,14 @@ func (a *Astilectron) execute() (err error) {
 			// Check the canceller to check whether it was a crash
 			if !a.canceller.Cancelled() {
 				astilog.Debug("App has crashed")
-				a.dispatcher.Dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
+				a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
 			} else {
 				astilog.Debug("App has closed")
-				a.dispatcher.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
+				a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
 			}
-			a.dispatcher.Dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppStop, TargetID: mainTargetID})
 		}()
 	}, EventNameAppEventReady)
-	astilog.Debug("App is ready")
 	return
 }
 

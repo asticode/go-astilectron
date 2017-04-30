@@ -75,11 +75,15 @@ func main() {
 		astilog.Infof("Received message %s", m)
 		return
 	})
-	w.Create()
+	if err = w.Create(); err != nil {
+		astilog.Fatal(errors.Wrap(err, "creating window failed"))
+	}
 
 	// Send message
 	time.Sleep(time.Second)
-	w.Send("What's up?")
+	if err = w.Send("What's up?"); err != nil {
+		astilog.Fatal(errors.Wrap(err, "sending message failed"))
+	}
 
 	// Blocking pattern
 	a.Wait()

@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/asticode/go-astilog"
+	"github.com/asticode/go-astitools/context"
 	"github.com/asticode/go-astitools/http"
 	"github.com/asticode/go-astitools/zip"
 	"github.com/pkg/errors"
@@ -74,8 +75,8 @@ func Download(ctx context.Context, c *http.Client, dst, src string) (err error) 
 	return
 }
 
-// Unzip unzips a src into a dst
-// Possible src formats are /path/to/zip.zip or /path/to/zip.zip/internal/path
+// Unzip unzips a src into a dst.
+// Possible src formats are /path/to/zip.zip or /path/to/zip.zip/internal/path.
 func Unzip(ctx context.Context, dst, src string) error {
 	astilog.Debugf("Unzipping %s into %s", src, dst)
 	return astizip.Unzip(ctx, src, dst)
@@ -96,26 +97,22 @@ func PtrStr(i string) *string {
 	return &i
 }
 
-// synchronousFunc executes a function and blocks until it has received a specific event
-func synchronousFunc(l listenable, fn func(), eventNameDone string) {
-	var c = make(chan bool)
-	defer func() {
-		if c != nil {
-			close(c)
-		}
-	}()
+// synchronousFunc executes a function and blocks until it has received a specific event or the canceller has been
+// cancelled
+func synchronousFunc(c *asticontext.Canceller, l listenable, fn func(), eventNameDone string) {
+	var ctx, cancel = c.NewContext()
+	defer cancel()
 	l.On(eventNameDone, func(e Event) (deleteListener bool) {
-		close(c)
-		c = nil
+		cancel()
 		return true
 	})
 	fn()
-	<-c
+	<-ctx.Done()
 }
 
-// synchronousEvent sends an event and blocks until it has received a specific event
-func synchronousEvent(l listenable, w *writer, e Event, eventNameDone string) (err error) {
-	synchronousFunc(l, func() {
+// synchronousEvent sends an event and blocks until it has received a specific event or the canceller has been cancelled
+func synchronousEvent(c *asticontext.Canceller, l listenable, w *writer, e Event, eventNameDone string) (err error) {
+	synchronousFunc(c, l, func() {
 		if err = w.write(e); err != nil {
 			err = errors.Wrapf(err, "writing %+v event failed", e)
 			return
