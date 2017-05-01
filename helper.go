@@ -1,22 +1,23 @@
 package astilectron
 
 import (
+	"bytes"
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
 
-	"context"
-
 	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/context"
 	"github.com/asticode/go-astitools/http"
+	"github.com/asticode/go-astitools/io"
 	"github.com/asticode/go-astitools/zip"
 	"github.com/pkg/errors"
 )
 
 // Download is a cancellable function that downloads a src into a dst using a specific *http.Client and deals with
 // failed downloads
-func Download(ctx context.Context, c *http.Client, dst, src string) (err error) {
+func Download(ctx context.Context, c *http.Client, src, dst string) (err error) {
 	// Log
 	astilog.Debugf("Downloading %s into %s", src, dst)
 
@@ -75,9 +76,56 @@ func Download(ctx context.Context, c *http.Client, dst, src string) (err error) 
 	return
 }
 
+// Disembed is a cancellable disembed of an src to a dst using a custom Disembedder
+func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
+	// Log
+	astilog.Debugf("Disembedding %s into %s...", src, dst)
+
+	// No need to disembed
+	if _, err = os.Stat(dst); err != nil && !os.IsNotExist(err) {
+		return errors.Wrapf(err, "stating %s failed", dst)
+	} else if err == nil {
+		astilog.Debugf("%s already exists, skipping disembed...", dst)
+		return
+	}
+	err = nil
+
+	// Make sure directory exists
+	var dirPath = filepath.Dir(dst)
+	astilog.Debugf("Creating %s", dirPath)
+	if err = os.MkdirAll(dirPath, 0755); err != nil {
+		return errors.Wrapf(err, "mkdirall %s failed", dirPath)
+	}
+
+	// Create dst
+	var f *os.File
+	astilog.Debugf("Creating %s", dst)
+	if f, err = os.Create(dst); err != nil {
+		err = errors.Wrapf(err, "creating %s failed", dst)
+		return
+	}
+	defer f.Close()
+
+	// Disembed
+	var b []byte
+	astilog.Debugf("Disembedding %s", src)
+	if b, err = d(src); err != nil {
+		err = errors.Wrapf(err, "disembedding %s failed", src)
+		return
+	}
+
+	// Copy
+	astilog.Debugf("Copying disembedded data to %s", dst)
+	if _, err = astiio.Copy(ctx, bytes.NewReader(b), f); err != nil {
+		err = errors.Wrapf(err, "copying disembedded data into %s failed", dst)
+		return
+	}
+	return
+}
+
 // Unzip unzips a src into a dst.
 // Possible src formats are /path/to/zip.zip or /path/to/zip.zip/internal/path.
-func Unzip(ctx context.Context, dst, src string) error {
+func Unzip(ctx context.Context, src, dst string) error {
 	astilog.Debugf("Unzipping %s into %s", src, dst)
 	return astizip.Unzip(ctx, src, dst)
 }

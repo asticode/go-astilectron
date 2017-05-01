@@ -11,6 +11,8 @@ import (
 
 // Paths represents the set of paths needed by Astilectron
 type Paths struct {
+	appExecutable          string
+	appIconDarwinSrc       string
 	astilectronApplication string
 	astilectronDirectory   string
 	astilectronDownloadSrc string
@@ -20,23 +22,25 @@ type Paths struct {
 	electronDirectory      string
 	electronDownloadSrc    string
 	electronDownloadDst    string
-	electronExecutable     string
 	electronUnzipSrc       string
+	provisionStatus        string
 	vendorDirectory        string
 }
 
 // newPaths creates new paths
-func newPaths(baseDirectoryPath string) (p *Paths, err error) {
+func newPaths(o Options) (p *Paths, err error) {
 	// Init base directory path
 	p = &Paths{}
-	if err = p.initBaseDirectory(baseDirectoryPath); err != nil {
+	if err = p.initBaseDirectory(o.BaseDirectoryPath); err != nil {
 		err = errors.Wrap(err, "initializing base directory failed")
 		return
 	}
 
 	// Init other paths
 	//!\\ Order matters
+	p.appIconDarwinSrc = o.AppIconDarwinPath
 	p.vendorDirectory = filepath.Join(p.baseDirectory, "vendor")
+	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.initAstilectronDirectory()
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
 	p.astilectronDownloadSrc = fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", versionAstilectron)
@@ -46,7 +50,7 @@ func newPaths(baseDirectoryPath string) (p *Paths, err error) {
 	p.initElectronDownloadSrc()
 	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", versionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
-	p.initElectronExecutable()
+	p.initAppExecutable(o.AppName)
 	return
 }
 
@@ -100,16 +104,29 @@ func (p *Paths) initElectronDownloadSrc() {
 	}
 }
 
-// initElectronExecutable initializes the electron executable path
-func (p *Paths) initElectronExecutable() {
+// initAppExecutable initializes the app executable path
+func (p *Paths) initAppExecutable(appName string) {
 	switch runtime.GOOS {
 	case "darwin":
-		p.electronExecutable = filepath.Join(p.electronDirectory, "Electron.app", "Contents", "MacOS", "Electron")
+		if appName == "" {
+			appName = "Electron"
+		}
+		p.appExecutable = filepath.Join(p.electronDirectory, appName+".app", "Contents", "MacOS", appName)
 	case "linux":
-		p.electronExecutable = filepath.Join(p.electronDirectory, "electron")
+		p.appExecutable = filepath.Join(p.electronDirectory, "electron")
 	case "windows":
-		p.electronExecutable = filepath.Join(p.electronDirectory, "electron.exe")
+		p.appExecutable = filepath.Join(p.electronDirectory, "electron.exe")
 	}
+}
+
+// AppExecutable returns the app executable path
+func (p *Paths) AppExecutable() string {
+	return p.appExecutable
+}
+
+// AppIconDarwinSrc returns the darwin app icon path
+func (p *Paths) AppIconDarwinSrc() string {
+	return p.appIconDarwinSrc
 }
 
 // BaseDirectory returns the base directory path
@@ -157,14 +174,14 @@ func (p *Paths) ElectronDownloadSrc() string {
 	return p.electronDownloadSrc
 }
 
-// ElectronExecutable returns the electron eecutable path
-func (p *Paths) ElectronExecutable() string {
-	return p.electronExecutable
-}
-
 // ElectronUnzipSrc returns the electron unzip source path
 func (p *Paths) ElectronUnzipSrc() string {
 	return p.electronUnzipSrc
+}
+
+// ProvisionStatus returns the provision status path
+func (p *Paths) ProvisionStatus() string {
+	return p.provisionStatus
 }
 
 // BaseDirectory returns the vendor directory path

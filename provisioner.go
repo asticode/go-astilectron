@@ -1,91 +1,297 @@
 package astilectron
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"runtime"
 
 	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/io"
+	"github.com/asticode/go-astitools/os"
+	"github.com/asticode/go-astitools/regexp"
 	"github.com/pkg/errors"
+)
+
+// Var
+var (
+	defaultHTTPClient     = &http.Client{}
+	regexpDarwinInfoPList = regexp.MustCompile("<string>Electron")
 )
 
 // Provisioner represents an object capable of provisioning Astilectron
 type Provisioner interface {
-	Provision(ctx context.Context, p Paths) error
+	Provision(ctx context.Context, appName string, p Paths) error
 }
+
+// mover is a function that moves a package
+type mover func(ctx context.Context, p Paths) error
 
 // Default provisioner
 var DefaultProvisioner = &defaultProvisioner{
-	httpClient: &http.Client{},
+	moverAstilectron: func(ctx context.Context, p Paths) (err error) {
+		if err = Download(ctx, defaultHTTPClient, p.AstilectronDownloadSrc(), p.AstilectronDownloadDst()); err != nil {
+			return errors.Wrapf(err, "downloading %s into %s failed", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst())
+		}
+		return
+	},
+	moverElectron: func(ctx context.Context, p Paths) (err error) {
+		if err = Download(ctx, defaultHTTPClient, p.ElectronDownloadSrc(), p.ElectronDownloadDst()); err != nil {
+			return errors.Wrapf(err, "downloading %s into %s failed", p.ElectronDownloadSrc(), p.ElectronDownloadDst())
+		}
+		return
+	},
 }
 
 // defaultProvisioner represents the default provisioner
 type defaultProvisioner struct {
-	httpClient *http.Client // We need to set up our own client in case we need to tweak some options such as timeout or proxy
+	moverAstilectron mover
+	moverElectron    mover
 }
 
 // Provision implements the provisioner interface
-// TODO Keep track of provisioned versions + handle upgrades
-func (p *defaultProvisioner) Provision(ctx context.Context, paths Paths) (err error) {
-	// Provision astilectron
-	if err = p.provisionAstilectron(ctx, paths); err != nil {
-		err = errors.Wrap(err, "default provisioning astilectron failed")
+// TODO Package app using electron instead of downloading Electron + Astilectron separately
+func (p *defaultProvisioner) Provision(ctx context.Context, appName string, paths Paths) (err error) {
+	// Retrieve provision status
+	var s ProvisionStatus
+	if s, err = p.ProvisionStatus(paths); err != nil {
+		err = errors.Wrap(err, "retrieving provisioning status failed")
 		return
 	}
+	defer p.updateProvisionStatus(paths, &s)
+
+	// Provision astilectron
+	if err = p.provisionAstilectron(ctx, paths, s); err != nil {
+		err = errors.Wrap(err, "provisioning astilectron failed")
+		return
+	}
+	s.Astilectron = &ProvisionStatusPackage{Version: versionAstilectron}
 
 	// Provision electron
-	if err = p.provisionElectron(ctx, paths); err != nil {
-		err = errors.Wrap(err, "default provisioning electron failed")
+	if err = p.provisionElectron(ctx, paths, s, appName); err != nil {
+		err = errors.Wrap(err, "provisioning electron failed")
+		return
+	}
+	s.Electron = &ProvisionStatusPackage{Version: versionElectron}
+	return
+}
+
+// ProvisionStatus represents the provision status
+type ProvisionStatus struct {
+	Astilectron *ProvisionStatusPackage `json:"astilectron,omitempty"`
+	Electron    *ProvisionStatusPackage `json:"electron,omitempty"`
+}
+
+// ProvisionStatusPackage represents the provision status of a package
+type ProvisionStatusPackage struct {
+	Version string `json:"version"`
+}
+
+// ProvisionStatus returns the provision status
+func (p *defaultProvisioner) ProvisionStatus(paths Paths) (s ProvisionStatus, err error) {
+	// Open the file
+	var f *os.File
+	if f, err = os.Open(paths.ProvisionStatus()); err != nil {
+		if !os.IsNotExist(err) {
+			err = errors.Wrapf(err, "opening file %s failed", paths.ProvisionStatus())
+		} else {
+			err = nil
+		}
+		return
+	}
+	defer f.Close()
+
+	// Unmarshal
+	if err = json.NewDecoder(f).Decode(&s); err != nil {
+		err = errors.Wrapf(err, "json decoding from %s failed", paths.ProvisionStatus())
+		return
+	}
+	return
+}
+
+// ProvisionStatus updates the provision status
+func (p *defaultProvisioner) updateProvisionStatus(paths Paths, s *ProvisionStatus) (err error) {
+	// Create the file
+	var f *os.File
+	if f, err = os.Create(paths.ProvisionStatus()); err != nil {
+		err = errors.Wrapf(err, "creating file %s failed", paths.ProvisionStatus())
+		return
+	}
+	defer f.Close()
+
+	// Marshal
+	if err = json.NewEncoder(f).Encode(s); err != nil {
+		err = errors.Wrapf(err, "json encoding into %s failed", paths.ProvisionStatus())
 		return
 	}
 	return
 }
 
 // provisionAstilectron provisions astilectron
-func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths) error {
-	return p.provisionDownloadableZipFile(ctx, "Astilectron", paths.AstilectronApplication(), paths.AstilectronDownloadSrc(), paths.AstilectronDownloadDst(), paths.AstilectronUnzipSrc(), paths.AstilectronDirectory())
+func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths, s ProvisionStatus) error {
+	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", versionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
 }
 
 // provisionElectron provisions electron
-func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths) error {
-	return p.provisionDownloadableZipFile(ctx, "Electron", paths.ElectronExecutable(), paths.ElectronDownloadSrc(), paths.ElectronDownloadDst(), paths.ElectronUnzipSrc(), paths.ElectronDirectory())
+func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName string) error {
+	return p.provisionPackage(ctx, paths, s.Electron, p.moverElectron, "Electron", versionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
+		switch runtime.GOOS {
+		case "darwin":
+			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
+				return errors.Wrap(err, "finishing provisioning electron for darwin systems failed")
+			}
+		default:
+			astilog.Debug("System doesn't require finshing provisioning electron, moving on...")
+		}
+		return
+	})
 }
 
-// provisionDownloadableZipFile provisions a downloadable .zip file
-func (p *defaultProvisioner) provisionDownloadableZipFile(ctx context.Context, name, pathExists, pathDownloadSrc, pathDownloadDst, pathUnzipSrc, pathDirectory string) (err error) {
+// provisionPackage provisions a package
+func (p *defaultProvisioner) provisionPackage(ctx context.Context, paths Paths, s *ProvisionStatusPackage, m mover, name, version, pathUnzipSrc, pathDirectory string, finish func() error) (err error) {
+	// Package has already been provisioned
+	if s != nil && s.Version == version {
+		astilog.Debugf("%s has already been provisioned to version %s, moving on...", name, version)
+		return
+	}
+	astilog.Debugf("Provisioning %s...", name)
+
+	// Remove previous install
+	astilog.Debugf("Removing directory %s", pathDirectory)
+	if err = os.RemoveAll(pathDirectory); err != nil && !os.IsNotExist(err) {
+		return errors.Wrapf(err, "removing %s failed", pathDirectory)
+	}
+
+	// Move
+	if err = m(ctx, paths); err != nil {
+		return errors.Wrapf(err, "moving %s failed", name)
+	}
+
+	// Create directory
+	astilog.Debugf("Creating directory %s", pathDirectory)
+	if err = os.MkdirAll(pathDirectory, 0755); err != nil {
+		return errors.Wrapf(err, "mkdirall %s failed", pathDirectory)
+	}
+
+	// Unzip
+	if err = Unzip(ctx, pathUnzipSrc, pathDirectory); err != nil {
+		return errors.Wrapf(err, "unzipping %s into %s failed", pathUnzipSrc, pathDirectory)
+	}
+
+	// Finish
+	if finish != nil {
+		if err = finish(); err != nil {
+			return errors.Wrap(err, "finishing failed")
+		}
+	}
+	return
+}
+
+// provisionElectronFinishDarwin finishes provisioning electron for Darwin systems
+// https://github.com/electron/electron/blob/v1.6.5/docs/tutorial/application-distribution.md#macos
+func (p *defaultProvisioner) provisionElectronFinishDarwin(appName string, paths Paths) (err error) {
 	// Log
-	astilog.Debugf("Default provisioning %s...", name)
+	astilog.Debug("Finishing provisioning electron for darwin system")
 
-	// We need to provision
-	if _, err = os.Stat(pathExists); os.IsNotExist(err) {
-		// Download the .zip file
-		if err = Download(ctx, p.httpClient, pathDownloadDst, pathDownloadSrc); err != nil {
-			return errors.Wrapf(err, "downloading %s into %s failed", pathDownloadSrc, pathDownloadDst)
+	// Custom app icon
+	if paths.AppIconDarwinSrc() != "" {
+		if err = p.provisionElectronFinishDarwinCopy(paths); err != nil {
+			return errors.Wrap(err, "copying for darwin system finish failed")
+		}
+	}
+
+	// Custom app name
+	if appName != "" {
+		// Replace
+		if err = p.provisionElectronFinishDarwinReplace(appName, paths); err != nil {
+			return errors.Wrap(err, "replacing for darwin system finish failed")
 		}
 
-		// Remove previous install
-		astilog.Debugf("Removing %s", pathDirectory)
-		if err = os.RemoveAll(pathDirectory); err != nil && !os.IsNotExist(err) {
-			return errors.Wrapf(err, "removing %s failed", pathDirectory)
+		// Rename
+		if err = p.provisionElectronFinishDarwinRename(appName, paths); err != nil {
+			return errors.Wrap(err, "renaming for darwin system finish failed")
+		}
+	}
+	return
+}
+
+// provisionElectronFinishDarwinCopy copies the proper darwin files
+func (p *defaultProvisioner) provisionElectronFinishDarwinCopy(paths Paths) (err error) {
+	// Icon
+	var src, dst = paths.AppIconDarwinSrc(), filepath.Join(paths.ElectronDirectory(), "Electron.app", "Contents", "Resources", "electron.icns")
+	if src != "" {
+		astilog.Debugf("Copying %s to %s", src, dst)
+		if err = astios.Copy(context.Background(), src, dst); err != nil {
+			return errors.Wrapf(err, "copying %s to %s failed", src, dst)
+		}
+	}
+	return
+}
+
+// provisionElectronFinishDarwinReplace makes the proper replacements in the proper darwin files
+func (p *defaultProvisioner) provisionElectronFinishDarwinReplace(appName string, paths Paths) (err error) {
+	for _, p := range []string{
+		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Info.plist"),
+		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Frameworks", "Electron Helper EH.app", "Contents", "Info.plist"),
+		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Frameworks", "Electron Helper NP.app", "Contents", "Info.plist"),
+		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Frameworks", "Electron Helper.app", "Contents", "Info.plist"),
+	} {
+		// Log
+		astilog.Debugf("Replacing in %s", p)
+
+		// Read file
+		var b []byte
+		if b, err = ioutil.ReadFile(p); err != nil {
+			return errors.Wrapf(err, "reading %s failed", p)
 		}
 
-		// Create directory
-		astilog.Debugf("Creating %s", pathDirectory)
-		if err = os.MkdirAll(pathDirectory, 0755); err != nil {
-			return errors.Wrapf(err, "mkdirall %s failed", pathDirectory)
+		// Open and truncate file
+		var f *os.File
+		if f, err = os.Create(p); err != nil {
+			return errors.Wrapf(err, "creating %s failed", p)
 		}
+		defer f.Close()
 
-		// Unzip
-		if err = Unzip(ctx, pathDirectory, pathUnzipSrc); err != nil {
-			return errors.Wrapf(err, "unzipping %s into %s failed", pathUnzipSrc, pathDirectory)
+		// Replace
+		astiregexp.ReplaceAll(regexpDarwinInfoPList, &b, []byte("<string>"+appName))
+
+		// Write
+		if _, err = f.Write(b); err != nil {
+			return errors.Wrapf(err, "writing to %s failed", p)
 		}
-	} else if err != nil {
-		return errors.Wrapf(err, "stating %s failed", pathExists)
-	} else {
-		astilog.Debugf("%s already exists, skipping %s default provision...", pathExists, name)
+	}
+	return
+}
+
+// rename represents a rename
+type rename struct {
+	src, dst string
+}
+
+// provisionElectronFinishDarwinRename renames the proper darwin folders
+func (p *defaultProvisioner) provisionElectronFinishDarwinRename(appName string, paths Paths) (err error) {
+	var appDirectory = filepath.Join(paths.electronDirectory, appName+".app")
+	var frameworksDirectory = filepath.Join(appDirectory, "Contents", "Frameworks")
+	var helperEH = filepath.Join(frameworksDirectory, appName+" Helper EH.app")
+	var helperNP = filepath.Join(frameworksDirectory, appName+" Helper NP.app")
+	var helper = filepath.Join(frameworksDirectory, appName+" Helper.app")
+	for _, r := range []rename{
+		rename{src: filepath.Join(paths.electronDirectory, "Electron.app"), dst: appDirectory},
+		rename{src: filepath.Join(appDirectory, "Contents", "MacOS", "Electron"), dst: paths.AppExecutable()},
+		rename{src: filepath.Join(frameworksDirectory, "Electron Helper EH.app"), dst: helperEH},
+		rename{src: filepath.Join(helperEH, "Contents", "MacOS", "Electron Helper EH"), dst: filepath.Join(helperEH, "Contents", "MacOS", appName+" Helper EH")},
+		rename{src: filepath.Join(frameworksDirectory, "Electron Helper NP.app"), dst: filepath.Join(helperNP)},
+		rename{src: filepath.Join(helperNP, "Contents", "MacOS", "Electron Helper NP"), dst: filepath.Join(helperNP, "Contents", "MacOS", appName+" Helper NP")},
+		rename{src: filepath.Join(frameworksDirectory, "Electron Helper.app"), dst: filepath.Join(helper)},
+		rename{src: filepath.Join(helper, "Contents", "MacOS", "Electron Helper"), dst: filepath.Join(helper, "Contents", "MacOS", appName+" Helper")},
+	} {
+		astilog.Debugf("Renaming %s into %s", r.src, r.dst)
+		if err = os.Rename(r.src, r.dst); err != nil {
+			return errors.Wrapf(err, "renaming %s into %s failed", r.src, r.dst)
+		}
 	}
 	return
 }
@@ -95,84 +301,18 @@ type Disembedder func(src string) ([]byte, error)
 
 // NewDisembedderProvisioner creates a provisioner that can provision based on embedded data
 func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron string) Provisioner {
-	return &disembedderProvisioner{d: d, pathAstilectron: pathAstilectron, pathElectron: pathElectron}
-}
-
-// disembedderProvisioner represents the disembedder provisioner
-type disembedderProvisioner struct {
-	d                             Disembedder
-	pathAstilectron, pathElectron string
-}
-
-// Provision implements the provisioner interface
-func (p *disembedderProvisioner) Provision(ctx context.Context, paths Paths) (err error) {
-	// Disembed astilectron
-	if err = p.disembedAstilectron(ctx, paths); err != nil {
-		err = errors.Wrap(err, "disembedding astilectron failed")
-		return
-	}
-
-	// Disembed electron
-	if err = p.disembedElectron(ctx, paths); err != nil {
-		err = errors.Wrap(err, "disembedding electron failed")
-		return
-	}
-
-	// Default provisioner
-	return DefaultProvisioner.Provision(ctx, paths)
-}
-
-// disembedAstilectron provisions astilectron
-func (p *disembedderProvisioner) disembedAstilectron(ctx context.Context, paths Paths) error {
-	return p.disembed(ctx, "Astilectron", p.pathAstilectron, paths.AstilectronDownloadDst())
-}
-
-// provisionElectron provisions electron
-func (p *disembedderProvisioner) disembedElectron(ctx context.Context, paths Paths) error {
-	return p.disembed(ctx, "Electron", p.pathElectron, paths.ElectronDownloadDst())
-}
-
-// disembed disembeds data from a src to a dst
-func (p *disembedderProvisioner) disembed(ctx context.Context, name, src, dst string) (err error) {
-	// Log
-	astilog.Debugf("Disembedding %s...", name)
-
-	// We need to disembed
-	if _, err = os.Stat(dst); os.IsNotExist(err) {
-		// Create directory
-		var dirPath = filepath.Dir(dst)
-		astilog.Debugf("Creating %s", dirPath)
-		if err = os.MkdirAll(dirPath, 0755); err != nil {
-			return errors.Wrapf(err, "mkdirall %s failed", dirPath)
-		}
-
-		// Create dst
-		var f *os.File
-		astilog.Debugf("Creating %s", dst)
-		if f, err = os.Create(dst); err != nil {
-			err = errors.Wrapf(err, "creating %s failed", dst)
+	return &defaultProvisioner{
+		moverAstilectron: func(ctx context.Context, p Paths) (err error) {
+			if err = Disembed(ctx, d, pathAstilectron, p.AstilectronDownloadDst()); err != nil {
+				return errors.Wrapf(err, "disembedding %s into %s failed", pathAstilectron, p.AstilectronDownloadDst())
+			}
 			return
-		}
-		defer f.Close()
-
-		// Disembed
-		var b []byte
-		astilog.Debugf("Disembedding %s", src)
-		if b, err = p.d(src); err != nil {
-			err = errors.Wrapf(err, "disembedding %s failed", src)
+		},
+		moverElectron: func(ctx context.Context, p Paths) (err error) {
+			if err = Disembed(ctx, d, pathElectron, p.ElectronDownloadDst()); err != nil {
+				return errors.Wrapf(err, "disembedding %s into %s failed", pathElectron, p.ElectronDownloadDst())
+			}
 			return
-		}
-
-		// Copy
-		astilog.Debugf("Copying disembedded data to %s", dst)
-		if _, err = astiio.Copy(ctx, bytes.NewReader(b), f); err != nil {
-			err = errors.Wrapf(err, "copying disembedded data into %s failed", dst)
-			return
-		}
-	} else if err != nil {
-		return errors.Wrapf(err, "stating %s failed", dst)
-	} else {
-		astilog.Debugf("%s already exists, skipping %s disembed...", dst, name)
+		},
 	}
-	return
 }
