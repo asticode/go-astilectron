@@ -14,8 +14,12 @@ type listenable interface {
 type dispatcher struct {
 	c  chan Event
 	cq chan bool
-	l  map[string]map[string][]Listener // Indexed by target ID then by event name
-	m  *sync.Mutex
+	id int
+	// Indexed by target ID then by event name then be listener id
+	// We use a map[int]Listener so that deletion is as smooth as possible
+	// It means it doesn't store listeners in order
+	l map[string]map[string]map[int]Listener
+	m *sync.Mutex
 }
 
 // newDispatcher creates a new dispatcher
@@ -23,7 +27,7 @@ func newDispatcher() *dispatcher {
 	return &dispatcher{
 		c:  make(chan Event),
 		cq: make(chan bool),
-		l:  make(map[string]map[string][]Listener),
+		l:  make(map[string]map[string]map[int]Listener),
 		m:  &sync.Mutex{},
 	}
 }
@@ -31,11 +35,15 @@ func newDispatcher() *dispatcher {
 // addListener adds a listener
 func (d *dispatcher) addListener(targetID, eventName string, l Listener) {
 	d.m.Lock()
+	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
-		d.l[targetID] = make(map[string][]Listener)
+		d.l[targetID] = make(map[string]map[int]Listener)
 	}
-	d.l[targetID][eventName] = append(d.l[targetID][eventName], l)
-	d.m.Unlock()
+	if _, ok := d.l[targetID][eventName]; !ok {
+		d.l[targetID][eventName] = make(map[int]Listener)
+	}
+	d.id++
+	d.l[targetID][eventName][d.id] = l
 }
 
 // close closes the dispatcher properly
@@ -47,7 +55,7 @@ func (d *dispatcher) close() {
 }
 
 // delListener delete a specific listener
-func (d *dispatcher) delListener(targetID, eventName string, index int) {
+func (d *dispatcher) delListener(targetID, eventName string, id int) {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
@@ -56,11 +64,7 @@ func (d *dispatcher) delListener(targetID, eventName string, index int) {
 	if _, ok := d.l[targetID][eventName]; !ok {
 		return
 	}
-	if len(d.l[targetID][eventName]) <= 1 {
-		d.l[targetID][eventName] = []Listener{}
-		return
-	}
-	d.l[targetID][eventName] = append(d.l[targetID][eventName][:index], d.l[targetID][eventName][index+1:]...)
+	delete(d.l[targetID][eventName], id)
 }
 
 // dispatch dispatches an event
@@ -73,9 +77,9 @@ func (d *dispatcher) start() {
 	for {
 		select {
 		case e := <-d.c:
-			for i, l := range d.listeners(e.TargetID, e.Name) {
-				if deleteListener := l(e); deleteListener {
-					d.delListener(e.TargetID, e.Name, i)
+			for id, l := range d.listeners(e.TargetID, e.Name) {
+				if l(e) {
+					d.delListener(e.TargetID, e.Name, id)
 				}
 			}
 		case <-d.cq:
@@ -85,14 +89,14 @@ func (d *dispatcher) start() {
 }
 
 // listeners returns the listeners for a target ID and an event name
-func (d *dispatcher) listeners(targetID, eventName string) []Listener {
+func (d *dispatcher) listeners(targetID, eventName string) map[int]Listener {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
-		return []Listener{}
+		return map[int]Listener{}
 	}
 	if _, ok := d.l[targetID][eventName]; !ok {
-		return []Listener{}
+		return map[int]Listener{}
 	}
 	return d.l[targetID][eventName]
 }

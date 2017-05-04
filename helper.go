@@ -15,63 +15,36 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Download is a cancellable function that downloads a src into a dst using a specific *http.Client and deals with
+// Download is a cancellable function that downloads a src into a dst using a specific *http.Client and cleans up on
 // failed downloads
 func Download(ctx context.Context, c *http.Client, src, dst string) (err error) {
 	// Log
 	astilog.Debugf("Downloading %s into %s", src, dst)
 
-	// Make sure the directory of the dst exists
+	// Destination already exists
+	if _, err = os.Stat(dst); err == nil {
+		astilog.Debugf("%s already exists, skipping download...", dst)
+		return
+	} else if !os.IsNotExist(err) {
+		return errors.Wrapf(err, "stating %s failed", dst)
+	}
+	err = nil
+
+	// Clean up on error
+	defer func(err *error) {
+		if *err != nil {
+			os.Remove(dst)
+		}
+	}(&err)
+
+	// Make sure the dst directory  exists
 	if err = os.MkdirAll(filepath.Dir(dst), 0775); err != nil {
 		return errors.Wrapf(err, "mkdirall %s failed", filepath.Dir(dst))
 	}
 
-	// Check whether dst and dst.processing exist
-	var dstProcessing = dst + ".processing"
-	var dstExists, dstProcessingExists = true, true
-	if _, err = os.Stat(dst); os.IsNotExist(err) {
-		dstExists = false
-	} else if err != nil {
-		return errors.Wrapf(err, "stating %s failed", dst)
-	}
-	if _, err = os.Stat(dstProcessing); os.IsNotExist(err) {
-		dstProcessingExists = false
-	} else if err != nil {
-		return errors.Wrapf(err, "stating %s failed", dstProcessing)
-	}
-	err = nil
-
-	// Skipping download
-	if dstExists && !dstProcessingExists {
-		astilog.Debugf("%s already exists, skipping download...", dst)
-		return
-	} else if dstProcessingExists {
-		astilog.Debugf("%s already exists, cleaning up and downloading again...", dstProcessing)
-		for _, p := range []string{dst, dstProcessing} {
-			if err = os.Remove(p); err != nil {
-				return errors.Wrapf(err, "removing %s failed", p)
-			}
-		}
-	}
-
-	// Create the dst.processing file
-	var fp *os.File
-	if fp, err = os.Create(dstProcessing); err != nil {
-		return errors.Wrapf(err, "creating file %s failed", dstProcessing)
-	}
-	defer fp.Close()
-
 	// Download
 	if err = astihttp.Download(ctx, c, src, dst); err != nil {
 		return errors.Wrap(err, "astihttp.Download failed")
-	}
-
-	// We need to close the file manually before removing it
-	fp.Close()
-
-	// Remove dst.processing file
-	if err = os.Remove(dstProcessing); err != nil {
-		return errors.Wrapf(err, "removing %s failed", dstProcessing)
 	}
 	return
 }
@@ -90,6 +63,13 @@ func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
 	}
 	err = nil
 
+	// Clean up on error
+	defer func(err *error) {
+		if *err != nil {
+			os.Remove(dst)
+		}
+	}(&err)
+
 	// Make sure directory exists
 	var dirPath = filepath.Dir(dst)
 	astilog.Debugf("Creating %s", dirPath)
@@ -101,8 +81,7 @@ func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
 	var f *os.File
 	astilog.Debugf("Creating %s", dst)
 	if f, err = os.Create(dst); err != nil {
-		err = errors.Wrapf(err, "creating %s failed", dst)
-		return
+		return errors.Wrapf(err, "creating %s failed", dst)
 	}
 	defer f.Close()
 
@@ -110,15 +89,13 @@ func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
 	var b []byte
 	astilog.Debugf("Disembedding %s", src)
 	if b, err = d(src); err != nil {
-		err = errors.Wrapf(err, "disembedding %s failed", src)
-		return
+		return errors.Wrapf(err, "disembedding %s failed", src)
 	}
 
 	// Copy
 	astilog.Debugf("Copying disembedded data to %s", dst)
 	if _, err = astiio.Copy(ctx, bytes.NewReader(b), f); err != nil {
-		err = errors.Wrapf(err, "copying disembedded data into %s failed", dst)
-		return
+		return errors.Wrapf(err, "copying disembedded data into %s failed", dst)
 	}
 	return
 }

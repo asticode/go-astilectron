@@ -64,7 +64,7 @@ type Options struct {
 // New creates a new Astilectron instance
 func New(o Options) (a *Astilectron, err error) {
 	// Validate the OS
-	if err = validateOS(); err != nil {
+	if err = validateOS(runtime.GOOS); err != nil {
 		err = errors.Wrap(err, "validating OS failed")
 		return
 	}
@@ -79,7 +79,7 @@ func New(o Options) (a *Astilectron, err error) {
 	}
 
 	// Set paths
-	if a.paths, err = newPaths(o); err != nil {
+	if a.paths, err = newPaths(runtime.GOOS, o); err != nil {
 		err = errors.Wrap(err, "creating new paths failed")
 		return
 	}
@@ -105,9 +105,9 @@ func New(o Options) (a *Astilectron, err error) {
 }
 
 // validateOS validates the OS
-func validateOS() error {
-	if !astislice.InStringSlice(runtime.GOOS, validOSes) {
-		return fmt.Errorf("OS %s is not supported", runtime.GOOS)
+func validateOS(os string) error {
+	if !astislice.InStringSlice(os, validOSes) {
+		return fmt.Errorf("OS %s is not supported", os)
 	}
 	return nil
 }
@@ -159,7 +159,7 @@ func (a *Astilectron) provision() error {
 
 	// Provision
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, a.options.AppName, *a.paths)
+	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -172,58 +172,63 @@ func (a *Astilectron) listenTCP() (err error) {
 		return errors.Wrap(err, "tcp net.Listen failed")
 	}
 
-	// Accept
+	// Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
-	go func() {
-		for i := 0; i <= 1; i++ {
-			// Accept
-			var conn net.Conn
-			var err error
-			if conn, err = a.listener.Accept(); err != nil {
-				astilog.Errorf("%s while TCP accepting", err)
-				a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
-				a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
-				return
-			}
+	go a.watchNoAccept(30*time.Second, chanAccepted)
 
-			// We only accept the first connection which should be Astilectron, close the next one and stop
-			// the app
-			if i > 0 {
-				astilog.Errorf("Too many TCP connections")
-				a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: mainTargetID})
-				a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
-				conn.Close()
-				return
-			}
-
-			// Let the timer know a connection has been accepted
-			chanAccepted <- true
-
-			// Create reader and writer
-			a.writer = newWriter(conn)
-			a.reader = newReader(a.dispatcher, conn)
-			go a.reader.read()
-		}
-	}()
-
-	// We check a connection has been accepted
-	go func() {
-		const timeout = 30 * time.Second
-		var t = time.NewTimer(timeout)
-		defer t.Stop()
-		for {
-			select {
-			case <-chanAccepted:
-				return
-			case <-t.C:
-				astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
-				a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
-				a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
-				return
-			}
-		}
-	}()
+	// Accept connections
+	go a.acceptTCP(chanAccepted)
 	return
+}
+
+// watchNoAccept checks whether a TCP connection is accepted quickly enough
+func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan bool) {
+	var t = time.NewTimer(timeout)
+	defer t.Stop()
+	for {
+		select {
+		case <-chanAccepted:
+			return
+		case <-t.C:
+			astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
+			a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			return
+		}
+	}
+}
+
+// watchAcceptTCP accepts TCP connections
+func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
+	for i := 0; i <= 1; i++ {
+		// Accept
+		var conn net.Conn
+		var err error
+		if conn, err = a.listener.Accept(); err != nil {
+			astilog.Errorf("%s while TCP accepting", err)
+			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			return
+		}
+
+		// We only accept the first connection which should be Astilectron, close the next one and stop
+		// the app
+		if i > 0 {
+			astilog.Errorf("Too many TCP connections")
+			a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			conn.Close()
+			return
+		}
+
+		// Let the timer know a connection has been accepted
+		chanAccepted <- true
+
+		// Create reader and writer
+		a.writer = newWriter(conn)
+		a.reader = newReader(a.dispatcher, conn)
+		go a.reader.read()
+	}
 }
 
 // execute executes Astilectron in Electron
@@ -239,7 +244,15 @@ func (a *Astilectron) execute() (err error) {
 	cmd.Stderr = a.stderrWriter
 	cmd.Stdout = a.stdoutWriter
 
-	// Start command
+	// Execute command
+	if err = a.executeCmd(cmd); err != nil {
+		return errors.Wrap(err, "executing cmd failed")
+	}
+	return
+}
+
+// executeCmd executes the command
+func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 	var e = synchronousFunc(a.canceller, a, func() {
 		// Start command
 		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
@@ -249,20 +262,7 @@ func (a *Astilectron) execute() (err error) {
 		}
 
 		// Watch command
-		go func() {
-			// Wait
-			cmd.Wait()
-
-			// Check the canceller to check whether it was a crash
-			if !a.canceller.Cancelled() {
-				astilog.Debug("App has crashed")
-				a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
-			} else {
-				astilog.Debug("App has closed")
-				a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
-			}
-			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
-		}()
+		go a.watchCmd(cmd)
 	}, EventNameAppEventReady)
 
 	// Update display pool
@@ -270,6 +270,22 @@ func (a *Astilectron) execute() (err error) {
 		a.displayPool.update(e.Displays)
 	}
 	return
+}
+
+// watchCmd watches the cmd execution
+func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
+	// Wait
+	cmd.Wait()
+
+	// Check the canceller to check whether it was a crash
+	if !a.canceller.Cancelled() {
+		astilog.Debug("App has crashed")
+		a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
+	} else {
+		astilog.Debug("App has closed")
+		a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
+	}
+	a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 }
 
 // Displays returns the displays
@@ -287,7 +303,9 @@ func (a *Astilectron) Close() {
 	astilog.Debug("Closing...")
 	a.canceller.Cancel()
 	a.dispatcher.close()
-	a.listener.Close()
+	if a.listener != nil {
+		a.listener.Close()
+	}
 	if a.reader != nil {
 		a.reader.close()
 	}

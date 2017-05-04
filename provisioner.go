@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 
 	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/os"
@@ -24,13 +23,13 @@ var (
 
 // Provisioner represents an object capable of provisioning Astilectron
 type Provisioner interface {
-	Provision(ctx context.Context, appName string, p Paths) error
+	Provision(ctx context.Context, appName, os string, p Paths) error
 }
 
 // mover is a function that moves a package
 type mover func(ctx context.Context, p Paths) error
 
-// Default provisioner
+// DefaultProvisioner represents the default provisioner
 var DefaultProvisioner = &defaultProvisioner{
 	moverAstilectron: func(ctx context.Context, p Paths) (err error) {
 		if err = Download(ctx, defaultHTTPClient, p.AstilectronDownloadSrc(), p.AstilectronDownloadDst()); err != nil {
@@ -54,7 +53,7 @@ type defaultProvisioner struct {
 
 // Provision implements the provisioner interface
 // TODO Package app using electron instead of downloading Electron + Astilectron separately
-func (p *defaultProvisioner) Provision(ctx context.Context, appName string, paths Paths) (err error) {
+func (p *defaultProvisioner) Provision(ctx context.Context, appName, os string, paths Paths) (err error) {
 	// Retrieve provision status
 	var s ProvisionStatus
 	if s, err = p.ProvisionStatus(paths); err != nil {
@@ -71,7 +70,7 @@ func (p *defaultProvisioner) Provision(ctx context.Context, appName string, path
 	s.Astilectron = &ProvisionStatusPackage{Version: versionAstilectron}
 
 	// Provision electron
-	if err = p.provisionElectron(ctx, paths, s, appName); err != nil {
+	if err = p.provisionElectron(ctx, paths, s, appName, os); err != nil {
 		err = errors.Wrap(err, "provisioning electron failed")
 		return
 	}
@@ -136,9 +135,9 @@ func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Pat
 }
 
 // provisionElectron provisions electron
-func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName string) error {
+func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName, os string) error {
 	return p.provisionPackage(ctx, paths, s.Electron, p.moverElectron, "Electron", versionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
-		switch runtime.GOOS {
+		switch os {
 		case "darwin":
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
 				return errors.Wrap(err, "finishing provisioning electron for darwin systems failed")
@@ -279,14 +278,14 @@ func (p *defaultProvisioner) provisionElectronFinishDarwinRename(appName string,
 	var helperNP = filepath.Join(frameworksDirectory, appName+" Helper NP.app")
 	var helper = filepath.Join(frameworksDirectory, appName+" Helper.app")
 	for _, r := range []rename{
-		rename{src: filepath.Join(paths.electronDirectory, "Electron.app"), dst: appDirectory},
-		rename{src: filepath.Join(appDirectory, "Contents", "MacOS", "Electron"), dst: paths.AppExecutable()},
-		rename{src: filepath.Join(frameworksDirectory, "Electron Helper EH.app"), dst: helperEH},
-		rename{src: filepath.Join(helperEH, "Contents", "MacOS", "Electron Helper EH"), dst: filepath.Join(helperEH, "Contents", "MacOS", appName+" Helper EH")},
-		rename{src: filepath.Join(frameworksDirectory, "Electron Helper NP.app"), dst: filepath.Join(helperNP)},
-		rename{src: filepath.Join(helperNP, "Contents", "MacOS", "Electron Helper NP"), dst: filepath.Join(helperNP, "Contents", "MacOS", appName+" Helper NP")},
-		rename{src: filepath.Join(frameworksDirectory, "Electron Helper.app"), dst: filepath.Join(helper)},
-		rename{src: filepath.Join(helper, "Contents", "MacOS", "Electron Helper"), dst: filepath.Join(helper, "Contents", "MacOS", appName+" Helper")},
+		{src: filepath.Join(paths.electronDirectory, "Electron.app"), dst: appDirectory},
+		{src: filepath.Join(appDirectory, "Contents", "MacOS", "Electron"), dst: paths.AppExecutable()},
+		{src: filepath.Join(frameworksDirectory, "Electron Helper EH.app"), dst: helperEH},
+		{src: filepath.Join(helperEH, "Contents", "MacOS", "Electron Helper EH"), dst: filepath.Join(helperEH, "Contents", "MacOS", appName+" Helper EH")},
+		{src: filepath.Join(frameworksDirectory, "Electron Helper NP.app"), dst: filepath.Join(helperNP)},
+		{src: filepath.Join(helperNP, "Contents", "MacOS", "Electron Helper NP"), dst: filepath.Join(helperNP, "Contents", "MacOS", appName+" Helper NP")},
+		{src: filepath.Join(frameworksDirectory, "Electron Helper.app"), dst: filepath.Join(helper)},
+		{src: filepath.Join(helper, "Contents", "MacOS", "Electron Helper"), dst: filepath.Join(helper, "Contents", "MacOS", appName+" Helper")},
 	} {
 		astilog.Debugf("Renaming %s into %s", r.src, r.dst)
 		if err = os.Rename(r.src, r.dst); err != nil {

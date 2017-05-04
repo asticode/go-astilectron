@@ -45,12 +45,11 @@ func (r *reader) read() {
 		var b []byte
 		var err error
 		if b, err = reader.ReadBytes('\n'); err != nil {
-			if r.isEOFErr(err) {
-				return
-			} else {
+			if !r.isEOFErr(err) {
 				astilog.Errorf("%s while reading", err)
 				continue
 			}
+			return
 		}
 		b = bytes.TrimSpace(b)
 		astilog.Debugf("Astilectron says: %s", b)
