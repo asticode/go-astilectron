@@ -31,6 +31,11 @@ var (
 	validOSes                = []string{"darwin", "linux", "windows"}
 )
 
+// App errors
+var (
+	ErrCancellerCancelled = errors.New("canceller.cancelled")
+)
+
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
 	canceller    *asticontext.Canceller
@@ -39,6 +44,7 @@ type Astilectron struct {
 	displayPool  *displayPool
 	identifier   *identifier
 	listener     net.Listener
+	options      Options
 	paths        *Paths
 	provisioner  Provisioner
 	reader       *reader
@@ -49,7 +55,10 @@ type Astilectron struct {
 
 // Options represents Astilectron options
 type Options struct {
-	BaseDirectoryPath string
+	AppName            string
+	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
+	AppIconDefaultPath string
+	BaseDirectoryPath  string
 }
 
 // New creates a new Astilectron instance
@@ -65,11 +74,12 @@ func New(o Options) (a *Astilectron, err error) {
 		dispatcher:  newDispatcher(),
 		displayPool: newDisplayPool(),
 		identifier:  newIdentifier(),
+		options:     o,
 		provisioner: DefaultProvisioner,
 	}
 
 	// Set paths
-	if a.paths, err = newPaths(o.BaseDirectoryPath); err != nil {
+	if a.paths, err = newPaths(o); err != nil {
 		err = errors.Wrap(err, "creating new paths failed")
 		return
 	}
@@ -142,11 +152,14 @@ func (a *Astilectron) Start() (err error) {
 
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
+	// Init
 	astilog.Debug("Provisioning...")
 	a.dispatcher.dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
 	defer a.dispatcher.dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
+
+	// Provision
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, *a.paths)
+	return a.provisioner.Provision(ctx, a.options.AppName, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -220,7 +233,7 @@ func (a *Astilectron) execute() (err error) {
 
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
-	var cmd = exec.CommandContext(ctx, a.paths.ElectronExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
+	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
 	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Errorf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
@@ -253,7 +266,9 @@ func (a *Astilectron) execute() (err error) {
 	}, EventNameAppEventReady)
 
 	// Update display pool
-	a.displayPool.update(e.Displays)
+	if e.Displays != nil {
+		a.displayPool.update(e.Displays)
+	}
 	return
 }
 

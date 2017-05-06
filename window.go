@@ -81,6 +81,14 @@ func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err er
 	}
 	w.ctx, w.cancel = context.WithCancel(context.Background())
 
+	// Check app details
+	if o.Icon == nil && a.options.AppIconDefaultPath != "" {
+		o.Icon = PtrStr(a.options.AppIconDefaultPath)
+	}
+	if o.Title == nil && a.options.AppName != "" {
+		o.Title = PtrStr(a.options.AppName)
+	}
+
 	// Make sure the window's context is cancelled once the closed event is received
 	w.On(EventNameWindowEventClosed, func(e Event) (deleteListener bool) {
 		w.cancel()
@@ -114,9 +122,9 @@ func (a *Astilectron) NewWindowInDisplay(url string, o *WindowOptions, d *Displa
 // isActionable checks whether any type of action is allowed on the window
 func (w *Window) isActionable() error {
 	if w.isWindowDestroyed() {
-		return errors.New("window has been destroyed")
+		return ErrWindowDestroyed
 	} else if w.c.Cancelled() {
-		return errors.New("canceller has been cancelled")
+		return ErrCancellerCancelled
 	}
 	return nil
 }

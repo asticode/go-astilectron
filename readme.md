@@ -1,4 +1,4 @@
-Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS (powered by Electron). It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
+Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
 # Quick start
 
@@ -14,7 +14,12 @@ To import `go-astilectron` run:
 
 ```go
 // Initialize astilectron
-var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
+var a, _ = astilectron.New(astilectron.Options{
+    AppName: "<your app name>",
+    AppIconDefaultPath: "<your .png icon>",
+    AppIconDarwinPath:  "<your .icns icon>",
+    BaseDirectoryPath: "<where you want the provisioner to install the dependencies>",
+})
 defer a.Close()
 
 // Start astilectron
@@ -24,6 +29,8 @@ a.Start()
 For everything to work properly we need to fetch 2 dependencies : [astilectron](https://github.com/asticode/astilectron) and [Electron](https://github.com/electron/electron). `.Start()` takes care of it by downloading the sources and setting them up properly.
 
 In case you want to embed the sources in the binary to keep a unique binary you can use the **NewDisembedderProvisioner** function to get the proper **Provisioner** and attach it to `go-astilectron` with `.SetProvisioner(p Provisioner)`. Check out the [example](https://github.com/asticode/go-astilectron/tree/master/examples/5.single_binary_distribution/main.go) to see how to use it with [go-bindata](https://github.com/jteeuwen/go-bindata).
+
+Beware when trying to add your own app icon as you'll need 2 icons : one compatible with MacOSX (.icns) and one compatible with the rest (.png for instance).
 
 If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
 
@@ -36,13 +43,12 @@ The majority of methods are synchrone which means that when executing them `go-a
 var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
     Center: astilectron.PtrBool(true),
     Height: astilectron.PtrInt(600),
-    Icon:   astilectron.PtrStr(<your icon path>),
     Width:  astilectron.PtrInt(600),
 })
 w.Create()
 ```
     
-When creating a window you need to indicate a URL as well as options such as position, size, icon, etc.
+When creating a window you need to indicate a URL as well as options such as position, size, etc.
 
 This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers and used pointers in structs sent to Electron.
 
@@ -160,7 +166,12 @@ http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 go http.ListenAndServe("127.0.0.1:4000", nil)
 
 // Initialize astilectron
-var a, _ = astilectron.New(astilectron.Options{BaseDirectoryPath: "<where you want the provisioner to install the dependencies>"})
+var a, _ = astilectron.New(astilectron.Options{
+    AppName: "<your app name>",
+    AppIconDefaultPath: "<your .png icon>",
+    AppIconDarwinPath:  "<your .icns icon>",
+    BaseDirectoryPath: "<where you want the provisioner to install the dependencies>",
+})
 defer a.Close()
 
 // Handle quit
@@ -235,11 +246,11 @@ $ go generate examples/5.single_binary_distribution/main.go
 $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_distribution/vendor.go -v
 ```
 
-- [6.icons](https://github.com/asticode/go-astilectron/tree/master/examples/6.icons/main.go) show you how to add an icon to your window
-- [7.screens_and_displays](https://github.com/asticode/go-astilectron/tree/master/examples/7.screens_and_displays/main.go) plays around with screens and displays
+- [6.screens_and_displays](https://github.com/asticode/go-astilectron/tree/master/examples/6.screens_and_displays/main.go) plays around with screens and displays
 
 # Features and roadmap
 
+- [x] custom branding (custom app name, app icon, etc.)
 - [x] window basic methods (create, show, close, resize, minimize, maximize, ...)
 - [x] window basic events (close, blur, focus, unresponsive, crashed, ...)
 - [x] remote messaging (messages between GO and the JS in the webserver)

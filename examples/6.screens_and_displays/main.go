@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"net/http"
 	"os"
 	"time"
 
@@ -18,25 +17,18 @@ func main() {
 	// Set up logger
 	astilog.SetLogger(astilog.New(astilog.FlagConfig()))
 
-	// Start server
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<!DOCTYPE html>
-		<html lang="en">
-		<head>
-		    <meta charset="UTF-8">
-		    <title>Hello world</title>
-		</head>
-		<body>
-		    Hello world
-		</body>
-		</html>`))
-	})
-	go http.ListenAndServe("127.0.0.1:4000", nil)
+	// Get base dir path
+	var err error
+	var p = os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples"
 
 	// Create astilectron
 	var a *astilectron.Astilectron
-	var err error
-	if a, err = astilectron.New(astilectron.Options{BaseDirectoryPath: os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples"}); err != nil {
+	if a, err = astilectron.New(astilectron.Options{
+		AppName:            "Astilectron",
+		AppIconDefaultPath: p + "/gopher.png",
+		AppIconDarwinPath:  p + "/gopher.icns",
+		BaseDirectoryPath:  p,
+	}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "creating new astilectron failed"))
 	}
 	defer a.Close()
@@ -49,7 +41,7 @@ func main() {
 
 	// Create window in the primary display
 	var w *astilectron.Window
-	if w, err = a.NewWindowInDisplay("http://127.0.0.1:4000", &astilectron.WindowOptions{
+	if w, err = a.NewWindowInDisplay(p+"/index.html", &astilectron.WindowOptions{
 		Icon:   astilectron.PtrStr(os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples/6.icons/gopher.png"),
 		Height: astilectron.PtrInt(600),
 		Show:   astilectron.PtrBool(false),
