@@ -67,6 +67,7 @@ type WindowOptions struct {
 	Width                  *int    `json:"width,omitempty"`
 	X                      *int    `json:"x,omitempty"`
 	Y                      *int    `json:"y,omitempty"`
+	TitleBarStyle 	       *string `json:"titleBarStyle,omitempty"`
 }
 
 // NewWindow creates a new window
