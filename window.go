@@ -14,6 +14,13 @@ var (
 	ErrWindowDestroyed = errors.New("window.destroyed")
 )
 
+// Title bar styles
+var (
+    TitleBarStyleDefault     = PtrStr("default")
+    TitleBarStyleHidden      = PtrStr("hidden")
+    TitleBarStyleHiddenInset = PtrStr("hidden-inset")
+)
+
 // Window represents a window
 // TODO Add missing window options
 // TODO Add missing window methods
