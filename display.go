@@ -13,7 +13,7 @@ type DisplayOptions struct {
 	Bounds       *RectangleOptions `json:"bounds,omitempty"`
 	ID           *int              `json:"id,omitempty"`
 	Rotation     *int              `json:"rotation,omitempty"` // 0, 90, 180 or 270
-	ScaleFactor  *int              `json:"scaleFactor,omitempty"`
+	ScaleFactor  *float64          `json:"scaleFactor,omitempty"`
 	Size         *SizeOptions      `json:"size,omitempty"`
 	TouchSupport *string           `json:"touchSupport,omitempty"` // available, unavailable or unknown
 	WorkArea     *RectangleOptions `json:"workArea,omitempty"`
@@ -47,7 +47,7 @@ func (d Display) Rotation() int {
 }
 
 // ScaleFactor returns the display scale factor
-func (d Display) ScaleFactor() int {
+func (d Display) ScaleFactor() float64 {
 	return *d.o.ScaleFactor
 }
 
