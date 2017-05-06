@@ -16,7 +16,7 @@ type Size struct {
 	Height, Width int
 }
 
-// Size represents size options
+// SizeOptions represents size options
 type SizeOptions struct {
 	Height *int `json:"height,omitempty"`
 	Width  *int `json:"width,omitempty"`

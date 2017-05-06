@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os/user"
 	"path/filepath"
-	"runtime"
 
 	"github.com/pkg/errors"
 )
@@ -28,7 +27,7 @@ type Paths struct {
 }
 
 // newPaths creates new paths
-func newPaths(o Options) (p *Paths, err error) {
+func newPaths(os string, o Options) (p *Paths, err error) {
 	// Init base directory path
 	p = &Paths{}
 	if err = p.initBaseDirectory(o.BaseDirectoryPath); err != nil {
@@ -47,10 +46,10 @@ func newPaths(o Options) (p *Paths, err error) {
 	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", versionAstilectron))
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", versionAstilectron))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, "electron")
-	p.initElectronDownloadSrc()
+	p.initElectronDownloadSrc(os)
 	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", versionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
-	p.initAppExecutable(o.AppName)
+	p.initAppExecutable(os, o.AppName)
 	return
 }
 
@@ -93,8 +92,8 @@ func (p *Paths) initAstilectronDirectory() {
 
 // initElectronDownloadSrc initializes the electron download source path
 // TODO Handle all available links (32bits, 64bits, ...)
-func (p *Paths) initElectronDownloadSrc() {
-	switch runtime.GOOS {
+func (p *Paths) initElectronDownloadSrc(os string) {
+	switch os {
 	case "darwin":
 		p.electronDownloadSrc = fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-darwin-x64.zip", versionElectron, versionElectron)
 	case "linux":
@@ -105,8 +104,8 @@ func (p *Paths) initElectronDownloadSrc() {
 }
 
 // initAppExecutable initializes the app executable path
-func (p *Paths) initAppExecutable(appName string) {
-	switch runtime.GOOS {
+func (p *Paths) initAppExecutable(os, appName string) {
+	switch os {
 	case "darwin":
 		if appName == "" {
 			appName = "Electron"
@@ -184,7 +183,7 @@ func (p *Paths) ProvisionStatus() string {
 	return p.provisionStatus
 }
 
-// BaseDirectory returns the vendor directory path
+// VendorDirectory returns the vendor directory path
 func (p *Paths) VendorDirectory() string {
 	return p.vendorDirectory
 }

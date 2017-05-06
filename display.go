@@ -1,5 +1,6 @@
 package astilectron
 
+// Display represents a display
 // https://github.com/electron/electron/blob/v1.6.5/docs/api/structures/display.md
 type Display struct {
 	o       *DisplayOptions
