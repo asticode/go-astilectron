@@ -44,6 +44,13 @@ const (
 	EventNameWindowEventUnresponsive           = "window.event.unresponsive"
 )
 
+// Title bar styles
+var (
+	TitleBarStyleDefault     = PtrStr("default")
+	TitleBarStyleHidden      = PtrStr("hidden")
+	TitleBarStyleHiddenInset = PtrStr("hidden-inset")
+)
+
 // Window represents a window
 // TODO Add missing window options
 // TODO Add missing window methods
@@ -88,6 +95,7 @@ type WindowOptions struct {
 	Show                   *bool   `json:"show,omitempty"`
 	SkipTaskbar            *bool   `json:"skipTaskbar,omitempty"`
 	Title                  *string `json:"title,omitempty"`
+	TitleBarStyle          *string `json:"titleBarStyle,omitempty"`
 	Transparent            *bool   `json:"transparent,omitempty"`
 	UseContentSize         *bool   `json:"useContentSize,omitempty"`
 	Width                  *int    `json:"width,omitempty"`
