@@ -16,9 +16,9 @@ var (
 
 // Title bar styles
 var (
-    TitleBarStyleDefault     = PtrStr("default")
-    TitleBarStyleHidden      = PtrStr("hidden")
-    TitleBarStyleHiddenInset = PtrStr("hidden-inset")
+    	TitleBarStyleDefault     = PtrStr("default")
+    	TitleBarStyleHidden      = PtrStr("hidden")
+    	TitleBarStyleHiddenInset = PtrStr("hidden-inset")
 )
 
 // Window represents a window
@@ -69,12 +69,12 @@ type WindowOptions struct {
 	Show                   *bool   `json:"show,omitempty"`
 	SkipTaskbar            *bool   `json:"skipTaskbar,omitempty"`
 	Title                  *string `json:"title,omitempty"`
+	TitleBarStyle 	       *string `json:"titleBarStyle,omitempty"`
 	Transparent            *bool   `json:"transparent,omitempty"`
 	UseContentSize         *bool   `json:"useContentSize,omitempty"`
 	Width                  *int    `json:"width,omitempty"`
 	X                      *int    `json:"x,omitempty"`
 	Y                      *int    `json:"y,omitempty"`
-	TitleBarStyle 	       *string `json:"titleBarStyle,omitempty"`
 }
 
 // NewWindow creates a new window
