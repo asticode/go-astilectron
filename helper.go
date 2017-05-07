@@ -112,6 +112,11 @@ func PtrBool(i bool) *bool {
 	return &i
 }
 
+// PtrFloat transforms a float64 into a *float64
+func PtrFloat(i float64) *float64 {
+	return &i
+}
+
 // PtrInt transforms an int into an *int
 func PtrInt(i int) *int {
 	return &i
