@@ -1,5 +1,12 @@
 package astilectron
 
+// Display event names
+const (
+	EventNameDisplayEventAdded          = "display.event.added"
+	EventNameDisplayEventMetricsChanged = "display.event.metrics.changed"
+	EventNameDisplayEventRemoved        = "display.event.removed"
+)
+
 // Display represents a display
 // https://github.com/electron/electron/blob/v1.6.5/docs/api/structures/display.md
 type Display struct {

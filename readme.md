@@ -130,11 +130,104 @@ NOTE: needless to say that the message can be something other than a string. A c
 var displays = a.Displays()
 if len(displays) > 1 {
     time.Sleep(time.Second)
-    if err = w.MoveInDisplay(displays[1], 50, 50); err != nil {
-        astilog.Fatal(errors.Wrap(err, "moving window to second display failed"))
-    }
+    w.MoveInDisplay(displays[1], 50, 50)
 }
 ```
+
+### Menus
+
+```go
+// Init a new app menu
+// You can do the same thing with a window
+var m = a.NewMenu([]*astilectron.MenuItemOptions{
+    {
+        Label: astilectron.PtrStr("Separator"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Normal 1")},
+            {Label: astilectron.PtrStr("Normal 2")},
+            {Type: astilectron.MenuItemTypeSeparator},
+            {Label: astilectron.PtrStr("Normal 3")},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Checkbox"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Checked: astilectron.PtrBool(true), Label: astilectron.PtrStr("Checkbox 1"), Type: astilectron.MenuItemTypeCheckbox},
+            {Label: astilectron.PtrStr("Checkbox 2"), Type: astilectron.MenuItemTypeCheckbox},
+            {Label: astilectron.PtrStr("Checkbox 3"), Type: astilectron.MenuItemTypeCheckbox},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Radio"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Checked: astilectron.PtrBool(true), Label: astilectron.PtrStr("Radio 1"), Type: astilectron.MenuItemTypeRadio},
+            {Label: astilectron.PtrStr("Radio 2"), Type: astilectron.MenuItemTypeRadio},
+            {Label: astilectron.PtrStr("Radio 3"), Type: astilectron.MenuItemTypeRadio},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Roles"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
+            {Label: astilectron.PtrStr("Close"), Role: astilectron.MenuItemRoleClose},
+        },
+    },
+})
+
+// Retrieve a menu item
+// This will retrieve the "Checkbox 2" item
+mi, _ := m.Item(1, 0)
+
+// Add listener
+mi.On(astilectron.EventNameMenuItemEventClicked, func(e astilectron.Event) bool {
+    astilog.Infof("Menu item has been clicked. 'Checked' status is now %t", *e.MenuItemOptions.Checked)
+    return false
+})
+
+// Create the menu
+m.Create()
+
+// Manipulate a menu item
+mi.SetChecked(true)
+
+// Init a new menu item
+var ni = m.NewItem(&astilectron.MenuItemOptions{
+    Label: astilectron.PtrStr("Inserted"),
+    SubMenu: []*astilectron.MenuItemOptions{
+        {Label: astilectron.PtrStr("Inserted 1")},
+        {Label: astilectron.PtrStr("Inserted 2")},
+    },
+})
+
+// Insert the menu item at position "1"
+m.Insert(1, ni)
+
+// Fetch a sub menu
+s, _ := m.SubMenu(0)
+
+// Init a new menu item
+ni = s.NewItem(&astilectron.MenuItemOptions{
+    Label: astilectron.PtrStr("Appended"),
+    SubMenu: []*astilectron.MenuItemOptions{
+        {Label: astilectron.PtrStr("Appended 1")},
+        {Label: astilectron.PtrStr("Appended 2")},
+    },
+})
+
+// Append menu item dynamically
+s.Append(ni)
+
+// Pop up sub menu as a context menu
+s.Popup(&astilectron.MenuPopupOptions{PositionOptions: astilectron.PositionOptions{X: astilectron.PtrInt(50), Y: astilectron.PtrInt(50)}})
+
+// Close popup
+s.ClosePopup()
+```
+
+A few things to know:
+
+* when assigning a role to a menu item, `go-astilectron` won't be able to capture its click event
+* on MacOS there's no such thing as a window menu, only app menus therefore my advice is to stick to one global app menu instead of creating separate window menus
 
 ### Final code
 
@@ -188,6 +281,56 @@ a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bo
 // Start astilectron: this will download and set up the dependencies, and start the Electron app
 a.Start()
 
+// Init a new app menu
+// You can do the same thing with a window
+var m = a.NewMenu([]*astilectron.MenuItemOptions{
+    {
+        Label: astilectron.PtrStr("Separator"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Normal 1")},
+            {Label: astilectron.PtrStr("Normal 2")},
+            {Type: astilectron.MenuItemTypeSeparator},
+            {Label: astilectron.PtrStr("Normal 3")},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Checkbox"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Checked: astilectron.PtrBool(true), Label: astilectron.PtrStr("Checkbox 1"), Type: astilectron.MenuItemTypeCheckbox},
+            {Label: astilectron.PtrStr("Checkbox 2"), Type: astilectron.MenuItemTypeCheckbox},
+            {Label: astilectron.PtrStr("Checkbox 3"), Type: astilectron.MenuItemTypeCheckbox},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Radio"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Checked: astilectron.PtrBool(true), Label: astilectron.PtrStr("Radio 1"), Type: astilectron.MenuItemTypeRadio},
+            {Label: astilectron.PtrStr("Radio 2"), Type: astilectron.MenuItemTypeRadio},
+            {Label: astilectron.PtrStr("Radio 3"), Type: astilectron.MenuItemTypeRadio},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Roles"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
+            {Label: astilectron.PtrStr("Close"), Role: astilectron.MenuItemRoleClose},
+        },
+    },
+})
+
+// Retrieve a menu item
+// This will retrieve the "Checkbox 2" item
+mi, _ := m.Item(1, 0)
+
+// Add listener
+mi.On(astilectron.EventNameMenuItemEventClicked, func(e astilectron.Event) bool {
+    astilog.Infof("Menu item has been clicked. 'Checked' status is now %t", *e.MenuItemOptions.Checked)
+    return false
+})
+
+// Create the menu
+m.Create()
+
 // Create a new window with a listener on resize
 var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
     Center: astilectron.PtrBool(true),
@@ -216,14 +359,53 @@ w.Maximize()
 var displays = a.Displays()
 if len(displays) > 1 {
     time.Sleep(time.Second)
-    if err = w.MoveInDisplay(displays[1], 50, 50); err != nil {
-        astilog.Fatal(errors.Wrap(err, "moving window to second display failed"))
-    }
+    w.MoveInDisplay(displays[1], 50, 50)
 }
 
 // Send a message to the server
 time.Sleep(time.Second)
 w.Send("What's up?")
+
+// Manipulate a menu item
+time.Sleep(time.Second)
+mi.SetChecked(true)
+
+// Init a new menu item
+var ni = m.NewItem(&astilectron.MenuItemOptions{
+    Label: astilectron.PtrStr("Inserted"),
+    SubMenu: []*astilectron.MenuItemOptions{
+        {Label: astilectron.PtrStr("Inserted 1")},
+        {Label: astilectron.PtrStr("Inserted 2")},
+    },
+})
+
+// Insert the menu item at position "1"
+time.Sleep(time.Second)
+m.Insert(1, ni)
+
+// Fetch a sub menu
+s, _ := m.SubMenu(0)
+
+// Init a new menu item
+ni = s.NewItem(&astilectron.MenuItemOptions{
+    Label: astilectron.PtrStr("Appended"),
+    SubMenu: []*astilectron.MenuItemOptions{
+        {Label: astilectron.PtrStr("Appended 1")},
+        {Label: astilectron.PtrStr("Appended 2")},
+    },
+})
+
+// Append menu item dynamically
+time.Sleep(time.Second)
+s.Append(ni)
+
+// Pop up sub menu as a context menu
+time.Sleep(time.Second)
+s.Popup(&astilectron.MenuPopupOptions{PositionOptions: astilectron.PositionOptions{X: astilectron.PtrInt(50), Y: astilectron.PtrInt(50)}})
+
+// Close popup
+time.Sleep(time.Second)
+s.ClosePopup()
 
 // Blocking pattern
 a.Wait()
@@ -251,6 +433,7 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 ```
 
 - [6.screens_and_displays](https://github.com/asticode/go-astilectron/tree/master/examples/6.screens_and_displays/main.go) plays around with screens and displays
+- [7.menus](https://github.com/asticode/go-astilectron/tree/master/examples/7.menus/main.go) creates and manipulates menus
 
 # Features and roadmap
 
@@ -260,8 +443,14 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 - [x] remote messaging (messages between GO and the JS in the webserver)
 - [x] single binary distribution
 - [x] multi screens/displays
-- [ ] menu methods
-- [ ] menu events
+- [x] menu methods and events (create, insert, append, popup, clicked, ...)
+- [ ] accelerators (shortcuts)
+- [ ] dialogs (open or save file, alerts, ...)
+- [ ] file methods (drag & drop, ...)
+- [ ] clipboard methods
+- [ ] power monitor events (suspend, resume, ...)
+- [ ] notifications (macosx)
+- [ ] desktop capturer (audio and video)
 - [ ] session methods
 - [ ] session events
 - [ ] window advanced options (add missing ones)

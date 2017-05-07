@@ -1,7 +1,6 @@
 package astilectron
 
 import (
-	"context"
 	"net/url"
 
 	"github.com/asticode/go-astitools/context"
@@ -9,9 +8,40 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Window errors
-var (
-	ErrWindowDestroyed = errors.New("window.destroyed")
+// Window event names
+const (
+	EventNameWindowCmdBlur                     = "window.cmd.blur"
+	EventNameWindowCmdCenter                   = "window.cmd.center"
+	EventNameWindowCmdClose                    = "window.cmd.close"
+	EventNameWindowCmdCreate                   = "window.cmd.create"
+	EventNameWindowCmdDestroy                  = "window.cmd.destroy"
+	EventNameWindowCmdFocus                    = "window.cmd.focus"
+	EventNameWindowCmdHide                     = "window.cmd.hide"
+	EventNameWindowCmdMaximize                 = "window.cmd.maximize"
+	EventNameWindowCmdMessage                  = "window.cmd.message"
+	EventNameWindowCmdMinimize                 = "window.cmd.minimize"
+	EventNameWindowCmdMove                     = "window.cmd.move"
+	EventNameWindowCmdResize                   = "window.cmd.resize"
+	EventNameWindowCmdRestore                  = "window.cmd.restore"
+	EventNameWindowCmdShow                     = "window.cmd.show"
+	EventNameWindowCmdUnmaximize               = "window.cmd.unmaximize"
+	EventNameWindowCmdWebContentsCloseDevTools = "window.cmd.web.contents.close.dev.tools"
+	EventNameWindowCmdWebContentsOpenDevTools  = "window.cmd.web.contents.open.dev.tools"
+	EventNameWindowEventBlur                   = "window.event.blur"
+	EventNameWindowEventClosed                 = "window.event.closed"
+	EventNameWindowEventDidFinishLoad          = "window.event.did.finish.load"
+	EventNameWindowEventFocus                  = "window.event.focus"
+	EventNameWindowEventHide                   = "window.event.hide"
+	EventNameWindowEventMaximize               = "window.event.maximize"
+	EventNameWindowEventMessage                = "window.event.message"
+	EventNameWindowEventMinimize               = "window.event.minimize"
+	EventNameWindowEventMove                   = "window.event.move"
+	EventNameWindowEventReadyToShow            = "window.event.ready.to.show"
+	EventNameWindowEventResize                 = "window.event.resize"
+	EventNameWindowEventRestore                = "window.event.restore"
+	EventNameWindowEventShow                   = "window.event.show"
+	EventNameWindowEventUnmaximize             = "window.event.unmaximize"
+	EventNameWindowEventUnresponsive           = "window.event.unresponsive"
 )
 
 // Window represents a window
@@ -19,14 +49,10 @@ var (
 // TODO Add missing window methods
 // TODO Add missing window events
 type Window struct {
-	cancel context.CancelFunc
-	ctx    context.Context
-	c      *asticontext.Canceller
-	d      *dispatcher
-	id     string
-	o      *WindowOptions
-	url    *url.URL
-	w      *writer
+	*object
+	m   *Menu
+	o   *WindowOptions
+	url *url.URL
 }
 
 // WindowOptions represents window options
@@ -69,24 +95,20 @@ type WindowOptions struct {
 	Y                      *int    `json:"y,omitempty"`
 }
 
-// NewWindow creates a new window
-func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err error) {
+// newWindow creates a new window
+func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
 	// Init
 	w = &Window{
-		c:  a.canceller,
-		d:  a.dispatcher,
-		id: a.identifier.new(),
-		o:  o,
-		w:  a.writer,
+		o:      wo,
+		object: newObject(nil, c, d, i, wrt),
 	}
-	w.ctx, w.cancel = context.WithCancel(context.Background())
 
 	// Check app details
-	if o.Icon == nil && a.options.AppIconDefaultPath != "" {
-		o.Icon = PtrStr(a.options.AppIconDefaultPath)
+	if wo.Icon == nil && o.AppIconDefaultPath != "" {
+		wo.Icon = PtrStr(o.AppIconDefaultPath)
 	}
-	if o.Title == nil && a.options.AppName != "" {
-		o.Title = PtrStr(a.options.AppName)
+	if wo.Title == nil && o.AppName != "" {
+		wo.Title = PtrStr(o.AppName)
 	}
 
 	// Make sure the window's context is cancelled once the closed event is received
@@ -103,40 +125,10 @@ func (a *Astilectron) NewWindow(url string, o *WindowOptions) (w *Window, err er
 	return
 }
 
-// NewWindowInDisplay creates a new window in a specific display
-// This overrides the center attribute
-func (a *Astilectron) NewWindowInDisplay(url string, o *WindowOptions, d *Display) (*Window, error) {
-	if o.X != nil {
-		*o.X += d.Bounds().X
-	} else {
-		o.X = PtrInt(d.Bounds().X)
-	}
-	if o.Y != nil {
-		*o.Y += d.Bounds().Y
-	} else {
-		o.Y = PtrInt(d.Bounds().Y)
-	}
-	return a.NewWindow(url, o)
-}
-
-// isActionable checks whether any type of action is allowed on the window
-func (w *Window) isActionable() error {
-	if w.isWindowDestroyed() {
-		return ErrWindowDestroyed
-	} else if w.c.Cancelled() {
-		return ErrCancellerCancelled
-	}
-	return nil
-}
-
-// isWindowDestroyed checks whether the window has been destroyed
-func (w *Window) isWindowDestroyed() bool {
-	return w.ctx.Err() != nil
-}
-
-// On implements the Listenable interface
-func (w *Window) On(eventName string, l Listener) {
-	w.d.addListener(w.id, eventName, l)
+// NewMenu creates a new windows menu
+func (w *Window) NewMenu(i []*MenuItemOptions) *Menu {
+	w.m = newMenu(w.ctx, w, i, w.c, w.d, w.i, w.w)
+	return w.m
 }
 
 // Blur blurs the window

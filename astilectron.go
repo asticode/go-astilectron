@@ -19,21 +19,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Constants
+// Versions
 const (
-	versionAstilectron = "0.2.0"
+	versionAstilectron = "0.3.0"
 	versionElectron    = "1.6.5"
 )
 
-// Vars
+// Misc vars
 var (
 	astilectronDirectoryPath = flag.String("astilectron-directory-path", "", "the astilectron directory path")
 	validOSes                = []string{"darwin", "linux", "windows"}
 )
 
-// App errors
-var (
-	ErrCancellerCancelled = errors.New("canceller.cancelled")
+// App event names
+const (
+	EventNameAppEventReady    = "app.event.ready"
+	EventNameAppClose         = "app.close"
+	EventNameAppCmdStop       = "app.cmd.stop"
+	EventNameAppCrash         = "app.crash"
+	EventNameAppErrorAccept   = "app.error.accept"
+	EventNameAppNoAccept      = "app.no.accept"
+	EventNameAppTooManyAccept = "app.too.many.accept"
+	EventNameProvisionStart   = "provision.start"
+	EventNameProvisionDone    = "provision.done"
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
@@ -44,6 +52,7 @@ type Astilectron struct {
 	displayPool  *displayPool
 	identifier   *identifier
 	listener     net.Listener
+	menu         *Menu
 	options      Options
 	paths        *Paths
 	provisioner  Provisioner
@@ -288,16 +297,6 @@ func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
 	a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 }
 
-// Displays returns the displays
-func (a *Astilectron) Displays() []*Display {
-	return a.displayPool.all()
-}
-
-// PrimaryDisplay returns the primary display
-func (a *Astilectron) PrimaryDisplay() *Display {
-	return a.displayPool.primary()
-}
-
 // Close closes Astilectron properly
 func (a *Astilectron) Close() {
 	astilog.Debug("Closing...")
@@ -350,4 +349,41 @@ func (a *Astilectron) Wait() {
 			return
 		}
 	}
+}
+
+// Displays returns the displays
+func (a *Astilectron) Displays() []*Display {
+	return a.displayPool.all()
+}
+
+// PrimaryDisplay returns the primary display
+func (a *Astilectron) PrimaryDisplay() *Display {
+	return a.displayPool.primary()
+}
+
+// NewMenu creates a new app menu
+func (a *Astilectron) NewMenu(i []*MenuItemOptions) *Menu {
+	a.menu = newMenu(nil, a, i, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return a.menu
+}
+
+// NewWindow creates a new window
+func (a *Astilectron) NewWindow(url string, o *WindowOptions) (*Window, error) {
+	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
+}
+
+// NewWindowInDisplay creates a new window in a specific display
+// This overrides the center attribute
+func (a *Astilectron) NewWindowInDisplay(d *Display, url string, o *WindowOptions) (*Window, error) {
+	if o.X != nil {
+		*o.X += d.Bounds().X
+	} else {
+		o.X = PtrInt(d.Bounds().X)
+	}
+	if o.Y != nil {
+		*o.Y += d.Bounds().Y
+	} else {
+		o.Y = PtrInt(d.Bounds().Y)
+	}
+	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
