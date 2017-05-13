@@ -175,7 +175,7 @@ var m = a.NewMenu([]*astilectron.MenuItemOptions{
 })
 
 // Retrieve a menu item
-// This will retrieve the "Checkbox 2" item
+// This will retrieve the "Checkbox 1" item
 mi, _ := m.Item(1, 0)
 
 // Add listener
@@ -222,6 +222,9 @@ s.Popup(&astilectron.MenuPopupOptions{PositionOptions: astilectron.PositionOptio
 
 // Close popup
 s.ClosePopup()
+
+// Destroy the menu
+m.Destroy()
 ```
 
 A few things to know:
@@ -319,7 +322,7 @@ var m = a.NewMenu([]*astilectron.MenuItemOptions{
 })
 
 // Retrieve a menu item
-// This will retrieve the "Checkbox 2" item
+// This will retrieve the "Checkbox 1" item
 mi, _ := m.Item(1, 0)
 
 // Add listener
@@ -406,6 +409,10 @@ s.Popup(&astilectron.MenuPopupOptions{PositionOptions: astilectron.PositionOptio
 // Close popup
 time.Sleep(time.Second)
 s.ClosePopup()
+
+// Destroy the menu
+time.Sleep(time.Second)
+m.Destroy()
 
 // Blocking pattern
 a.Wait()
