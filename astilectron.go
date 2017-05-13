@@ -21,7 +21,7 @@ import (
 
 // Versions
 const (
-	versionAstilectron = "0.3.0"
+	versionAstilectron = "0.4.0"
 	versionElectron    = "1.6.5"
 )
 
@@ -52,7 +52,6 @@ type Astilectron struct {
 	displayPool  *displayPool
 	identifier   *identifier
 	listener     net.Listener
-	menu         *Menu
 	options      Options
 	paths        *Paths
 	provisioner  Provisioner
@@ -363,8 +362,7 @@ func (a *Astilectron) PrimaryDisplay() *Display {
 
 // NewMenu creates a new app menu
 func (a *Astilectron) NewMenu(i []*MenuItemOptions) *Menu {
-	a.menu = newMenu(nil, a, i, a.canceller, a.dispatcher, a.identifier, a.writer)
-	return a.menu
+	return newMenu(nil, a, i, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewWindow creates a new window

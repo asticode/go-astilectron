@@ -57,7 +57,6 @@ var (
 // TODO Add missing window events
 type Window struct {
 	*object
-	m   *Menu
 	o   *WindowOptions
 	url *url.URL
 }
@@ -133,10 +132,9 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 	return
 }
 
-// NewMenu creates a new windows menu
+// NewMenu creates a new window menu
 func (w *Window) NewMenu(i []*MenuItemOptions) *Menu {
-	w.m = newMenu(w.ctx, w, i, w.c, w.d, w.i, w.w)
-	return w.m
+	return newMenu(w.ctx, w, i, w.c, w.d, w.i, w.w)
 }
 
 // Blur blurs the window

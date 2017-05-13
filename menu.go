@@ -8,8 +8,10 @@ import (
 
 // Menu event names
 const (
-	EventNameMenuCmdCreate    = "menu.cmd.create"
-	EventNameMenuEventCreated = "menu.event.created"
+	EventNameMenuCmdCreate      = "menu.cmd.create"
+	EventNameMenuCmdDestroy     = "menu.cmd.destroy"
+	EventNameMenuEventCreated   = "menu.event.created"
+	EventNameMenuEventDestroyed = "menu.event.destroyed"
 )
 
 // Menu represents a menu
@@ -19,8 +21,16 @@ type Menu struct {
 }
 
 // newMenu creates a new menu
-func newMenu(ctx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) *Menu {
-	return &Menu{newSubMenu(ctx, root, items, c, d, i, w)}
+func newMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (m *Menu) {
+	// Init
+	m = &Menu{newSubMenu(parentCtx, root, items, c, d, i, w)}
+
+	// Make sure the menu's context is cancelled once the destroyed event is received
+	m.On(EventNameMenuEventDestroyed, func(e Event) (deleteListener bool) {
+		m.cancel()
+		return true
+	})
+	return
 }
 
 // toEvent returns the menu in the proper event format
@@ -34,5 +44,14 @@ func (m *Menu) Create() (err error) {
 		return
 	}
 	_, err = synchronousEvent(m.c, m, m.w, Event{Name: EventNameMenuCmdCreate, TargetID: m.id, Menu: m.toEvent()}, EventNameMenuEventCreated)
+	return
+}
+
+// Destroy destroys the menu
+func (m *Menu) Destroy() (err error) {
+	if err = m.isActionable(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(m.c, m, m.w, Event{Name: EventNameMenuCmdDestroy, TargetID: m.id, Menu: m.toEvent()}, EventNameMenuEventDestroyed)
 	return
 }
