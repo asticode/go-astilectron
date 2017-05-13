@@ -2,8 +2,9 @@ package astilectron
 
 import (
 	"fmt"
-	"os/user"
 	"path/filepath"
+
+	"os"
 
 	"github.com/pkg/errors"
 )
@@ -58,19 +59,13 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 	// No path specified in the options
 	p.baseDirectory = baseDirectoryPath
 	if len(p.baseDirectory) == 0 {
-		// Retrieve current user
-		var u *user.User
-		if u, err = user.Current(); err != nil {
-			err = errors.Wrap(err, "retrieving current user failed")
+		// Retrieve executable path
+		var ep string
+		if ep, err = os.Executable(); err != nil {
+			err = errors.Wrap(err, "retrieving executable path failed")
 			return
 		}
-
-		// Home directory is empty
-		p.baseDirectory = u.HomeDir
-		if len(p.baseDirectory) == 0 {
-			err = errors.New("home dir path is empty")
-			return
-		}
+		p.baseDirectory = filepath.Dir(ep)
 	}
 
 	// We need the absolute path

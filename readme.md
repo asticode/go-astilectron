@@ -36,7 +36,7 @@ In case you want to embed the sources in the binary to keep a unique binary you 
 
 Beware when trying to add your own app icon as you'll need 2 icons : one compatible with MacOSX (.icns) and one compatible with the rest (.png for instance).
 
-If no BaseDirectoryPath is provided, it defaults to the user's home directory path.
+If no BaseDirectoryPath is provided, it defaults to the executable's directory path.
 
 The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
 
