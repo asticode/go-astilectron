@@ -27,6 +27,9 @@ func TestDefaultProvisioner(t *testing.T) {
 	defer os.RemoveAll(o.BaseDirectoryPath)
 	var mh = &mockedHandler{}
 	var s = httptest.NewServer(mh)
+	var d = newDispatcher()
+	defer d.close()
+	go d.start()
 
 	// Test linux
 	p, err := newPaths("linux", o)
@@ -34,7 +37,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/linux"
-	err = DefaultProvisioner.Provision(context.Background(), "", "linux", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "linux", *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p)
 
@@ -42,7 +45,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	mh.e = true
 	os.Remove(p.AstilectronDownloadDst())
 	os.Remove(p.ElectronDownloadDst())
-	err = DefaultProvisioner.Provision(context.Background(), "", "linux", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "linux", *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p)
 
@@ -54,7 +57,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/windows"
-	err = DefaultProvisioner.Provision(context.Background(), "", "windows", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "windows", *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p)
 
@@ -65,7 +68,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = DefaultProvisioner.Provision(context.Background(), "", "darwin", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "darwin", *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p)
 
@@ -78,7 +81,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = DefaultProvisioner.Provision(context.Background(), o.AppName, "darwin", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, o.AppName, "darwin", *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p)
 	// Rename
@@ -121,13 +124,16 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	// Init
 	var o = Options{BaseDirectoryPath: mockedTempPath()}
 	defer os.RemoveAll(o.BaseDirectoryPath)
+	var d = newDispatcher()
+	defer d.close()
+	go d.start()
 	p, err := newPaths("linux", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux")
 
 	// Test provision
-	err = pvb.Provision(context.Background(), "", "linux", *p)
+	err = pvb.Provision(context.Background(), *d, "", "linux", *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p)
 }
