@@ -41,12 +41,12 @@ func main() {
 
 	// Create window in the primary display
 	var w *astilectron.Window
-	if w, err = a.NewWindowInDisplay(p+"/index.html", &astilectron.WindowOptions{
+	if w, err = a.NewWindowInDisplay(a.PrimaryDisplay(), p+"/index.html", &astilectron.WindowOptions{
 		Icon:   astilectron.PtrStr(os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples/6.icons/gopher.png"),
 		Height: astilectron.PtrInt(600),
 		Show:   astilectron.PtrBool(false),
 		Width:  astilectron.PtrInt(600),
-	}, a.PrimaryDisplay()); err != nil {
+	}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "new window failed"))
 	}
 	if err = w.Create(); err != nil {
