@@ -21,7 +21,7 @@ type Menu struct {
 }
 
 // newMenu creates a new menu
-func newMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (m *Menu) {
+func newMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (m *Menu) {
 	// Init
 	m = &Menu{newSubMenu(parentCtx, root, items, c, d, i, w)}
 

@@ -18,14 +18,14 @@ type object struct {
 	cancel context.CancelFunc
 	ctx    context.Context
 	c      *asticontext.Canceller
-	d      *dispatcher
+	d      *Dispatcher
 	i      *identifier
 	id     string
 	w      *writer
 }
 
 // newObject returns a new base object
-func newObject(parentCtx context.Context, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (o *object) {
+func newObject(parentCtx context.Context, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (o *object) {
 	o = &object{
 		c:  c,
 		d:  d,

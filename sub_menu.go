@@ -37,7 +37,7 @@ type subMenu struct {
 }
 
 // newSubMenu creates a new sub menu
-func newSubMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) *subMenu {
+func newSubMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) *subMenu {
 	// Init
 	var m = &subMenu{
 		object: newObject(parentCtx, c, d, i, w),

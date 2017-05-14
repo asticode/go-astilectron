@@ -93,7 +93,7 @@ type MenuItemOptions struct {
 }
 
 // newMenu creates a new menu item
-func newMenuItem(parentCtx context.Context, root interface{}, o *MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (m *MenuItem) {
+func newMenuItem(parentCtx context.Context, root interface{}, o *MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (m *MenuItem) {
 	m = &MenuItem{
 		o:      o,
 		object: newObject(parentCtx, c, d, i, w),

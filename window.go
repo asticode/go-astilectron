@@ -103,7 +103,7 @@ type WindowOptions struct {
 }
 
 // newWindow creates a new window
-func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
+func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
 	// Init
 	w = &Window{
 		o:      wo,

@@ -10,8 +10,8 @@ type listenable interface {
 	On(eventName string, l Listener)
 }
 
-// dispatcher represents a dispatcher
-type dispatcher struct {
+// Dispatcher represents an object capable of dispatching events
+type Dispatcher struct {
 	c  chan Event
 	cq chan bool
 	id int
@@ -23,8 +23,8 @@ type dispatcher struct {
 }
 
 // newDispatcher creates a new dispatcher
-func newDispatcher() *dispatcher {
-	return &dispatcher{
+func newDispatcher() *Dispatcher {
+	return &Dispatcher{
 		c:  make(chan Event),
 		cq: make(chan bool),
 		l:  make(map[string]map[string]map[int]Listener),
@@ -33,7 +33,7 @@ func newDispatcher() *dispatcher {
 }
 
 // addListener adds a listener
-func (d *dispatcher) addListener(targetID, eventName string, l Listener) {
+func (d *Dispatcher) addListener(targetID, eventName string, l Listener) {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
@@ -47,7 +47,7 @@ func (d *dispatcher) addListener(targetID, eventName string, l Listener) {
 }
 
 // close closes the dispatcher properly
-func (d *dispatcher) close() {
+func (d *Dispatcher) close() {
 	if d.cq != nil {
 		close(d.cq)
 		d.cq = nil
@@ -55,7 +55,7 @@ func (d *dispatcher) close() {
 }
 
 // delListener delete a specific listener
-func (d *dispatcher) delListener(targetID, eventName string, id int) {
+func (d *Dispatcher) delListener(targetID, eventName string, id int) {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
@@ -67,13 +67,13 @@ func (d *dispatcher) delListener(targetID, eventName string, id int) {
 	delete(d.l[targetID][eventName], id)
 }
 
-// dispatch dispatches an event
-func (d *dispatcher) dispatch(e Event) {
+// Dispatch dispatches an event
+func (d Dispatcher) Dispatch(e Event) {
 	d.c <- e
 }
 
 // start starts the dispatcher and listens to dispatched events
-func (d *dispatcher) start() {
+func (d *Dispatcher) start() {
 	for {
 		select {
 		case e := <-d.c:
@@ -89,7 +89,7 @@ func (d *dispatcher) start() {
 }
 
 // listeners returns the listeners for a target ID and an event name
-func (d *dispatcher) listeners(targetID, eventName string) map[int]Listener {
+func (d *Dispatcher) listeners(targetID, eventName string) map[int]Listener {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
