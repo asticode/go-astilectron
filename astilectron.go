@@ -33,15 +33,13 @@ var (
 
 // App event names
 const (
-	EventNameAppEventReady    = "app.event.ready"
 	EventNameAppClose         = "app.close"
 	EventNameAppCmdStop       = "app.cmd.stop"
 	EventNameAppCrash         = "app.crash"
 	EventNameAppErrorAccept   = "app.error.accept"
+	EventNameAppEventReady    = "app.event.ready"
 	EventNameAppNoAccept      = "app.no.accept"
 	EventNameAppTooManyAccept = "app.too.many.accept"
-	EventNameProvisionStart   = "provision.start"
-	EventNameProvisionDone    = "provision.done"
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
@@ -160,14 +158,9 @@ func (a *Astilectron) Start() (err error) {
 
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
-	// Init
 	astilog.Debug("Provisioning...")
-	a.dispatcher.Dispatch(Event{Name: EventNameProvisionStart, TargetID: mainTargetID})
-	defer a.dispatcher.Dispatch(Event{Name: EventNameProvisionDone, TargetID: mainTargetID})
-
-	// Provision
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, *a.paths)
+	return a.provisioner.Provision(ctx, *a.dispatcher, a.options.AppName, runtime.GOOS, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)

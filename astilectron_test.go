@@ -22,12 +22,12 @@ func TestAstilectron_Provision(t *testing.T) {
 	go a.dispatcher.start()
 	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux"))
 	var hasStarted, hasStopped bool
-	a.On(EventNameProvisionStart, func(e Event) bool {
+	a.On(EventNameProvisionAstilectronMoved, func(e Event) bool {
 		hasStarted = true
 		return false
 	})
 	var wg = &sync.WaitGroup{}
-	a.On(EventNameProvisionDone, func(e Event) bool {
+	a.On(EventNameProvisionElectronFinished, func(e Event) bool {
 		hasStopped = true
 		wg.Done()
 		return false
