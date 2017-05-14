@@ -177,7 +177,7 @@ func TestAstilectron_ExecuteCmd(t *testing.T) {
 		a.executeCmd(cmd)
 		wg.Done()
 	}()
-	a.dispatcher.dispatch(Event{Name: EventNameAppEventReady, Displays: &EventDisplays{All: []*DisplayOptions{{ID: PtrInt(1)}}, Primary: &DisplayOptions{ID: PtrInt(1)}}, TargetID: mainTargetID})
+	a.dispatcher.Dispatch(Event{Name: EventNameAppEventReady, Displays: &EventDisplays{All: []*DisplayOptions{{ID: PtrInt(1)}}, Primary: &DisplayOptions{ID: PtrInt(1)}}, TargetID: mainTargetID})
 	wg.Wait()
 	assert.Len(t, a.Displays(), 1)
 	assert.Equal(t, 1, *a.PrimaryDisplay().o.ID)
