@@ -40,6 +40,24 @@ If no BaseDirectoryPath is provided, it defaults to the executable's directory p
 
 The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
 
+### Loader
+
+Provisioning astilectron and electron can take quite some time during which the user doesn't really know what's happening, therefore if you need a way to reassure the user that everything is going according to plan you can use the **Loader**:
+
+```go
+// Start loader before starting astilectron
+var l = astiloader.NewForAstilectron(a)
+go l.Start()
+```
+
+This will display a native window using the awesome [ui](https://github.com/andlabs/ui) and containing a progress bar showing the progress. It will disappear once every steps are done.
+
+This is important not to execute `astiloader.NewForAstilectron(a)` in a go routine as all steps need to be registered before being able to `.Start()` properly.
+
+[ui](https://github.com/andlabs/ui) relies on C and unfortunately cross compilation when using **cgo** is a bitch. That's why the **Loader** has its own package and is not available by default. If you want to use the **Loader** you'll need to set up the proper cross-compilation toolchains.
+
+You can also add custom steps to the **Loader** using the `.Add()` and `.Done()` methods.
+
 ### Create a window
 
 ```go
@@ -281,6 +299,10 @@ a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bo
     return
 })
 
+// Start loader before starting astilectron
+var l = astiloader.NewForAstilectron(a)
+go l.Start()
+
 // Start astilectron: this will download and set up the dependencies, and start the Electron app
 a.Start()
 
@@ -441,6 +463,7 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 
 - [6.screens_and_displays](https://github.com/asticode/go-astilectron/tree/master/examples/6.screens_and_displays/main.go) plays around with screens and displays
 - [7.menus](https://github.com/asticode/go-astilectron/tree/master/examples/7.menus/main.go) creates and manipulates menus
+- [8.loader](https://github.com/asticode/go-astilectron/tree/master/examples/8.loader/main.go) displays a loader until the app is ready
 
 # Features and roadmap
 
@@ -451,6 +474,7 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 - [x] single binary distribution
 - [x] multi screens/displays
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)
+- [x] loader
 - [ ] accelerators (shortcuts)
 - [ ] dialogs (open or save file, alerts, ...)
 - [ ] file methods (drag & drop, ...)
