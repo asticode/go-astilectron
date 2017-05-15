@@ -1,6 +1,7 @@
 .idea/
 cover.*
 examples/5.single_binary_distribution/vendor.go
+examples/9.bootstrap/resources.go
 examples/test
 examples/vendor
 testdata/tmp/*
