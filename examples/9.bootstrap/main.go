@@ -31,7 +31,7 @@ func main() {
 			AppIconDefaultPath: p + "/gopher.png",
 			AppIconDarwinPath:  p + "/gopher.icns",
 		},
-		CustomProvision: func() error {
+		CustomProvision: func(baseDirectoryPath string) error {
 			astilog.Info("You can run your custom provisioning here!")
 			l.Done(1)
 			return nil

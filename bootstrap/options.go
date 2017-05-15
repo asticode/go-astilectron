@@ -10,6 +10,7 @@ import (
 // Options represents options
 type Options struct {
 	AstilectronOptions astilectron.Options
+	BaseDirectoryPath  string
 	CustomProvision    CustomProvision
 	Homepage           string
 	RestoreAssets      RestoreAssets
@@ -19,7 +20,7 @@ type Options struct {
 }
 
 // CustomProvision is a function that executes custom provisioning
-type CustomProvision func() error
+type CustomProvision func(baseDirectoryPath string) error
 
 // RestoreAssets is a function that restores assets namely the go-bindata's RestoreAssets method
 type RestoreAssets func(dir, name string) error
