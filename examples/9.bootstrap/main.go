@@ -26,6 +26,11 @@ func main() {
 	// Run bootstrap
 	var l *astiloader.Loader
 	if err := bootstrap.Run(bootstrap.Options{
+		AdaptRouter: func(r *httprouter.Router) {
+			r.GET("/custom/route", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+				w.Write([]byte("Custom route content"))
+			})
+		},
 		AstilectronOptions: astilectron.Options{
 			AppName:            "Astilectron",
 			AppIconDefaultPath: p + "/gopher.png",
