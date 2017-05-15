@@ -18,6 +18,11 @@ func Run(o Options) (err error) {
 	defer a.Close()
 	a.HandleSignals()
 
+	// Adapt astilectron
+	if o.AdaptAstilectron != nil {
+		o.AdaptAstilectron(a)
+	}
+
 	// Start loader
 	if o.StartLoader != nil {
 		o.StartLoader(a)
@@ -42,7 +47,7 @@ func Run(o Options) (err error) {
 	}
 
 	// Serve
-	var ln = serve(o.BaseDirectoryPath, o.TemplateData)
+	var ln = serve(o.BaseDirectoryPath, o.AdaptRouter, o.TemplateData)
 	defer ln.Close()
 
 	// Create window

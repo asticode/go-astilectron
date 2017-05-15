@@ -9,6 +9,8 @@ import (
 
 // Options represents options
 type Options struct {
+	AdaptAstilectron   AdaptAstilectron
+	AdaptRouter        AdaptRouter
 	AstilectronOptions astilectron.Options
 	BaseDirectoryPath  string
 	CustomProvision    CustomProvision
@@ -18,6 +20,12 @@ type Options struct {
 	TemplateData       TemplateData
 	WindowOptions      *astilectron.WindowOptions
 }
+
+// AdaptAstilectron is a function that adapts astilectron
+type AdaptAstilectron func(a *astilectron.Astilectron)
+
+// AdaptRouter is a function that adapts the router
+type AdaptRouter func(r *httprouter.Router)
 
 // CustomProvision is a function that executes custom provisioning
 type CustomProvision func(baseDirectoryPath string) error
