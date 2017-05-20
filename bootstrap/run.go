@@ -1,6 +1,9 @@
 package bootstrap
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/asticode/go-astilectron"
 	"github.com/pkg/errors"
 )
@@ -20,9 +23,16 @@ func Run(o Options) (err error) {
 		o.StartLoader(a)
 	}
 
+	// Base directory path default to executable path
+	if o.BaseDirectoryPath == "" {
+		if o.BaseDirectoryPath, err = os.Executable(); err != nil {
+			return errors.Wrap(err, "getting executable path failed")
+		}
+		o.BaseDirectoryPath = filepath.Dir(o.BaseDirectoryPath)
+	}
+
 	// Provision
-	var resourcesPath string
-	if resourcesPath, err = provision(o.RestoreAssets, o.CustomProvision); err != nil {
+	if err = provision(o.BaseDirectoryPath, o.RestoreAssets, o.CustomProvision); err != nil {
 		return errors.Wrap(err, "provisioning failed")
 	}
 
@@ -32,7 +42,7 @@ func Run(o Options) (err error) {
 	}
 
 	// Serve
-	var ln = serve(resourcesPath, o.TemplateData)
+	var ln = serve(o.BaseDirectoryPath, o.TemplateData)
 	defer ln.Close()
 
 	// Create window

@@ -18,19 +18,19 @@ var (
 )
 
 // serve initialize an HTTP server
-func serve(resourcesPath string, fn TemplateData) (ln net.Listener) {
+func serve(baseDirectoryPath string, fn TemplateData) (ln net.Listener) {
 	// Init router
 	var r = httprouter.New()
 
 	// Static files
-	r.ServeFiles("/static/*filepath", http.Dir(filepath.Join(resourcesPath, "static")))
+	r.ServeFiles("/static/*filepath", http.Dir(filepath.Join(baseDirectoryPath, "resources", "static")))
 
 	// Dynamic pages
 	r.GET("/templates/*page", handleTemplates(fn))
 
 	// Parse templates
 	var err error
-	if templates, err = astitemplate.ParseDirectory(filepath.Join(resourcesPath, "templates"), ".html"); err != nil {
+	if templates, err = astitemplate.ParseDirectory(filepath.Join(baseDirectoryPath, "resources", "templates"), ".html"); err != nil {
 		astilog.Fatal(err)
 	}
 
