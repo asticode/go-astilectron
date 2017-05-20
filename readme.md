@@ -440,6 +440,37 @@ m.Destroy()
 a.Wait()
 ```
 
+# Bootstrap
+
+For convenience purposes I've added a **bootstrap** to help first timers and avoid code duplications.
+
+NOTE: you DON'T have to use the bootstrap, it's entirely up to you whether to use it or not.
+
+The bootstrap allows you to quickly create a one-window application using .html templates.
+
+In order to use the **bootstrap** you must:
+
+- follow the following project organization:
+
+        |--+ resources
+              |
+              |--+ static (contains your static files such as .css, .js, .png, etc.)
+              |
+              |--+ templates (contains your templates .html files)
+        |--+ main.go
+    
+- add the following comment on top of your `main()` method:
+
+        //go:generate go-bindata -pkg $GOPACKAGE -o resources.go resources/...
+        
+    and run the following command before building your binary:
+
+        $ go generate main.go
+    
+- use the `bootstrap.Run()` method
+    
+Check out the [example](https://github.com/asticode/go-astilectron/tree/master/examples/9.bootstrap) for a detailed working example (see the **Examples** section below for the specific commands to run).
+
 # I want to see it in actions!
 
 To make things clearer I've tried to split features in different [examples](https://github.com/asticode/go-astilectron/tree/master/examples).
@@ -464,6 +495,12 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 - [6.screens_and_displays](https://github.com/asticode/go-astilectron/tree/master/examples/6.screens_and_displays/main.go) plays around with screens and displays
 - [7.menus](https://github.com/asticode/go-astilectron/tree/master/examples/7.menus/main.go) creates and manipulates menus
 - [8.loader](https://github.com/asticode/go-astilectron/tree/master/examples/8.loader/main.go) displays a loader until the app is ready
+- [9.bootstrap](https://github.com/asticode/go-astilectron/tree/master/examples/9.bootstrap) shows how to use the **bootstrap**. For this example you have to run the following commands:
+
+```
+$ go generate examples/9.bootstrap/main.go
+$ go run examples/9.bootstrap/main.go examples/9.bootstrap/resources.go -v
+```
 
 # Features and roadmap
 
@@ -475,6 +512,7 @@ $ go run examples/5.single_binary_distribution/main.go examples/5.single_binary_
 - [x] multi screens/displays
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)
 - [x] loader
+- [x] bootstrap
 - [ ] accelerators (shortcuts)
 - [ ] dialogs (open or save file, alerts, ...)
 - [ ] file methods (drag & drop, ...)
