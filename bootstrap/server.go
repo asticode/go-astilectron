@@ -18,7 +18,7 @@ var (
 )
 
 // serve initialize an HTTP server
-func serve(baseDirectoryPath string, fn TemplateData) (ln net.Listener) {
+func serve(baseDirectoryPath string, fnR AdaptRouter, fnT TemplateData) (ln net.Listener) {
 	// Init router
 	var r = httprouter.New()
 
@@ -26,7 +26,12 @@ func serve(baseDirectoryPath string, fn TemplateData) (ln net.Listener) {
 	r.ServeFiles("/static/*filepath", http.Dir(filepath.Join(baseDirectoryPath, "resources", "static")))
 
 	// Dynamic pages
-	r.GET("/templates/*page", handleTemplates(fn))
+	r.GET("/templates/*page", handleTemplates(fnT))
+
+	// Adapt router
+	if fnR != nil {
+		fnR(r)
+	}
 
 	// Parse templates
 	var err error

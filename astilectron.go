@@ -240,7 +240,7 @@ func (a *Astilectron) execute() (err error) {
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
 	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), a.paths.AstilectronApplication(), a.listener.Addr().String())
-	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Errorf("Stderr says: %s", i) })
+	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
 	cmd.Stdout = a.stdoutWriter
