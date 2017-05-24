@@ -7,7 +7,6 @@ import (
 
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilectron/bootstrap"
-	"github.com/asticode/go-astilectron/loader"
 	"github.com/asticode/go-astilog"
 	"github.com/julienschmidt/httprouter"
 )
@@ -24,7 +23,6 @@ func main() {
 	var p = os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples"
 
 	// Run bootstrap
-	var l *astiloader.Loader
 	if err := bootstrap.Run(bootstrap.Options{
 		AdaptRouter: func(r *httprouter.Router) {
 			r.GET("/custom/route", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -38,15 +36,10 @@ func main() {
 		},
 		CustomProvision: func(baseDirectoryPath string) error {
 			astilog.Info("You can run your custom provisioning here!")
-			l.Done(1)
 			return nil
 		},
 		Homepage:      "/templates/index",
 		RestoreAssets: RestoreAssets,
-		StartLoader: func(a *astilectron.Astilectron) {
-			l = astiloader.NewForAstilectron(a).Add(1)
-			go l.Start()
-		},
 		TemplateData: func(name string, r *http.Request, p httprouter.Params) (d interface{}, err error) {
 			switch name {
 			case "/index.html":
