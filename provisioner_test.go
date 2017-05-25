@@ -18,7 +18,7 @@ func testProvisionerSuccessful(t *testing.T, p Paths) {
 	assert.NoError(t, err)
 	b, err := ioutil.ReadFile(p.ProvisionStatus())
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"astilectron\":{\"version\":\""+versionAstilectron+"\"},\"electron\":{\"version\":\""+versionElectron+"\"}}\n", string(b))
+	assert.Equal(t, "{\"astilectron\":{\"version\":\""+VersionAstilectron+"\"},\"electron\":{\"version\":\""+VersionElectron+"\"}}\n", string(b))
 }
 
 func TestDefaultProvisioner(t *testing.T) {
@@ -32,7 +32,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	go d.start()
 
 	// Test linux
-	p, err := newPaths("linux", o)
+	p, err := newPaths("linux", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
@@ -52,7 +52,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	// Test windows
 	mh.e = false
 	os.RemoveAll(o.BaseDirectoryPath)
-	p, err = newPaths("windows", o)
+	p, err = newPaths("windows", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
@@ -63,7 +63,7 @@ func TestDefaultProvisioner(t *testing.T) {
 
 	// Test darwin without custom app name + icon
 	os.RemoveAll(o.BaseDirectoryPath)
-	p, err = newPaths("darwin", o)
+	p, err = newPaths("darwin", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
@@ -76,7 +76,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	os.RemoveAll(o.BaseDirectoryPath)
 	o.AppName = "Test app"
 	o.AppIconDarwinPath = "testdata/provisioner/icon.icns"
-	p, err = newPaths("darwin", o)
+	p, err = newPaths("darwin", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
@@ -127,7 +127,7 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	var d = newDispatcher()
 	defer d.close()
 	go d.start()
-	p, err := newPaths("linux", o)
+	p, err := newPaths("linux", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux")
