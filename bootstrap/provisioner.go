@@ -24,7 +24,7 @@ func provision(baseDirectoryPath string, fnA RestoreAssets, fnP CustomProvision)
 		err = errors.Wrapf(err, "stating %s failed", pr)
 		return
 	} else {
-		astilog.Debugf("%s already exists, skipping restoring assets...", baseDirectoryPath)
+		astilog.Debugf("%s already exists, skipping restoring assets...", pr)
 	}
 
 	// Custom provision
