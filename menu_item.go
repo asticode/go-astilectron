@@ -84,6 +84,7 @@ type MenuItemOptions struct {
 	Enabled  *bool              `json:"enabled,omitempty"`
 	Icon     *string            `json:"icon,omitempty"`
 	Label    *string            `json:"label,omitempty"`
+	OnClick  Listener           `json:"-"`
 	Position *string            `json:"position,omitempty"`
 	Role     *string            `json:"role,omitempty"`
 	SubLabel *string            `json:"sublabel,omitempty"`
@@ -98,6 +99,9 @@ func newMenuItem(parentCtx context.Context, root interface{}, o *MenuItemOptions
 		o:      o,
 		object: newObject(parentCtx, c, d, i, w),
 		root:   root,
+	}
+	if o.OnClick != nil {
+		m.On(EventNameMenuItemEventClicked, o.OnClick)
 	}
 	if len(o.SubMenu) > 0 {
 		m.s = &SubMenu{newSubMenu(parentCtx, root, o.SubMenu, c, d, i, w)}
