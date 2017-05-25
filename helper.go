@@ -122,6 +122,11 @@ func PtrInt(i int) *int {
 	return &i
 }
 
+// PtrInt64 transforms an int64 into an *int64
+func PtrInt64(i int64) *int64 {
+	return &i
+}
+
 // PtrStr transforms a string into a *string
 func PtrStr(i string) *string {
 	return &i

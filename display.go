@@ -18,7 +18,7 @@ type Display struct {
 // https://github.com/electron/electron/blob/v1.6.5/docs/api/structures/display.md
 type DisplayOptions struct {
 	Bounds       *RectangleOptions `json:"bounds,omitempty"`
-	ID           *int              `json:"id,omitempty"`
+	ID           *int64            `json:"id,omitempty"`
 	Rotation     *int              `json:"rotation,omitempty"` // 0, 90, 180 or 270
 	ScaleFactor  *float64          `json:"scaleFactor,omitempty"`
 	Size         *SizeOptions      `json:"size,omitempty"`
