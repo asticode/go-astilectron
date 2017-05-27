@@ -466,9 +466,25 @@ For convenience purposes I've added a **bootstrap** to help first timers and avo
 
 NOTE: you DON'T have to use the bootstrap, it's entirely up to you whether to use it or not.
 
-The bootstrap allows you to quickly create a one-window application using .html templates.
+The bootstrap allows you to quickly create a one-window application.
 
-In order to use the **bootstrap** you must:
+## Using static files and remote messaging (the best way)
+
+In order to use the **bootstrap** with static files and remote messaging you must:
+
+- follow the following project organization:
+
+        |--+ resources
+            |
+            |--+ app (contains your static files such as .html, .css, .js, .png, etc.)
+        |--+ main.go
+        
+- use the `MessageHandler` **bootstrap** option in order to handle remote messaging
+- use `remote messaging` in your static files
+
+## Using a web server
+
+In order to use the **bootstrap** with a web server you must:
 
 - follow the following project organization:
 
@@ -478,8 +494,11 @@ In order to use the **bootstrap** you must:
               |
               |--+ templates (contains your templates .html files)
         |--+ main.go
+- use the `AdaptRouter` and `TemplateData` **bootstrap** options in order to handle the server routes
     
-- add the following comment on top of your `main()` method:
+## Common
+    
+- if you're using the `RestoreAssets` **bootstrap** option, add the following comment on top of your `main()` method:
 
         //go:generate go-bindata -pkg $GOPACKAGE -o resources.go resources/...
         

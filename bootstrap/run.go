@@ -46,9 +46,15 @@ func Run(o Options) (err error) {
 		return errors.Wrap(err, "starting astilectron failed")
 	}
 
-	// Serve
-	var ln = serve(o.BaseDirectoryPath, o.AdaptRouter, o.TemplateData)
-	defer ln.Close()
+	// Serve or handle messages
+	var url string
+	if o.MessageHandler == nil {
+		var ln = serve(o.BaseDirectoryPath, o.AdaptRouter, o.TemplateData)
+		defer ln.Close()
+		url = "http://" + ln.Addr().String() + o.Homepage
+	} else {
+		url = filepath.Join(o.BaseDirectoryPath, "resources", "app", o.Homepage)
+	}
 
 	// Debug
 	if o.Debug {
@@ -57,8 +63,13 @@ func Run(o Options) (err error) {
 
 	// Init window
 	var w *astilectron.Window
-	if w, err = a.NewWindow("http://"+ln.Addr().String()+o.Homepage, o.WindowOptions); err != nil {
+	if w, err = a.NewWindow(url, o.WindowOptions); err != nil {
 		return errors.Wrap(err, "new window failed")
+	}
+
+	// Handle messages
+	if o.MessageHandler != nil {
+		w.On(astilectron.EventNameWindowEventMessage, handleMessages(w, o.MessageHandler))
 	}
 
 	// Adapt window
