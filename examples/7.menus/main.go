@@ -46,7 +46,13 @@ func main() {
 			Label: astilectron.PtrStr("Separator"),
 			SubMenu: []*astilectron.MenuItemOptions{
 				{Label: astilectron.PtrStr("Normal 1")},
-				{Label: astilectron.PtrStr("Normal 2")},
+				{
+					Label: astilectron.PtrStr("Normal 2"),
+					OnClick: func(e astilectron.Event) (deleteListener bool) {
+						astilog.Info("Normal 2 item has been clicked")
+						return
+					},
+				},
 				{Type: astilectron.MenuItemTypeSeparator},
 				{Label: astilectron.PtrStr("Normal 3")},
 			},
@@ -82,7 +88,8 @@ func main() {
 		astilog.Fatal(errors.Wrap(err, "fetching menu item 1,0 failed"))
 	}
 
-	// Add listener
+	// Add listener manually
+	// An OnClick listener has already been added in the options directly for another menu item
 	mi.On(astilectron.EventNameMenuItemEventClicked, func(e astilectron.Event) bool {
 		astilog.Infof("Menu item has been clicked. 'Checked' status is now %t", *e.MenuItemOptions.Checked)
 		return false
