@@ -4,14 +4,14 @@ import "sync"
 
 // displayPool represents a display pool
 type displayPool struct {
-	d map[int]*Display
+	d map[int64]*Display
 	m *sync.Mutex
 }
 
 // newDisplayPool creates a new display pool
 func newDisplayPool() *displayPool {
 	return &displayPool{
-		d: make(map[int]*Display),
+		d: make(map[int64]*Display),
 		m: &sync.Mutex{},
 	}
 }
@@ -44,7 +44,7 @@ func (p *displayPool) primary() (d *Display) {
 func (p *displayPool) update(e *EventDisplays) {
 	p.m.Lock()
 	defer p.m.Unlock()
-	var ids = make(map[int]bool)
+	var ids = make(map[int64]bool)
 	for _, o := range e.All {
 		ids[*o.ID] = true
 		var primary bool
