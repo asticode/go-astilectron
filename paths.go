@@ -2,9 +2,9 @@ package astilectron
 
 import (
 	"fmt"
-	"path/filepath"
-
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -28,7 +28,7 @@ type Paths struct {
 }
 
 // newPaths creates new paths
-func newPaths(os string, o Options) (p *Paths, err error) {
+func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	// Init base directory path
 	p = &Paths{}
 	if err = p.initBaseDirectory(o.BaseDirectoryPath); err != nil {
@@ -43,12 +43,12 @@ func newPaths(os string, o Options) (p *Paths, err error) {
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.initAstilectronDirectory()
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
-	p.astilectronDownloadSrc = fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", versionAstilectron)
-	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", versionAstilectron))
-	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", versionAstilectron))
+	p.astilectronDownloadSrc = fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", VersionAstilectron)
+	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", VersionAstilectron))
+	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", VersionAstilectron))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, "electron")
-	p.initElectronDownloadSrc(os)
-	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", versionElectron))
+	p.initElectronDownloadSrc(os, arch)
+	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", VersionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
 	p.initAppExecutable(os, o.AppName)
 	return
@@ -86,16 +86,26 @@ func (p *Paths) initAstilectronDirectory() {
 }
 
 // initElectronDownloadSrc initializes the electron download source path
-// TODO Handle all available links (32bits, 64bits, ...)
-func (p *Paths) initElectronDownloadSrc(os string) {
-	switch os {
+func (p *Paths) initElectronDownloadSrc(os, arch string) {
+	// Get OS name
+	var o string
+	switch strings.ToLower(os) {
 	case "darwin":
-		p.electronDownloadSrc = fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-darwin-x64.zip", versionElectron, versionElectron)
+		o = "darwin"
 	case "linux":
-		p.electronDownloadSrc = fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-linux-x64.zip", versionElectron, versionElectron)
+		o = "linux"
 	case "windows":
-		p.electronDownloadSrc = fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-win32-ia32.zip", versionElectron, versionElectron)
+		o = "win32"
 	}
+
+	// Get arch name
+	var a = "ia32"
+	if strings.ToLower(arch) == "amd64" || o == "darwin" {
+		a = "x64"
+	}
+
+	// Set url
+	p.electronDownloadSrc = fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-%s-%s.zip", VersionElectron, VersionElectron, o, a)
 }
 
 // initAppExecutable initializes the app executable path

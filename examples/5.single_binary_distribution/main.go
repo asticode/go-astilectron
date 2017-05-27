@@ -31,7 +31,7 @@ func main() {
 	}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "creating new astilectron failed"))
 	}
-	a.SetProvisioner(astilectron.NewDisembedderProvisioner(Asset, "../vendor/astilectron-v0.3.0.zip", "../vendor/electron-v1.6.5.zip"))
+	a.SetProvisioner(astilectron.NewDisembedderProvisioner(Asset, "../vendor/astilectron-v"+astilectron.VersionAstilectron+".zip", "../vendor/electron-v"+astilectron.VersionElectron+".zip"))
 	defer a.Close()
 	a.HandleSignals()
 

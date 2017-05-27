@@ -21,8 +21,8 @@ import (
 
 // Versions
 const (
-	versionAstilectron = "0.5.0"
-	versionElectron    = "1.6.5"
+	VersionAstilectron = "0.5.0"
+	VersionElectron    = "1.6.5"
 )
 
 // Misc vars
@@ -85,7 +85,7 @@ func New(o Options) (a *Astilectron, err error) {
 	}
 
 	// Set paths
-	if a.paths, err = newPaths(runtime.GOOS, o); err != nil {
+	if a.paths, err = newPaths(runtime.GOOS, runtime.GOARCH, o); err != nil {
 		err = errors.Wrap(err, "creating new paths failed")
 		return
 	}
