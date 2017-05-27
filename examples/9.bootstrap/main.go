@@ -4,6 +4,8 @@ import (
 	"flag"
 	"os"
 
+	"encoding/json"
+
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilectron/bootstrap"
 	"github.com/asticode/go-astilog"
@@ -32,10 +34,21 @@ func main() {
 			return nil
 		},
 		Homepage: "index.html",
-		MessageHandler: func(w *astilectron.Window, m bootstrap.Message) {
+		MessageHandler: func(w *astilectron.Window, m bootstrap.MessageIn) {
 			switch m.Name {
-			case "example":
-				w.Send(bootstrap.Message{Name: "say.hello"})
+			case "say":
+				// Unmarshal
+				type P struct {
+					Message string `json:"message"`
+				}
+				var p P
+				if err := json.Unmarshal(m.Payload, &p); err != nil {
+					astilog.Errorf("Unmarshaling %s failed", m.Payload)
+					return
+				}
+
+				// Send
+				w.Send(bootstrap.MessageOut{Name: "say", Payload: p})
 			}
 		},
 		RestoreAssets: RestoreAssets,
