@@ -9,6 +9,7 @@ Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS
 Here's a list of awesome projects using `go-astilectron` (if you're using `go-astilectron` and want your project to be listed here please submit a PR):
 
 - [go-astivid](https://github.com/asticode/go-astivid) Video tools written in GO
+- [GroupMatcher](https://github.com/veecue/GroupMatcher) Program to allocate persons to groups while trying to fulfill all the given wishes as good as possible
 
 # Quick start
 
