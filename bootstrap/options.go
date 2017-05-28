@@ -37,7 +37,7 @@ type AdaptWindow func(w *astilectron.Window)
 type CustomProvision func(baseDirectoryPath string) error
 
 // MessageHandler is a functions that handles messages
-type MessageHandler func(w *astilectron.Window, m Message)
+type MessageHandler func(w *astilectron.Window, m MessageIn)
 
 // RestoreAssets is a function that restores assets namely the go-bindata's RestoreAssets method
 type RestoreAssets func(dir, name string) error
