@@ -264,6 +264,62 @@ A few things to know:
 * when assigning a role to a menu item, `go-astilectron` won't be able to capture its click event
 * on MacOS there's no such thing as a window menu, only app menus therefore my advice is to stick to one global app menu instead of creating separate window menus
 
+### Dialogs
+
+In your webserver add one of the following javascript to achieve any kind of dialog.
+
+#### Error box
+
+```html
+<script>
+    // This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+        // This will open the dialog
+        astilectron.showErrorBox("My Title", "My content")
+    })
+</script>
+```
+
+#### Message box
+
+```html
+<script>
+    // This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+        // This will open the dialog
+        astilectron.showMessageBox({message: "My message", title: "My Title"})
+    })
+</script>
+```
+
+#### Open dialog
+
+```html
+<script>
+    // This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+        // This will open the dialog
+        astilectron.showOpenDialog({properties: ['openFile', 'multiSelections'], title: "My Title"}, function(paths) {
+            console.log("chosen paths are ", paths)
+        })
+    })
+</script>
+```
+
+#### Save dialog
+
+```html
+<script>
+    // This will wait for the astilectron namespace to be ready
+    document.addEventListener('astilectron-ready', function() {
+        // This will open the dialog
+        astilectron.showSaveDialog({title: "My title"}, function(filename) {
+            console.log("chosen filename is ", filename)
+        })
+    })
+</script>
+```
+
 ### Final code
 
 ```go
@@ -553,8 +609,8 @@ $ go run examples/9.bootstrap/main.go examples/9.bootstrap/resources.go -v
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)
 - [x] loader
 - [x] bootstrap
+- [x] dialogs (open or save file, alerts, ...)
 - [ ] accelerators (shortcuts)
-- [ ] dialogs (open or save file, alerts, ...)
 - [ ] file methods (drag & drop, ...)
 - [ ] clipboard methods
 - [ ] power monitor events (suspend, resume, ...)
