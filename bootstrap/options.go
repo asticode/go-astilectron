@@ -17,6 +17,7 @@ type Options struct {
 	CustomProvision    CustomProvision
 	Debug              bool
 	Homepage           string
+	MessageHandler     MessageHandler
 	RestoreAssets      RestoreAssets
 	StartLoader        StartLoader
 	TemplateData       TemplateData
@@ -34,6 +35,9 @@ type AdaptWindow func(w *astilectron.Window)
 
 // CustomProvision is a function that executes custom provisioning
 type CustomProvision func(baseDirectoryPath string) error
+
+// MessageHandler is a functions that handles messages
+type MessageHandler func(w *astilectron.Window, m Message)
 
 // RestoreAssets is a function that restores assets namely the go-bindata's RestoreAssets method
 type RestoreAssets func(dir, name string) error

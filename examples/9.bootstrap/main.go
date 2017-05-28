@@ -2,13 +2,11 @@ package main
 
 import (
 	"flag"
-	"net/http"
 	"os"
 
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilectron/bootstrap"
 	"github.com/asticode/go-astilog"
-	"github.com/julienschmidt/httprouter"
 )
 
 //go:generate go-bindata -pkg $GOPACKAGE -o resources.go resources/...
@@ -24,11 +22,6 @@ func main() {
 
 	// Run bootstrap
 	if err := bootstrap.Run(bootstrap.Options{
-		AdaptRouter: func(r *httprouter.Router) {
-			r.GET("/custom/route", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-				w.Write([]byte("Custom route content"))
-			})
-		},
 		AstilectronOptions: astilectron.Options{
 			AppName:            "Astilectron",
 			AppIconDefaultPath: p + "/gopher.png",
@@ -38,17 +31,14 @@ func main() {
 			astilog.Info("You can run your custom provisioning here!")
 			return nil
 		},
-		Homepage:      "/templates/index",
-		RestoreAssets: RestoreAssets,
-		TemplateData: func(name string, r *http.Request, p httprouter.Params) (d interface{}, err error) {
-			switch name {
-			case "/index.html":
-				d = struct {
-					Label string
-				}{Label: "Welcome to Astilectron's bootstrap!"}
+		Homepage: "index.html",
+		MessageHandler: func(w *astilectron.Window, m bootstrap.Message) {
+			switch m.Name {
+			case "example":
+				w.Send(bootstrap.Message{Name: "say.hello"})
 			}
-			return
 		},
+		RestoreAssets: RestoreAssets,
 		WindowOptions: &astilectron.WindowOptions{
 			Center: astilectron.PtrBool(true),
 			Height: astilectron.PtrInt(600),
