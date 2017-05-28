@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/css/base.css"/>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="content">
+            <div>Welcome to Astilectron's bootstrap!</div>
+            <div id="click" style="cursor: pointer; text-decoration: underline">Click here to get a hello</div>
+        </div>
+    </div>
+<script>
+    // Wait for astilectron to be ready
+    document.addEventListener('astilectron-ready', function() {
+        astilectron.listen(function(message) {
+            switch (message.name) {
+                case "say":
+                    alert(message.payload.message);
+                    break;
+            }
+        });
+        document.getElementById("click").onclick = function() {
+            astilectron.send({name: "say", payload: {message: "hello"}})
+        }
+    });
+</script>
+</body>
+</html>

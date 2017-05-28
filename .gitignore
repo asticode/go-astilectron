@@ -5,5 +5,4 @@ cover.*
 examples/5.single_binary_distribution/vendor.go
 examples/test
 examples/vendor
-resources/
 testdata/tmp/*

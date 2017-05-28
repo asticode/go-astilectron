@@ -1,0 +1,20 @@
+html, body {
+    background-color: #333;
+    color: #fff;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.wrapper {
+    display: table;
+    height: 100%;
+    width: 100%;
+}
+
+.content {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
