@@ -11,9 +11,11 @@ import (
 type Options struct {
 	AdaptAstilectron   AdaptAstilectron
 	AdaptRouter        AdaptRouter
+	AdaptWindow        AdaptWindow
 	AstilectronOptions astilectron.Options
 	BaseDirectoryPath  string
 	CustomProvision    CustomProvision
+	Debug              bool
 	Homepage           string
 	RestoreAssets      RestoreAssets
 	StartLoader        StartLoader
@@ -26,6 +28,9 @@ type AdaptAstilectron func(a *astilectron.Astilectron)
 
 // AdaptRouter is a function that adapts the router
 type AdaptRouter func(r *httprouter.Router)
+
+// AdaptWindow is a function that adapts the window
+type AdaptWindow func(w *astilectron.Window)
 
 // CustomProvision is a function that executes custom provisioning
 type CustomProvision func(baseDirectoryPath string) error

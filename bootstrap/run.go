@@ -50,13 +50,32 @@ func Run(o Options) (err error) {
 	var ln = serve(o.BaseDirectoryPath, o.AdaptRouter, o.TemplateData)
 	defer ln.Close()
 
-	// Create window
+	// Debug
+	if o.Debug {
+		o.WindowOptions.Width = astilectron.PtrInt(*o.WindowOptions.Width + 700)
+	}
+
+	// Init window
 	var w *astilectron.Window
 	if w, err = a.NewWindow("http://"+ln.Addr().String()+o.Homepage, o.WindowOptions); err != nil {
 		return errors.Wrap(err, "new window failed")
 	}
+
+	// Adapt window
+	if o.AdaptWindow != nil {
+		o.AdaptWindow(w)
+	}
+
+	// Create window
 	if err = w.Create(); err != nil {
 		return errors.Wrap(err, "creating window failed")
+	}
+
+	// Debug
+	if o.Debug {
+		if err = w.OpenDevTools(); err != nil {
+			return errors.Wrap(err, "opening dev tools failed")
+		}
 	}
 
 	// Blocking pattern
