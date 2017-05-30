@@ -19,7 +19,6 @@ type Options struct {
 	Homepage           string
 	MessageHandler     MessageHandler
 	RestoreAssets      RestoreAssets
-	StartLoader        StartLoader
 	TemplateData       TemplateData
 	WindowOptions      *astilectron.WindowOptions
 }
@@ -41,9 +40,6 @@ type MessageHandler func(w *astilectron.Window, m MessageIn)
 
 // RestoreAssets is a function that restores assets namely the go-bindata's RestoreAssets method
 type RestoreAssets func(dir, name string) error
-
-// StartLoader is a function that can start a loader
-type StartLoader func(a *astilectron.Astilectron)
 
 // TemplateData is a function that retrieves a template's data
 type TemplateData func(name string, r *http.Request, p httprouter.Params) (d interface{}, err error)
