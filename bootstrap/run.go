@@ -23,11 +23,6 @@ func Run(o Options) (err error) {
 		o.AdaptAstilectron(a)
 	}
 
-	// Start loader
-	if o.StartLoader != nil {
-		o.StartLoader(a)
-	}
-
 	// Base directory path default to executable path
 	if o.BaseDirectoryPath == "" {
 		if o.BaseDirectoryPath, err = os.Executable(); err != nil {
