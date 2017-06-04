@@ -67,14 +67,14 @@ func Run(o Options) (err error) {
 		w.On(astilectron.EventNameWindowEventMessage, handleMessages(w, o.MessageHandler))
 	}
 
-	// Adapt window
-	if o.AdaptWindow != nil {
-		o.AdaptWindow(w)
-	}
-
 	// Create window
 	if err = w.Create(); err != nil {
 		return errors.Wrap(err, "creating window failed")
+	}
+
+	// Adapt window
+	if o.AdaptWindow != nil {
+		o.AdaptWindow(w)
 	}
 
 	// Debug
