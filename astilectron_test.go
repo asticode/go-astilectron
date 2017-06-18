@@ -168,22 +168,19 @@ func TestAstilectron_ExecuteCmd(t *testing.T) {
 	assert.NoError(t, err)
 	defer a.Close()
 	go a.dispatcher.start()
-	var wg = &sync.WaitGroup{}
 
 	// Test success
 	var cmd = exec.Command("whoami")
-	wg.Add(1)
 	go func() {
 		a.executeCmd(cmd)
-		wg.Done()
 	}()
-	for {
-		if cmd.ProcessState != nil && cmd.ProcessState.Exited() {
-			a.dispatcher.Dispatch(Event{Name: EventNameAppEventReady, Displays: &EventDisplays{All: []*DisplayOptions{{ID: PtrInt64(1)}}, Primary: &DisplayOptions{ID: PtrInt64(1)}}, TargetID: mainTargetID})
-			break
-		}
+	for cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
+		time.Sleep(time.Microsecond)
 	}
-	wg.Wait()
+	a.dispatcher.Dispatch(Event{Name: EventNameAppEventReady, Displays: &EventDisplays{All: []*DisplayOptions{{ID: PtrInt64(1)}}, Primary: &DisplayOptions{ID: PtrInt64(1)}}, TargetID: mainTargetID})
+	for a.PrimaryDisplay() == nil {
+		time.Sleep(time.Microsecond)
+	}
 	assert.Len(t, a.Displays(), 1)
 	assert.Equal(t, int64(1), *a.PrimaryDisplay().o.ID)
 }
