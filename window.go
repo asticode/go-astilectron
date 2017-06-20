@@ -66,40 +66,76 @@ type Window struct {
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.6.5/docs/api/browser-window.md
 type WindowOptions struct {
-	AcceptFirstMouse       *bool   `json:"acceptFirstMouse,omitempty"`
-	AlwaysOnTop            *bool   `json:"alwaysOnTop,omitempty"`
-	AutoHideMenuBar        *bool   `json:"autoHideMenuBar,omitempty"`
-	BackgroundColor        *string `json:"backgroundColor,omitempty"`
-	Center                 *bool   `json:"center,omitempty"`
-	Closable               *bool   `json:"closable,omitempty"`
-	DisableAutoHideCursor  *bool   `json:"disableAutoHideCursor,omitempty"`
-	EnableLargerThanScreen *bool   `json:"enableLargerThanScreen,omitempty"`
-	Focusable              *bool   `json:"focusable,omitempty"`
-	Frame                  *bool   `json:"frame,omitempty"`
-	Fullscreen             *bool   `json:"fullscreen,omitempty"`
-	Fullscreenable         *bool   `json:"fullscreenable,omitempty"`
-	HasShadow              *bool   `json:"hasShadow,omitempty"`
-	Height                 *int    `json:"height,omitempty"`
-	Icon                   *string `json:"icon,omitempty"`
-	Kiosk                  *bool   `json:"kiosk,omitempty"`
-	MaxHeight              *int    `json:"maxHeight,omitempty"`
-	Maximizable            *bool   `json:"maximizable,omitempty"`
-	MaxWidth               *int    `json:"maxWidth,omitempty"`
-	MinHeight              *int    `json:"minHeight,omitempty"`
-	Minimizable            *bool   `json:"minimizable,omitempty"`
-	MinWidth               *int    `json:"minWidth,omitempty"`
-	Modal                  *bool   `json:"modal,omitempty"`
-	Movable                *bool   `json:"movable,omitempty"`
-	Resizable              *bool   `json:"resizable,omitempty"`
-	Show                   *bool   `json:"show,omitempty"`
-	SkipTaskbar            *bool   `json:"skipTaskbar,omitempty"`
-	Title                  *string `json:"title,omitempty"`
-	TitleBarStyle          *string `json:"titleBarStyle,omitempty"`
-	Transparent            *bool   `json:"transparent,omitempty"`
-	UseContentSize         *bool   `json:"useContentSize,omitempty"`
-	Width                  *int    `json:"width,omitempty"`
-	X                      *int    `json:"x,omitempty"`
-	Y                      *int    `json:"y,omitempty"`
+	AcceptFirstMouse       *bool           `json:"acceptFirstMouse,omitempty"`
+	AlwaysOnTop            *bool           `json:"alwaysOnTop,omitempty"`
+	AutoHideMenuBar        *bool           `json:"autoHideMenuBar,omitempty"`
+	BackgroundColor        *string         `json:"backgroundColor,omitempty"`
+	Center                 *bool           `json:"center,omitempty"`
+	Closable               *bool           `json:"closable,omitempty"`
+	DisableAutoHideCursor  *bool           `json:"disableAutoHideCursor,omitempty"`
+	EnableLargerThanScreen *bool           `json:"enableLargerThanScreen,omitempty"`
+	Focusable              *bool           `json:"focusable,omitempty"`
+	Frame                  *bool           `json:"frame,omitempty"`
+	Fullscreen             *bool           `json:"fullscreen,omitempty"`
+	Fullscreenable         *bool           `json:"fullscreenable,omitempty"`
+	HasShadow              *bool           `json:"hasShadow,omitempty"`
+	Height                 *int            `json:"height,omitempty"`
+	Icon                   *string         `json:"icon,omitempty"`
+	Kiosk                  *bool           `json:"kiosk,omitempty"`
+	MaxHeight              *int            `json:"maxHeight,omitempty"`
+	Maximizable            *bool           `json:"maximizable,omitempty"`
+	MaxWidth               *int            `json:"maxWidth,omitempty"`
+	MinHeight              *int            `json:"minHeight,omitempty"`
+	Minimizable            *bool           `json:"minimizable,omitempty"`
+	MinWidth               *int            `json:"minWidth,omitempty"`
+	Modal                  *bool           `json:"modal,omitempty"`
+	Movable                *bool           `json:"movable,omitempty"`
+	Resizable              *bool           `json:"resizable,omitempty"`
+	Show                   *bool           `json:"show,omitempty"`
+	SkipTaskbar            *bool           `json:"skipTaskbar,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+	TitleBarStyle          *string         `json:"titleBarStyle,omitempty"`
+	Transparent            *bool           `json:"transparent,omitempty"`
+	UseContentSize         *bool           `json:"useContentSize,omitempty"`
+	Width                  *int            `json:"width,omitempty"`
+	X                      *int            `json:"x,omitempty"`
+	Y                      *int            `json:"y,omitempty"`
+	WebPreferences         *WebPreferences `json:"webPreferences,omitempty"`
+}
+
+// WebPreferences represents web preferences in window options.
+// We must use pointers since GO doesn't handle optional fields whereas NodeJS does.
+// Use PtrBool, PtrInt or PtrStr to fill the struct
+type WebPreferences struct {
+	DevTools                    *bool                  `json:"devTools,omitempty"`
+	NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
+	NodeIntegrationInWorker     *bool                  `json:"nodeIntegrationInWorker,omitempty"`
+	Preload                     *string                `json:"preload,omitempty"`
+	Sandbox                     *bool                  `json:"sandbox,omitempty"`
+	Session                     map[string]interface{} `json:"session,omitempty"`
+	Partition                   *string                `json:"partition,omitempty"`
+	ZoomFactor                  *float64               `json:"zoomFactor,omitempty"`
+	Javascript                  *bool                  `json:"javascript,omitempty"`
+	WebSecurity                 *bool                  `json:"webSecurity,omitempty"`
+	AllowRunningInsecureContent *bool                  `json:"allowRunningInsecureContent,omitempty"`
+	Images                      *bool                  `json:"images,omitempty"`
+	TextAreasAreResizable       *bool                  `json:"textAreasAreResizable,omitempty"`
+	Webgl                       *bool                  `json:"webgl,omitempty"`
+	Webaudio                    *bool                  `json:"webaudio,omitempty"`
+	Plugins                     *bool                  `json:"plugins,omitempty"`
+	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
+	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
+	ScrollBounce                *bool                  `json:"scrollBounce,omitempty"`
+	BlinkFeatures               *string                `json:"blinkFeatures,omitempty"`
+	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
+	DefaultFontFamily           map[string]interface{} `json:"defaultFontFamily,omitempty"`
+	DefaultFontSize             *int                   `json:"defaultFontSize,omitempty"`
+	DefaultMonospaceFontSize    *int                   `json:"defaultMonospaceFontSize,omitempty"`
+	MinimumFontSize             *int                   `json:"minimumFontSize,omitempty"`
+	DefaultEncoding             *string                `json:"defaultEncoding,omitempty"`
+	BackgroundThrottling        *bool                  `json:"backgroundThrottling,omitempty"`
+	Offscreen                   *bool                  `json:"offscreen,omitempty"`
+	ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
 }
 
 // newWindow creates a new window
