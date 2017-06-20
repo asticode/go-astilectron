@@ -97,45 +97,45 @@ type WindowOptions struct {
 	TitleBarStyle          *string         `json:"titleBarStyle,omitempty"`
 	Transparent            *bool           `json:"transparent,omitempty"`
 	UseContentSize         *bool           `json:"useContentSize,omitempty"`
+	WebPreferences         *WebPreferences `json:"webPreferences,omitempty"`
 	Width                  *int            `json:"width,omitempty"`
 	X                      *int            `json:"x,omitempty"`
 	Y                      *int            `json:"y,omitempty"`
-	WebPreferences         *WebPreferences `json:"webPreferences,omitempty"`
 }
 
 // WebPreferences represents web preferences in window options.
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does.
 // Use PtrBool, PtrInt or PtrStr to fill the struct
 type WebPreferences struct {
-	DevTools                    *bool                  `json:"devTools,omitempty"`
-	NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
-	NodeIntegrationInWorker     *bool                  `json:"nodeIntegrationInWorker,omitempty"`
-	Preload                     *string                `json:"preload,omitempty"`
-	Sandbox                     *bool                  `json:"sandbox,omitempty"`
-	Session                     map[string]interface{} `json:"session,omitempty"`
-	Partition                   *string                `json:"partition,omitempty"`
-	ZoomFactor                  *float64               `json:"zoomFactor,omitempty"`
-	Javascript                  *bool                  `json:"javascript,omitempty"`
-	WebSecurity                 *bool                  `json:"webSecurity,omitempty"`
 	AllowRunningInsecureContent *bool                  `json:"allowRunningInsecureContent,omitempty"`
-	Images                      *bool                  `json:"images,omitempty"`
-	TextAreasAreResizable       *bool                  `json:"textAreasAreResizable,omitempty"`
-	Webgl                       *bool                  `json:"webgl,omitempty"`
-	Webaudio                    *bool                  `json:"webaudio,omitempty"`
-	Plugins                     *bool                  `json:"plugins,omitempty"`
-	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
-	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
-	ScrollBounce                *bool                  `json:"scrollBounce,omitempty"`
+	BackgroundThrottling        *bool                  `json:"backgroundThrottling,omitempty"`
 	BlinkFeatures               *string                `json:"blinkFeatures,omitempty"`
-	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
+	ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
+	DefaultEncoding             *string                `json:"defaultEncoding,omitempty"`
 	DefaultFontFamily           map[string]interface{} `json:"defaultFontFamily,omitempty"`
 	DefaultFontSize             *int                   `json:"defaultFontSize,omitempty"`
 	DefaultMonospaceFontSize    *int                   `json:"defaultMonospaceFontSize,omitempty"`
+	DevTools                    *bool                  `json:"devTools,omitempty"`
+	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
+	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
+	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
+	Images                      *bool                  `json:"images,omitempty"`
+	Javascript                  *bool                  `json:"javascript,omitempty"`
 	MinimumFontSize             *int                   `json:"minimumFontSize,omitempty"`
-	DefaultEncoding             *string                `json:"defaultEncoding,omitempty"`
-	BackgroundThrottling        *bool                  `json:"backgroundThrottling,omitempty"`
+	NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
+	NodeIntegrationInWorker     *bool                  `json:"nodeIntegrationInWorker,omitempty"`
 	Offscreen                   *bool                  `json:"offscreen,omitempty"`
-	ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
+	Partition                   *string                `json:"partition,omitempty"`
+	Plugins                     *bool                  `json:"plugins,omitempty"`
+	Preload                     *string                `json:"preload,omitempty"`
+	Sandbox                     *bool                  `json:"sandbox,omitempty"`
+	ScrollBounce                *bool                  `json:"scrollBounce,omitempty"`
+	Session                     map[string]interface{} `json:"session,omitempty"`
+	TextAreasAreResizable       *bool                  `json:"textAreasAreResizable,omitempty"`
+	Webaudio                    *bool                  `json:"webaudio,omitempty"`
+	Webgl                       *bool                  `json:"webgl,omitempty"`
+	WebSecurity                 *bool                  `json:"webSecurity,omitempty"`
+	ZoomFactor                  *float64               `json:"zoomFactor,omitempty"`
 }
 
 // newWindow creates a new window
