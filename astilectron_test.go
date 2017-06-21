@@ -132,6 +132,7 @@ func TestAstilectron_AcceptTCP(t *testing.T) {
 			case <-c:
 				isAccepted = true
 				wg.Done()
+				return
 			}
 		}
 	}()
@@ -171,16 +172,17 @@ func TestAstilectron_ExecuteCmd(t *testing.T) {
 
 	// Test success
 	var cmd = exec.Command("whoami")
+	var wg = &sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
 		a.executeCmd(cmd)
+		wg.Done()
 	}()
 	for cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
 		time.Sleep(time.Microsecond)
 	}
 	a.dispatcher.Dispatch(Event{Name: EventNameAppEventReady, Displays: &EventDisplays{All: []*DisplayOptions{{ID: PtrInt64(1)}}, Primary: &DisplayOptions{ID: PtrInt64(1)}}, TargetID: mainTargetID})
-	for a.PrimaryDisplay() == nil {
-		time.Sleep(time.Microsecond)
-	}
+	wg.Wait()
 	assert.Len(t, a.Displays(), 1)
 	assert.Equal(t, int64(1), *a.PrimaryDisplay().o.ID)
 }
