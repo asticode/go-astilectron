@@ -586,6 +586,8 @@ $ go run examples/8.bootstrap/main.go examples/8.bootstrap/resources.go -v
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)
 - [x] bootstrap
 - [x] dialogs (open or save file, alerts, ...)
+- [ ] loader
+- [ ] bundle helper
 - [ ] accelerators (shortcuts)
 - [ ] file methods (drag & drop, ...)
 - [ ] clipboard methods
