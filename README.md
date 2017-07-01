@@ -302,12 +302,37 @@ In your webserver add one of the following javascript to achieve any kind of dia
 </script>
 ```
 
+### Splash screen
+
+Setting up the whole project can take quite some time, therefore I urge you to use [astisplash](https://github.com/asticode/go-astisplash) in order to display a splash screen to the user:
+
+```go
+// Build splasher
+s, _ := astisplash.New()
+defer s.Close()
+
+// Splash
+sp, _ := s.Splash("<your spash screen image>")
+
+// Wait for the app to be ready
+
+// Close the splash
+sp.Close()
+```
+
 ### Final code
 
 ```go
 // Set up the logger
 var l <your logger type>
 astilog.SetLogger(l)
+
+// Build splasher
+s, _ := astisplash.New()
+defer s.Close()
+
+// Splash
+sp, _ := s.Splash("<your spash screen image>")
 
 // Start an http server
 http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -353,6 +378,9 @@ a.On(astilectron.EventNameAppCrash, func(e astilectron.Event) (deleteListener bo
 
 // Start astilectron: this will download and set up the dependencies, and start the Electron app
 a.Start()
+
+// Close the splash
+sp.Close()
 
 // Init a new app menu
 // You can do the same thing with a window
@@ -575,6 +603,8 @@ $ go generate examples/8.bootstrap/main.go
 $ go run examples/8.bootstrap/main.go examples/8.bootstrap/resources.go -v
 ```
 
+- [9.splash_screen](https://github.com/asticode/go-astilectron/tree/master/examples/9.splash_screen/main.go) uses **astisplash** to display a splash screen to the user while the project is being set up
+
 # Features and roadmap
 
 - [x] custom branding (custom app name, app icon, etc.)
@@ -586,7 +616,7 @@ $ go run examples/8.bootstrap/main.go examples/8.bootstrap/resources.go -v
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)
 - [x] bootstrap
 - [x] dialogs (open or save file, alerts, ...)
-- [ ] loader
+- [x] splash screen
 - [ ] bundle helper
 - [ ] accelerators (shortcuts)
 - [ ] file methods (drag & drop, ...)
