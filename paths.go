@@ -43,11 +43,11 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.initAstilectronDirectory()
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
-	p.astilectronDownloadSrc = fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", VersionAstilectron)
+	p.astilectronDownloadSrc = AstilectronDownloadSrc()
 	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", VersionAstilectron))
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", VersionAstilectron))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, "electron")
-	p.initElectronDownloadSrc(os, arch)
+	p.electronDownloadSrc = ElectronDownloadSrc(os, arch)
 	// TODO Split folders for each OS/ARCH couples?
 	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", VersionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
@@ -86,8 +86,13 @@ func (p *Paths) initAstilectronDirectory() {
 	}
 }
 
-// initElectronDownloadSrc initializes the electron download source path
-func (p *Paths) initElectronDownloadSrc(os, arch string) {
+// AstilectronDownloadSrc returns the download URL of the (currently platform-independant) astilectron zipfile
+func AstilectronDownloadSrc() string {
+	return fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", VersionAstilectron)
+}
+
+// ElectronDownloadSrc returns the download URL of the platform-dependant electron zipfile
+func ElectronDownloadSrc(os, arch string) string {
 	// Get OS name
 	var o string
 	switch strings.ToLower(os) {
@@ -105,8 +110,8 @@ func (p *Paths) initElectronDownloadSrc(os, arch string) {
 		a = "x64"
 	}
 
-	// Set url
-	p.electronDownloadSrc = fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-%s-%s.zip", VersionElectron, VersionElectron, o, a)
+	// Return url
+	return fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-%s-%s.zip", VersionElectron, VersionElectron, o, a)
 }
 
 // initAppExecutable initializes the app executable path

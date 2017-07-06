@@ -118,6 +118,11 @@ func validateOS(os string) error {
 	return nil
 }
 
+// ValidOSes returns a slice containing the names of all currently supported operating systems
+func ValidOSes() []string {
+	return append(make([]string, 0, len(validOSes)), validOSes...)
+}
+
 // SetProvisioner sets the provisioner
 func (a *Astilectron) SetProvisioner(p Provisioner) *Astilectron {
 	a.provisioner = p
