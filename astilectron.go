@@ -21,7 +21,7 @@ import (
 
 // Versions
 const (
-	VersionAstilectron = "0.5.0"
+	VersionAstilectron = "0.6.0"
 	VersionElectron    = "1.6.5"
 )
 
@@ -382,4 +382,9 @@ func (a *Astilectron) NewWindowInDisplay(d *Display, url string, o *WindowOption
 		o.Y = PtrInt(d.Bounds().Y)
 	}
 	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
+}
+
+// NewTray creates a new tray
+func (a *Astilectron) NewTray(o *TrayOptions) *Tray {
+	return newTray(o, a.canceller, a.dispatcher, a.identifier, a.writer)
 }

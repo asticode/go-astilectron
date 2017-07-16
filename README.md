@@ -246,6 +246,42 @@ A few things to know:
 * when assigning a role to a menu item, `go-astilectron` won't be able to capture its click event
 * on MacOS there's no such thing as a window menu, only app menus therefore my advice is to stick to one global app menu instead of creating separate window menus
 
+### Tray
+
+```go
+// New tray
+var t = a.NewTray(&astilectron.TrayOptions{
+    Image:   astilectron.PtrStr("/path/to/image.png"),
+    Tooltip: astilectron.PtrStr("Tray's tooltip"),
+})
+
+// New tray menu
+var m = t.NewMenu([]*astilectron.MenuItemOptions{
+    {
+        Label: astilectron.PtrStr("Root 1"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Item 1")},
+            {Label: astilectron.PtrStr("Item 2")},
+            {Type: astilectron.MenuItemTypeSeparator},
+            {Label: astilectron.PtrStr("Item 3")},
+        },
+    },
+    {
+        Label: astilectron.PtrStr("Root 2"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Item 1")},
+            {Label: astilectron.PtrStr("Item 2")},
+        },
+    },
+})
+
+// Create the menu
+m.Create()
+
+// Create tray
+t.Create()
+```
+
 ### Dialogs
 
 In your webserver add one of the following javascript to achieve any kind of dialog.
@@ -575,6 +611,8 @@ $ go generate examples/8.bootstrap/main.go
 $ go run examples/8.bootstrap/main.go examples/8.bootstrap/resources.go -v
 ```
 
+- [9.tray](https://github.com/asticode/go-astilectron/tree/master/examples/9.tray/main.go) creates a tray
+
 # Features and roadmap
 
 - [x] custom branding (custom app name, app icon, etc.)
@@ -586,6 +624,7 @@ $ go run examples/8.bootstrap/main.go examples/8.bootstrap/resources.go -v
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)
 - [x] bootstrap
 - [x] dialogs (open or save file, alerts, ...)
+- [x] tray
 - [ ] loader
 - [ ] bundle helper
 - [ ] accelerators (shortcuts)

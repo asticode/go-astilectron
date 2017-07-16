@@ -21,11 +21,13 @@ type Event struct {
 	// We use pointers so that omitempty works
 	Displays         *EventDisplays    `json:"displays,omitempty"`
 	Menu             *EventMenu        `json:"menu,omitempty"`
+	MenuID           string            `json:"menuId,omitempty"`
 	MenuItem         *EventMenuItem    `json:"menuItem,omitempty"`
 	MenuItemOptions  *MenuItemOptions  `json:"menuItemOptions,omitempty"`
 	MenuItemPosition *int              `json:"menuItemPosition,omitempty"`
 	MenuPopupOptions *MenuPopupOptions `json:"menuPopupOptions,omitempty"`
 	Message          *EventMessage     `json:"message,omitempty"`
+	TrayOptions      *TrayOptions      `json:"trayOptions,omitempty"`
 	URL              string            `json:"url,omitempty"`
 	WindowID         string            `json:"windowId,omitempty"`
 	WindowOptions    *WindowOptions    `json:"windowOptions,omitempty"`

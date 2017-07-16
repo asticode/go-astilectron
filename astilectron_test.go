@@ -3,7 +3,6 @@ package astilectron
 import (
 	"net"
 	"os"
-	"os/exec"
 	"sync"
 	"testing"
 	"time"
@@ -161,29 +160,6 @@ func TestAstilectron_AcceptTCP(t *testing.T) {
 	wg.Wait()
 	assert.False(t, isAccepted)
 	assert.True(t, isStopped)
-}
-
-func TestAstilectron_ExecuteCmd(t *testing.T) {
-	// Init
-	a, err := New(Options{})
-	assert.NoError(t, err)
-	defer a.Close()
-	go a.dispatcher.start()
-
-	// Test success
-	var cmd = exec.Command("whoami")
-	var wg = &sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		a.executeCmd(cmd)
-		wg.Done()
-	}()
-	for cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
-		time.Sleep(time.Microsecond)
-	}
-	a.dispatcher.Dispatch(Event{Name: EventNameAppEventReady, Displays: &EventDisplays{All: []*DisplayOptions{{ID: PtrInt64(1)}}, Primary: &DisplayOptions{ID: PtrInt64(1)}}, TargetID: mainTargetID})
-	wg.Wait()
-	assert.Len(t, a.Displays(), 1)
 }
 
 func TestIsValidOS(t *testing.T) {
