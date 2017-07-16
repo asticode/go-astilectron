@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	// Set up logger
-	astilog.SetLogger(astilog.New(astilog.FlagConfig()))
+	astilog.FlagInit()
 
 	// Start server
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

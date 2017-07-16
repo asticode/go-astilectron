@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	// Set up logger
-	astilog.SetLogger(astilog.New(astilog.FlagConfig()))
+	astilog.FlagInit()
 
 	// Get base dir path
 	var p = os.Getenv("GOPATH") + "/src/github.com/asticode/go-astilectron/examples"

@@ -14,7 +14,7 @@ func main() {
 	flag.Parse()
 
 	// Set up logger
-	astilog.SetLogger(astilog.New(astilog.FlagConfig()))
+	astilog.FlagInit()
 
 	// Get base dir path
 	var err error
