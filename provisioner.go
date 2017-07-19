@@ -185,8 +185,13 @@ func (p *defaultProvisioner) provisionElectron(ctx context.Context, d Dispatcher
 
 // provisionPackage provisions a package
 func (p *defaultProvisioner) provisionPackage(ctx context.Context, d Dispatcher, paths Paths, s *ProvisionStatusPackage, m mover, name, version, pathUnzipSrc, pathDirectory string, finish func() error) (err error) {
+	_, err = os.Stat(pathDirectory)
+	if err != nil && !os.IsNotExist(err) {
+		return errors.Wrapf(err, "check %s exist failed", pathDirectory)
+	}
+
 	// Package has already been provisioned
-	if s != nil && s.Version == version {
+	if s != nil && s.Version == version && err == nil {
 		astilog.Debugf("%s has already been provisioned to version %s, moving on...", name, version)
 		d.Dispatch(Event{Name: provisionEventNamesMapping[name][provisionEventNamesMappingKeyAlreadyProvisioned], TargetID: mainTargetID})
 		return

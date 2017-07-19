@@ -44,12 +44,11 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.initAstilectronDirectory()
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
 	p.astilectronDownloadSrc = AstilectronDownloadSrc()
-	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", VersionAstilectron))
+	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-%s-%s-v%s.zip", os, arch, VersionAstilectron))
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", VersionAstilectron))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, "electron")
 	p.electronDownloadSrc = ElectronDownloadSrc(os, arch)
-	// TODO Split folders for each OS/ARCH couples?
-	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-v%s.zip", VersionElectron))
+	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, VersionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
 	p.initAppExecutable(os, o.AppName)
 	return
