@@ -46,7 +46,7 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.astilectronDownloadSrc = AstilectronDownloadSrc()
 	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", VersionAstilectron))
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", VersionAstilectron))
-	p.electronDirectory = filepath.Join(p.vendorDirectory, "electron")
+	p.electronDirectory = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s", os, arch))
 	p.electronDownloadSrc = ElectronDownloadSrc(os, arch)
 	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, VersionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
