@@ -86,6 +86,10 @@ type defaultProvisioner struct {
 	moverElectron    mover
 }
 
+func statusElectronKey(os, arch string) string {
+	return fmt.Sprintf("%s-%s", os, arch)
+}
+
 // Provision implements the provisioner interface
 // TODO Package app using electron instead of downloading Electron + Astilectron separately
 func (p *defaultProvisioner) Provision(ctx context.Context, d Dispatcher, appName, os, arch string, paths Paths) (err error) {
@@ -104,16 +108,12 @@ func (p *defaultProvisioner) Provision(ctx context.Context, d Dispatcher, appNam
 	}
 	s.Astilectron = &ProvisionStatusPackage{Version: VersionAstilectron}
 
-	if s.Electron == nil {
-		s.Electron = make(map[string]*ProvisionStatusPackage)
-	}
 	// Provision electron
 	if err = p.provisionElectron(ctx, d, paths, s, appName, os, arch); err != nil {
 		err = errors.Wrap(err, "provisioning electron failed")
 		return
 	}
-
-	s.Electron[fmt.Sprintf("%s-%s", os, arch)] = &ProvisionStatusPackage{Version: VersionElectron}
+	s.Electron[statusElectronKey(os, arch)] = &ProvisionStatusPackage{Version: VersionElectron}
 	return
 }
 
@@ -130,6 +130,7 @@ type ProvisionStatusPackage struct {
 
 // ProvisionStatus returns the provision status
 func (p *defaultProvisioner) ProvisionStatus(paths Paths) (s ProvisionStatus, err error) {
+	s.Electron = make(map[string]*ProvisionStatusPackage)
 	// Open the file
 	var f *os.File
 	if f, err = os.Open(paths.ProvisionStatus()); err != nil {
@@ -175,9 +176,7 @@ func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, d Dispatc
 
 // provisionElectron provisions electron
 func (p *defaultProvisioner) provisionElectron(ctx context.Context, d Dispatcher, paths Paths, s ProvisionStatus, appName, os, arch string) error {
-	electron := s.Electron[fmt.Sprintf("%s-%s", os, arch)]
-
-	return p.provisionPackage(ctx, d, paths, electron, p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
+	return p.provisionPackage(ctx, d, paths, s.Electron[statusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
 		switch os {
 		case "darwin":
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
