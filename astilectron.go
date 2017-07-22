@@ -43,6 +43,7 @@ const (
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
+// TODO Fix race conditions
 type Astilectron struct {
 	canceller    *asticontext.Canceller
 	channelQuit  chan bool
