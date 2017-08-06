@@ -341,12 +341,10 @@ func (a *Astilectron) Stop() {
 
 // Wait is a blocking pattern
 func (a *Astilectron) Wait() {
-	for {
-		select {
-		case <-a.channelQuit:
-			return
-		}
+	if a.channelQuit == nil {
+		return
 	}
+	<-a.channelQuit
 }
 
 // Displays returns the displays
