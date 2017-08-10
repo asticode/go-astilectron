@@ -18,7 +18,7 @@ func testProvisionerSuccessful(t *testing.T, p Paths, osName, arch string) {
 	assert.NoError(t, err)
 	b, err := ioutil.ReadFile(p.ProvisionStatus())
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"astilectron\":{\"version\":\""+VersionAstilectron+"\"},\"electron\":{\""+statusElectronKey(osName, arch)+"\":{\"version\":\""+VersionElectron+"\"}}}\n", string(b))
+	assert.Equal(t, "{\"astilectron\":{\"version\":\""+VersionAstilectron+"\"},\"electron\":{\""+provisionStatusElectronKey(osName, arch)+"\":{\"version\":\""+VersionElectron+"\"}}}\n", string(b))
 }
 
 func TestDefaultProvisioner(t *testing.T) {

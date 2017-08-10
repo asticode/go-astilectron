@@ -86,7 +86,8 @@ type defaultProvisioner struct {
 	moverElectron    mover
 }
 
-func statusElectronKey(os, arch string) string {
+// provisionStatusElectronKey returns the electron's provision status key
+func provisionStatusElectronKey(os, arch string) string {
 	return fmt.Sprintf("%s-%s", os, arch)
 }
 
@@ -113,7 +114,7 @@ func (p *defaultProvisioner) Provision(ctx context.Context, d Dispatcher, appNam
 		err = errors.Wrap(err, "provisioning electron failed")
 		return
 	}
-	s.Electron[statusElectronKey(os, arch)] = &ProvisionStatusPackage{Version: VersionElectron}
+	s.Electron[provisionStatusElectronKey(os, arch)] = &ProvisionStatusPackage{Version: VersionElectron}
 	return
 }
 
@@ -130,9 +131,9 @@ type ProvisionStatusPackage struct {
 
 // ProvisionStatus returns the provision status
 func (p *defaultProvisioner) ProvisionStatus(paths Paths) (s ProvisionStatus, err error) {
-	s.Electron = make(map[string]*ProvisionStatusPackage)
 	// Open the file
 	var f *os.File
+	s.Electron = make(map[string]*ProvisionStatusPackage)
 	if f, err = os.Open(paths.ProvisionStatus()); err != nil {
 		if !os.IsNotExist(err) {
 			err = errors.Wrapf(err, "opening file %s failed", paths.ProvisionStatus())
@@ -144,8 +145,14 @@ func (p *defaultProvisioner) ProvisionStatus(paths Paths) (s ProvisionStatus, er
 	defer f.Close()
 
 	// Unmarshal
-	if err = json.NewDecoder(f).Decode(&s); err != nil {
-		err = errors.Wrapf(err, "json decoding from %s failed", paths.ProvisionStatus())
+	if errLocal := json.NewDecoder(f).Decode(&s); errLocal != nil {
+		// For retrocompatibility purposes, if there's an unmarshal error we delete the status file and make the
+		// assumption that provisioning has to be done all over again
+		astilog.Error(errors.Wrapf(errLocal, "json decoding from %s failed", paths.ProvisionStatus()))
+		astilog.Debugf("Removing %s", f.Name())
+		if errLocal = os.RemoveAll(f.Name()); errLocal != nil {
+			astilog.Error(errors.Wrapf(errLocal, "removing %s failed", f.Name()))
+		}
 		return
 	}
 	return
@@ -176,7 +183,7 @@ func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, d Dispatc
 
 // provisionElectron provisions electron
 func (p *defaultProvisioner) provisionElectron(ctx context.Context, d Dispatcher, paths Paths, s ProvisionStatus, appName, os, arch string) error {
-	return p.provisionPackage(ctx, d, paths, s.Electron[statusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
+	return p.provisionPackage(ctx, d, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
 		switch os {
 		case "darwin":
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
