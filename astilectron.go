@@ -166,7 +166,7 @@ func (a *Astilectron) Start() (err error) {
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, *a.dispatcher, a.options.AppName, runtime.GOOS, *a.paths)
+	return a.provisioner.Provision(ctx, *a.dispatcher, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
