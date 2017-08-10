@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testProvisionerSuccessful(t *testing.T, p Paths) {
+func testProvisionerSuccessful(t *testing.T, p Paths, osName, arch string) {
 	_, err := os.Stat(p.AstilectronApplication())
 	assert.NoError(t, err)
 	_, err = os.Stat(p.AppExecutable())
 	assert.NoError(t, err)
 	b, err := ioutil.ReadFile(p.ProvisionStatus())
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"astilectron\":{\"version\":\""+VersionAstilectron+"\"},\"electron\":{\"version\":\""+VersionElectron+"\"}}\n", string(b))
+	assert.Equal(t, "{\"astilectron\":{\"version\":\""+VersionAstilectron+"\"},\"electron\":{\""+statusElectronKey(osName, arch)+"\":{\"version\":\""+VersionElectron+"\"}}}\n", string(b))
 }
 
 func TestDefaultProvisioner(t *testing.T) {
@@ -37,17 +37,17 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/linux"
-	err = DefaultProvisioner.Provision(context.Background(), *d, "", "linux", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "linux", "amd64", *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p)
+	testProvisionerSuccessful(t, *p, "linux", "amd64")
 
 	// Test nothing happens if provision status is up to date
 	mh.e = true
 	os.Remove(p.AstilectronDownloadDst())
 	os.Remove(p.ElectronDownloadDst())
-	err = DefaultProvisioner.Provision(context.Background(), *d, "", "linux", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "linux", "amd64", *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p)
+	testProvisionerSuccessful(t, *p, "linux", "amd64")
 
 	// Test windows
 	mh.e = false
@@ -57,9 +57,9 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/windows"
-	err = DefaultProvisioner.Provision(context.Background(), *d, "", "windows", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "windows", "amd64", *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p)
+	testProvisionerSuccessful(t, *p, "windows", "amd64")
 
 	// Test darwin without custom app name + icon
 	os.RemoveAll(o.BaseDirectoryPath)
@@ -68,9 +68,9 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = DefaultProvisioner.Provision(context.Background(), *d, "", "darwin", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, "", "darwin", "amd64", *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p)
+	testProvisionerSuccessful(t, *p, "darwin", "amd64")
 
 	// Test darwin with custom app name + icon
 	os.RemoveAll(o.BaseDirectoryPath)
@@ -81,9 +81,9 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = DefaultProvisioner.Provision(context.Background(), *d, o.AppName, "darwin", *p)
+	err = DefaultProvisioner.Provision(context.Background(), *d, o.AppName, "darwin", "amd64", *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p)
+	testProvisionerSuccessful(t, *p, "darwin", "amd64")
 	// Rename
 	_, err = os.Stat(filepath.Join(p.ElectronDirectory(), o.AppName+".app"))
 	assert.NoError(t, err)
@@ -133,7 +133,7 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux")
 
 	// Test provision
-	err = pvb.Provision(context.Background(), *d, "", "linux", *p)
+	err = pvb.Provision(context.Background(), *d, "", "linux", "amd64", *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p)
+	testProvisionerSuccessful(t, *p, "linux", "amd64")
 }
