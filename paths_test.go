@@ -35,7 +35,7 @@ func TestPaths(t *testing.T) {
 	assert.Equal(t, "https://github.com/electron/electron/releases/download/v"+VersionElectron+"/electron-v"+VersionElectron+"-linux-ia32.zip", p.ElectronDownloadSrc())
 	p, err = newPaths("linux", "arm", Options{})
 	assert.NoError(t, err)
-	assert.Equal(t, "https://github.com/electron/electron/releases/download/v"+VersionElectron+"/electron-v"+VersionElectron+"-linux-arm.zip", p.ElectronDownloadSrc())
+	assert.Equal(t, "https://github.com/electron/electron/releases/download/v"+VersionElectron+"/electron-v"+VersionElectron+"-linux-armv7l.zip", p.ElectronDownloadSrc())
 	p, err = newPaths("darwin", "", Options{BaseDirectoryPath: "/path/to/base/directory", AppIconDarwinPath: "/path/to/darwin/icon"})
 	assert.NoError(t, err)
 	assert.Equal(t, "/path/to/base/directory/vendor/electron/Electron.app/Contents/MacOS/Electron", p.AppExecutable())
