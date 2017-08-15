@@ -18,6 +18,7 @@ type Options struct {
 	Debug              bool
 	Homepage           string
 	MessageHandler     MessageHandler
+	OnWait             OnWait
 	RestoreAssets      RestoreAssets
 	TemplateData       TemplateData
 	WindowOptions      *astilectron.WindowOptions
@@ -37,6 +38,9 @@ type CustomProvision func(baseDirectoryPath string) error
 
 // MessageHandler is a functions that handles messages
 type MessageHandler func(w *astilectron.Window, m MessageIn)
+
+// OnWait is a function that executes custom actions before waiting
+type OnWait func(a *astilectron.Astilectron, w *astilectron.Window) error
 
 // RestoreAssets is a function that restores assets namely the go-bindata's RestoreAssets method
 type RestoreAssets func(dir, name string) error

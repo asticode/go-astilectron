@@ -62,6 +62,11 @@ func Run(o Options) (err error) {
 		return errors.Wrap(err, "new window failed")
 	}
 
+	// Adapt window
+	if o.AdaptWindow != nil {
+		o.AdaptWindow(w)
+	}
+
 	// Handle messages
 	if o.MessageHandler != nil {
 		w.On(astilectron.EventNameWindowEventMessage, handleMessages(w, o.MessageHandler))
@@ -72,15 +77,17 @@ func Run(o Options) (err error) {
 		return errors.Wrap(err, "creating window failed")
 	}
 
-	// Adapt window
-	if o.AdaptWindow != nil {
-		o.AdaptWindow(w)
-	}
-
 	// Debug
 	if o.Debug {
 		if err = w.OpenDevTools(); err != nil {
 			return errors.Wrap(err, "opening dev tools failed")
+		}
+	}
+
+	// On wait
+	if o.OnWait != nil {
+		if err = o.OnWait(a, w); err != nil {
+			return errors.Wrap(err, "onwait failed")
 		}
 	}
 
