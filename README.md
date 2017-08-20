@@ -59,7 +59,7 @@ var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
 })
 w.Create()
 ```
-    
+
 When creating a window you need to indicate a URL as well as options such as position, size, etc.
 
 This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers and used pointers in structs sent to Electron.
@@ -79,7 +79,7 @@ w.On(astilectron.EventNameWindowEventResize, func(e astilectron.Event) (deleteLi
     return
 })
 ```
-    
+
 Nothing much to say here either except that you can add listeners to Astilectron as well.
 
 ### Play with the window
@@ -90,7 +90,7 @@ w.Resize(200, 200)
 time.Sleep(time.Second)
 w.Maximize()
 ```
-    
+
 Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#Window) for a list of all exported methods
 
 ### Send messages between GO and your webserver
@@ -101,17 +101,17 @@ In your webserver add the following javascript to any of the pages you want to i
 <script>
     // This will wait for the astilectron namespace to be ready
     document.addEventListener('astilectron-ready', function() {
-    
+
         // This will listen to messages sent by GO
         astilectron.listen(function(message) {
-                            
+
             // This will send a message back to GO
             astilectron.send("I'm good bro")
         });
     })
 </script>
 ```
-    
+
 In your GO app add the following:
 
 ```go
@@ -126,7 +126,7 @@ w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteL
 // Send message to webserver
 w.Send("What's up?")
 ```
-    
+
 And that's it!
 
 NOTE: needless to say that the message can be something other than a string. A custom struct for instance!
@@ -550,7 +550,7 @@ In order to use the **bootstrap** with static files and remote messaging you mus
             |
             |--+ app (contains your static files such as .html, .css, .js, .png, etc.)
         |--+ main.go
-        
+
 - use the `MessageHandler` **bootstrap** option in order to handle remote messaging
 - use `remote messaging` in your static files
 
@@ -567,20 +567,36 @@ In order to use the **bootstrap** with a web server you must:
               |--+ templates (contains your templates .html files)
         |--+ main.go
 - use the `AdaptRouter` and `TemplateData` **bootstrap** options in order to handle the server routes
-    
+
 ## Common
-    
+
 - if you're using the `RestoreAssets` **bootstrap** option, add the following comment on top of your `main()` method:
 
         //go:generate go-bindata -pkg $GOPACKAGE -o resources.go resources/...
-        
+
     and run the following command before building your binary:
 
         $ go generate main.go
-    
+
 - use the `bootstrap.Run()` method
-    
+
 Check out the [example](https://github.com/asticode/go-astilectron/tree/master/examples/9.bootstrap) for a detailed working example (see the **Examples** section below for the specific commands to run).
+
+# Commands
+## Bindata
+
+go-astilectron-bindata is a simple utility, that automatically downloads [go-astilectron](https://github.com/asticode/go-astilectron)'s
+binary dependencies and embeds them into the source code.
+## Installation
+`go install github.com/asticode/go-astilectron/cmd/astilectron-bindata`
+
+
+## Usage
+ * add this line to your code: `//go:generate astilectron-bindata` and run `go generate`
+   *or* simply run `astilectron-bindata`
+ * add `"github.com/veecue/go-astilectron-bindata"` to your includes
+ * add this code before `a.Start()`: `a.SetProvisioner(astilectron_bindata.NewProvisioner(Disembed))`
+
 
 # I want to see it in actions!
 
@@ -589,7 +605,7 @@ To make things clearer I've tried to split features in different [examples](http
 To run any of the examples, run the following commands:
 
     $ go run examples/<name of the example>/main.go -v
-    
+
 Here's a list of the examples:
 
 - [1.basic_window](https://github.com/asticode/go-astilectron/tree/master/examples/1.basic_window/main.go) creates a basic window that displays a static .html file
