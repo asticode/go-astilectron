@@ -163,10 +163,10 @@ func TestAstilectron_AcceptTCP(t *testing.T) {
 }
 
 func TestIsValidOS(t *testing.T) {
-	assert.NoError(t, validateOS("darwin"))
-	assert.NoError(t, validateOS("linux"))
-	assert.NoError(t, validateOS("windows"))
-	assert.Error(t, validateOS("invalid"))
+	assert.True(t, IsValidOS("darwin"))
+	assert.True(t, IsValidOS("linux"))
+	assert.True(t, IsValidOS("windows"))
+	assert.False(t, IsValidOS("invalid"))
 }
 
 func TestAstilectron_Wait(t *testing.T) {
