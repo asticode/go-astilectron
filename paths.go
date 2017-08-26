@@ -131,71 +131,71 @@ func (p *Paths) initAppExecutable(os, appName string) {
 }
 
 // AppExecutable returns the app executable path
-func (p *Paths) AppExecutable() string {
+func (p Paths) AppExecutable() string {
 	return p.appExecutable
 }
 
 // AppIconDarwinSrc returns the darwin app icon path
-func (p *Paths) AppIconDarwinSrc() string {
+func (p Paths) AppIconDarwinSrc() string {
 	return p.appIconDarwinSrc
 }
 
 // BaseDirectory returns the base directory path
-func (p *Paths) BaseDirectory() string {
+func (p Paths) BaseDirectory() string {
 	return p.baseDirectory
 }
 
 // AstilectronApplication returns the astilectron application path
-func (p *Paths) AstilectronApplication() string {
+func (p Paths) AstilectronApplication() string {
 	return p.astilectronApplication
 }
 
 // AstilectronDirectory returns the astilectron directory path
-func (p *Paths) AstilectronDirectory() string {
+func (p Paths) AstilectronDirectory() string {
 	return p.astilectronDirectory
 }
 
 // AstilectronDownloadDst returns the astilectron download destination path
-func (p *Paths) AstilectronDownloadDst() string {
+func (p Paths) AstilectronDownloadDst() string {
 	return p.astilectronDownloadDst
 }
 
 // AstilectronDownloadSrc returns the astilectron download source path
-func (p *Paths) AstilectronDownloadSrc() string {
+func (p Paths) AstilectronDownloadSrc() string {
 	return p.astilectronDownloadSrc
 }
 
 // AstilectronUnzipSrc returns the astilectron unzip source path
-func (p *Paths) AstilectronUnzipSrc() string {
+func (p Paths) AstilectronUnzipSrc() string {
 	return p.astilectronUnzipSrc
 }
 
 // ElectronDirectory returns the electron directory path
-func (p *Paths) ElectronDirectory() string {
+func (p Paths) ElectronDirectory() string {
 	return p.electronDirectory
 }
 
 // ElectronDownloadDst returns the electron download destination path
-func (p *Paths) ElectronDownloadDst() string {
+func (p Paths) ElectronDownloadDst() string {
 	return p.electronDownloadDst
 }
 
 // ElectronDownloadSrc returns the electron download source path
-func (p *Paths) ElectronDownloadSrc() string {
+func (p Paths) ElectronDownloadSrc() string {
 	return p.electronDownloadSrc
 }
 
 // ElectronUnzipSrc returns the electron unzip source path
-func (p *Paths) ElectronUnzipSrc() string {
+func (p Paths) ElectronUnzipSrc() string {
 	return p.electronUnzipSrc
 }
 
 // ProvisionStatus returns the provision status path
-func (p *Paths) ProvisionStatus() string {
+func (p Paths) ProvisionStatus() string {
 	return p.provisionStatus
 }
 
 // VendorDirectory returns the vendor directory path
-func (p *Paths) VendorDirectory() string {
+func (p Paths) VendorDirectory() string {
 	return p.vendorDirectory
 }
