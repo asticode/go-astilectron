@@ -1,7 +1,6 @@
 package astilectron
 
 import (
-	"flag"
 	"net"
 	"os"
 	"os/exec"
@@ -25,8 +24,7 @@ const (
 
 // Misc vars
 var (
-	astilectronDirectoryPath = flag.String("astilectron-directory-path", "", "the astilectron directory path")
-	validOSes                = map[string]bool{
+	validOSes = map[string]bool{
 		"darwin":  true,
 		"linux":   true,
 		"windows": true,

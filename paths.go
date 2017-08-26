@@ -41,7 +41,7 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.appIconDarwinSrc = o.AppIconDarwinPath
 	p.vendorDirectory = filepath.Join(p.baseDirectory, "vendor")
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
-	p.initAstilectronDirectory()
+	p.astilectronDirectory = filepath.Join(p.vendorDirectory, "astilectron")
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
 	p.astilectronDownloadSrc = AstilectronDownloadSrc()
 	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", VersionAstilectron))
@@ -74,15 +74,6 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 		return
 	}
 	return
-}
-
-// initAstilectronDirectory initializes the astilectron directory path
-func (p *Paths) initAstilectronDirectory() {
-	if len(*astilectronDirectoryPath) > 0 {
-		p.astilectronDirectory = *astilectronDirectoryPath
-	} else {
-		p.astilectronDirectory = filepath.Join(p.vendorDirectory, "astilectron")
-	}
 }
 
 // AstilectronDownloadSrc returns the download URL of the (currently platform-independant) astilectron zipfile

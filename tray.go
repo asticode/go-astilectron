@@ -4,10 +4,13 @@ import "github.com/asticode/go-astitools/context"
 
 // Tray event names
 const (
-	EventNameTrayCmdCreate      = "tray.cmd.create"
-	EventNameTrayCmdDestroy     = "tray.cmd.destroy"
-	EventNameTrayEventCreated   = "tray.event.created"
-	EventNameTrayEventDestroyed = "tray.event.destroyed"
+	EventNameTrayCmdCreate          = "tray.cmd.create"
+	EventNameTrayCmdDestroy         = "tray.cmd.destroy"
+	EventNameTrayEventClicked       = "tray.event.clicked"
+	EventNameTrayEventCreated       = "tray.event.created"
+	EventNameTrayEventDestroyed     = "tray.event.destroyed"
+	EventNameTrayEventDoubleClicked = "tray.event.double.clicked"
+	EventNameTrayEventRightClicked  = "tray.event.right.clicked"
 )
 
 // Tray represents a tray
