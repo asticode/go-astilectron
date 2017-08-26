@@ -2,7 +2,6 @@ package astilectron
 
 import (
 	"flag"
-	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -15,7 +14,6 @@ import (
 	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/context"
 	"github.com/asticode/go-astitools/exec"
-	"github.com/asticode/go-astitools/slice"
 	"github.com/pkg/errors"
 )
 
@@ -28,7 +26,11 @@ const (
 // Misc vars
 var (
 	astilectronDirectoryPath = flag.String("astilectron-directory-path", "", "the astilectron directory path")
-	validOSes                = []string{"darwin", "linux", "windows"}
+	validOSes                = map[string]bool{
+		"darwin":  true,
+		"linux":   true,
+		"windows": true,
+	}
 )
 
 // App event names
@@ -71,10 +73,12 @@ type Options struct {
 // New creates a new Astilectron instance
 func New(o Options) (a *Astilectron, err error) {
 	// Validate the OS
-	if err = validateOS(runtime.GOOS); err != nil {
-		err = errors.Wrap(err, "validating OS failed")
+	if !IsValidOS(runtime.GOOS) {
+		err = errors.Wrapf(err, "OS %s is invalid")
 		return
 	}
+
+	// Init
 	a = &Astilectron{
 		canceller:   asticontext.NewCanceller(),
 		channelQuit: make(chan bool),
@@ -111,17 +115,10 @@ func New(o Options) (a *Astilectron, err error) {
 	return
 }
 
-// validateOS validates the OS
-func validateOS(os string) error {
-	if !astislice.InStringSlice(os, validOSes) {
-		return fmt.Errorf("OS %s is not supported", os)
-	}
-	return nil
-}
-
-// ValidOSes returns a slice containing the names of all currently supported operating systems
-func ValidOSes() []string {
-	return append(make([]string, 0, len(validOSes)), validOSes...)
+// IsValidOS validates the OS
+func IsValidOS(os string) (ok bool) {
+	_, ok = validOSes[os]
+	return
 }
 
 // SetProvisioner sets the provisioner
@@ -345,6 +342,11 @@ func (a *Astilectron) Wait() {
 		return
 	}
 	<-a.channelQuit
+}
+
+// Paths returns the paths
+func (a *Astilectron) Paths() Paths {
+	return *a.paths
 }
 
 // Displays returns the displays
