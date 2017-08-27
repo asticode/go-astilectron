@@ -52,6 +52,9 @@ func (r *reader) read() {
 			return
 		}
 		b = bytes.TrimSpace(b)
+		if len(b) == 0 {
+			return
+		}
 		astilog.Debugf("Astilectron says: %s", b)
 
 		// Unmarshal
