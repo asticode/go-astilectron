@@ -32,7 +32,8 @@ func Download(ctx context.Context, c *http.Client, src, dst string) (err error) 
 
 	// Clean up on error
 	defer func(err *error) {
-		if *err != nil {
+		if *err != nil || ctx.Err() != nil {
+			astilog.Debugf("Removing %s...", dst)
 			os.Remove(dst)
 		}
 	}(&err)
@@ -65,7 +66,8 @@ func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
 
 	// Clean up on error
 	defer func(err *error) {
-		if *err != nil {
+		if *err != nil || ctx.Err() != nil {
+			astilog.Debugf("Removing %s...", dst)
 			os.Remove(dst)
 		}
 	}(&err)
@@ -102,9 +104,22 @@ func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
 
 // Unzip unzips a src into a dst.
 // Possible src formats are /path/to/zip.zip or /path/to/zip.zip/internal/path.
-func Unzip(ctx context.Context, src, dst string) error {
+func Unzip(ctx context.Context, src, dst string) (err error) {
+	// Clean up on error
+	defer func(err *error) {
+		if *err != nil || ctx.Err() != nil {
+			astilog.Debugf("Removing %s...", dst)
+			os.RemoveAll(dst)
+		}
+	}(&err)
+
+	// Unzipping
 	astilog.Debugf("Unzipping %s into %s", src, dst)
-	return astizip.Unzip(ctx, src, dst)
+	if err = astizip.Unzip(ctx, src, dst); err != nil {
+		err = errors.Wrapf(err, "unzipping %s into %s failed", src, dst)
+		return
+	}
+	return
 }
 
 // PtrBool transforms a bool into a *bool
