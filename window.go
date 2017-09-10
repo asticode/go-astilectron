@@ -17,6 +17,7 @@ const (
 	EventNameWindowCmdDestroy                  = "window.cmd.destroy"
 	EventNameWindowCmdFocus                    = "window.cmd.focus"
 	EventNameWindowCmdHide                     = "window.cmd.hide"
+	EventNameWindowCmdLog                      = "window.cmd.log"
 	EventNameWindowCmdMaximize                 = "window.cmd.maximize"
 	EventNameWindowCmdMessage                  = "window.cmd.message"
 	EventNameWindowCmdMinimize                 = "window.cmd.minimize"
@@ -246,12 +247,12 @@ func (w *Window) Hide() (err error) {
 	return
 }
 
-// OpenDevTools opens the dev tools
-func (w *Window) OpenDevTools() (err error) {
+// Log logs a message in the JS console of the window
+func (w *Window) Log(message string) (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return w.w.write(Event{Name: EventNameWindowCmdWebContentsOpenDevTools, TargetID: w.id})
+	return w.w.write(Event{Message: newEventMessage(message), Name: EventNameWindowCmdLog, TargetID: w.id})
 }
 
 // Maximize maximizes the window
@@ -286,6 +287,14 @@ func (w *Window) Move(x, y int) (err error) {
 // MoveInDisplay moves the window in the proper display
 func (w *Window) MoveInDisplay(d *Display, x, y int) error {
 	return w.Move(d.Bounds().X+x, d.Bounds().Y+y)
+}
+
+// OpenDevTools opens the dev tools
+func (w *Window) OpenDevTools() (err error) {
+	if err = w.isActionable(); err != nil {
+		return
+	}
+	return w.w.write(Event{Name: EventNameWindowCmdWebContentsOpenDevTools, TargetID: w.id})
 }
 
 // Resize resizes the window
