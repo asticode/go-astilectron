@@ -58,7 +58,7 @@ var (
 
 // Provisioner represents an object capable of provisioning Astilectron
 type Provisioner interface {
-	Provision(ctx context.Context, d Dispatcher, appName, os, arch string, p Paths) error
+	Provision(ctx context.Context, d *Dispatcher, appName, os, arch string, p Paths) error
 }
 
 // mover is a function that moves a package
@@ -93,7 +93,7 @@ func provisionStatusElectronKey(os, arch string) string {
 
 // Provision implements the provisioner interface
 // TODO Package app using electron instead of downloading Electron + Astilectron separately
-func (p *defaultProvisioner) Provision(ctx context.Context, d Dispatcher, appName, os, arch string, paths Paths) (err error) {
+func (p *defaultProvisioner) Provision(ctx context.Context, d *Dispatcher, appName, os, arch string, paths Paths) (err error) {
 	// Retrieve provision status
 	var s ProvisionStatus
 	if s, err = p.ProvisionStatus(paths); err != nil {
@@ -177,12 +177,12 @@ func (p *defaultProvisioner) updateProvisionStatus(paths Paths, s *ProvisionStat
 }
 
 // provisionAstilectron provisions astilectron
-func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, d Dispatcher, paths Paths, s ProvisionStatus) error {
+func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, d *Dispatcher, paths Paths, s ProvisionStatus) error {
 	return p.provisionPackage(ctx, d, paths, s.Astilectron, p.moverAstilectron, "Astilectron", VersionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
 }
 
 // provisionElectron provisions electron
-func (p *defaultProvisioner) provisionElectron(ctx context.Context, d Dispatcher, paths Paths, s ProvisionStatus, appName, os, arch string) error {
+func (p *defaultProvisioner) provisionElectron(ctx context.Context, d *Dispatcher, paths Paths, s ProvisionStatus, appName, os, arch string) error {
 	return p.provisionPackage(ctx, d, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
 		switch os {
 		case "darwin":
@@ -197,7 +197,7 @@ func (p *defaultProvisioner) provisionElectron(ctx context.Context, d Dispatcher
 }
 
 // provisionPackage provisions a package
-func (p *defaultProvisioner) provisionPackage(ctx context.Context, d Dispatcher, paths Paths, s *ProvisionStatusPackage, m mover, name, version, pathUnzipSrc, pathDirectory string, finish func() error) (err error) {
+func (p *defaultProvisioner) provisionPackage(ctx context.Context, d *Dispatcher, paths Paths, s *ProvisionStatusPackage, m mover, name, version, pathUnzipSrc, pathDirectory string, finish func() error) (err error) {
 	// Package has already been provisioned
 	if s != nil && s.Version == version {
 		astilog.Debugf("%s has already been provisioned to version %s, moving on...", name, version)

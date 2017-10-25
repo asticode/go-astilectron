@@ -11,8 +11,14 @@ func TestDispatcher(t *testing.T) {
 	// Init
 	var d = newDispatcher()
 	defer d.close()
-	go d.start()
-	var wg = &sync.WaitGroup{}
+
+	waitChan := make(chan struct{})
+	go func() {
+		d.start()
+		waitChan <- struct{}{}
+	}()
+
+	var wg = sync.WaitGroup{}
 	var dispatched = []int{}
 
 	// Test adding listener
@@ -50,5 +56,6 @@ func TestDispatcher(t *testing.T) {
 
 	// Test close
 	d.close()
-	assert.Nil(t, d.cq)
+	<-waitChan
+	d.close() // this shouldn't try to close the channel again and therefore don't panic
 }
