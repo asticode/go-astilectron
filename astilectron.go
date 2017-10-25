@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -47,6 +48,7 @@ const (
 type Astilectron struct {
 	canceller    *asticontext.Canceller
 	channelQuit  chan bool
+	closeOnce    sync.Once
 	dispatcher   *Dispatcher
 	displayPool  *displayPool
 	identifier   *identifier
@@ -161,7 +163,7 @@ func (a *Astilectron) Start() (err error) {
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, *a.dispatcher, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
+	return a.provisioner.Provision(ctx, a.dispatcher, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -315,7 +317,7 @@ func (a *Astilectron) Close() {
 // HandleSignals handles signals
 func (a *Astilectron) HandleSignals() {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGABRT, syscall.SIGKILL, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+	signal.Notify(ch, syscall.SIGABRT, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 	go func() {
 		for sig := range ch {
 			astilog.Debugf("Received signal %s", sig)
@@ -328,17 +330,13 @@ func (a *Astilectron) HandleSignals() {
 func (a *Astilectron) Stop() {
 	astilog.Debug("Stopping...")
 	a.canceller.Cancel()
-	if a.channelQuit != nil {
+	a.closeOnce.Do(func() {
 		close(a.channelQuit)
-		a.channelQuit = nil
-	}
+	})
 }
 
 // Wait is a blocking pattern
 func (a *Astilectron) Wait() {
-	if a.channelQuit == nil {
-		return
-	}
 	<-a.channelQuit
 }
 

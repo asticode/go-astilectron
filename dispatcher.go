@@ -14,12 +14,13 @@ type listenable interface {
 type Dispatcher struct {
 	c  chan Event
 	cq chan bool
+	co sync.Once
 	id int
 	// Indexed by target ID then by event name then be listener id
 	// We use a map[int]Listener so that deletion is as smooth as possible
 	// It means it doesn't store listeners in order
 	l map[string]map[string]map[int]Listener
-	m *sync.Mutex
+	m sync.Mutex
 }
 
 // newDispatcher creates a new dispatcher
@@ -28,7 +29,6 @@ func newDispatcher() *Dispatcher {
 		c:  make(chan Event),
 		cq: make(chan bool),
 		l:  make(map[string]map[string]map[int]Listener),
-		m:  &sync.Mutex{},
 	}
 }
 
@@ -48,10 +48,9 @@ func (d *Dispatcher) addListener(targetID, eventName string, l Listener) {
 
 // close closes the dispatcher properly
 func (d *Dispatcher) close() {
-	if d.cq != nil {
+	d.co.Do(func() {
 		close(d.cq)
-		d.cq = nil
-	}
+	})
 }
 
 // delListener delete a specific listener
@@ -68,7 +67,7 @@ func (d *Dispatcher) delListener(targetID, eventName string, id int) {
 }
 
 // Dispatch dispatches an event
-func (d Dispatcher) Dispatch(e Event) {
+func (d *Dispatcher) Dispatch(e Event) {
 	d.c <- e
 }
 
