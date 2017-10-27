@@ -10,6 +10,8 @@ import (
 
 	"fmt"
 
+	"sync"
+
 	"github.com/asticode/go-astitools/context"
 	"github.com/pkg/errors"
 	"github.com/rs/xid"
@@ -161,7 +163,10 @@ func TestSynchronousEvent(t *testing.T) {
 	var c = asticontext.NewCanceller()
 	var l = &mockedListenable{d: d, id: "1"}
 	var done bool
+	var m sync.Mutex
 	l.On("done", func(e Event) bool {
+		m.Lock()
+		defer m.Unlock()
 		done = true
 		return false
 	})
@@ -170,7 +175,9 @@ func TestSynchronousEvent(t *testing.T) {
 	// Test successful synchronous event
 	var e, err = synchronousEvent(c, l, w, ei, "done")
 	assert.NoError(t, err)
+	m.Lock()
 	assert.True(t, done)
+	m.Unlock()
 	assert.Equal(t, ed, e)
 	assert.Equal(t, []string{"{\"name\":\"order\",\"targetID\":\"1\"}\n"}, mw.w)
 }
