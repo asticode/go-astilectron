@@ -6,4 +6,4 @@ matrix:
   allow_failures:
       - go: tip
 script:
-    go test -v
+    go test -v -race
