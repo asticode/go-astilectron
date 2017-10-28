@@ -52,7 +52,7 @@ func TestDispatcher(t *testing.T) {
 	for _, v := range []int{1, 2, 3, 4} {
 		assert.Contains(t, dispatched, v)
 	}
-	assert.Len(t, d.l["1"]["1"], 1)
+	assert.Len(t, d.listeners("1", "1"), 1)
 
 	// Test close
 	d.close()

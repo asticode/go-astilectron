@@ -88,14 +88,18 @@ func (d *Dispatcher) start() {
 }
 
 // listeners returns the listeners for a target ID and an event name
-func (d *Dispatcher) listeners(targetID, eventName string) map[int]Listener {
+func (d *Dispatcher) listeners(targetID, eventName string) (l map[int]Listener) {
 	d.m.Lock()
 	defer d.m.Unlock()
+	l = map[int]Listener{}
 	if _, ok := d.l[targetID]; !ok {
-		return map[int]Listener{}
+		return
 	}
 	if _, ok := d.l[targetID][eventName]; !ok {
-		return map[int]Listener{}
+		return
 	}
-	return d.l[targetID][eventName]
+	for k, v := range d.l[targetID][eventName] {
+		l[k] = v
+	}
+	return
 }
