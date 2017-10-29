@@ -25,3 +25,11 @@ func TestTray_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return tr.Destroy() }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdDestroy+"\",\"targetID\":\""+tr.id+"\"}\n", EventNameTrayEventDestroyed)
 	assert.True(t, tr.IsDestroyed())
 }
+
+func TestTray_NewMenu(t *testing.T) {
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	tr := a.NewTray(&TrayOptions{})
+	m := tr.NewMenu([]*MenuItemOptions{})
+	assert.Equal(t, tr.id, m.rootID)
+}

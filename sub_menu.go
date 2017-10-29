@@ -32,21 +32,21 @@ type SubMenu struct {
 type subMenu struct {
 	*object
 	items []*MenuItem
-	// We must store the root since everytime we update a sub menu we need to set the root menu all over again in electron
-	root interface{}
+	// We must store the root ID since everytime we update a sub menu we need to set the root menu all over again in electron
+	rootID string
 }
 
 // newSubMenu creates a new sub menu
-func newSubMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) *subMenu {
+func newSubMenu(parentCtx context.Context, rootID string, items []*MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) *subMenu {
 	// Init
 	var m = &subMenu{
 		object: newObject(parentCtx, c, d, i, w),
-		root:   root,
+		rootID: rootID,
 	}
 
 	// Parse items
 	for _, o := range items {
-		m.items = append(m.items, newMenuItem(m.ctx, root, o, c, d, i, w))
+		m.items = append(m.items, newMenuItem(m.ctx, rootID, o, c, d, i, w))
 	}
 	return m
 }
@@ -55,10 +55,7 @@ func newSubMenu(parentCtx context.Context, root interface{}, items []*MenuItemOp
 func (m *subMenu) toEvent() (e *EventSubMenu) {
 	e = &EventSubMenu{
 		ID:     m.id,
-		RootID: mainTargetID,
-	}
-	if w, ok := m.root.(*Window); ok {
-		e.RootID = w.id
+		RootID: m.rootID,
 	}
 	for _, i := range m.items {
 		e.Items = append(e.Items, i.toEvent())
@@ -68,7 +65,7 @@ func (m *subMenu) toEvent() (e *EventSubMenu) {
 
 // NewItem returns a new menu item
 func (m *subMenu) NewItem(o *MenuItemOptions) *MenuItem {
-	return newMenuItem(m.ctx, m.root, o, m.c, m.d, m.i, m.w)
+	return newMenuItem(m.ctx, m.rootID, o, m.c, m.d, m.i, m.w)
 }
 
 // SubMenu returns the sub menu at the specified indexes

@@ -67,3 +67,12 @@ func TestWindow_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return w.Show() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdShow+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventShow)
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize)
 }
+
+func TestWindow_NewMenu(t *testing.T) {
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	w, err := a.NewWindow("http://test.com", &WindowOptions{})
+	assert.NoError(t, err)
+	m := w.NewMenu([]*MenuItemOptions{})
+	assert.Equal(t, w.id, m.rootID)
+}

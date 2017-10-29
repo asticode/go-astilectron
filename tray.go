@@ -16,7 +16,6 @@ const (
 // Tray represents a tray
 type Tray struct {
 	*object
-	m *Menu
 	o *TrayOptions
 }
 
@@ -51,9 +50,6 @@ func (t *Tray) Create() (err error) {
 		return
 	}
 	var e = Event{Name: EventNameTrayCmdCreate, TargetID: t.id, TrayOptions: t.o}
-	if t.m != nil {
-		e.MenuID = t.m.id
-	}
 	_, err = synchronousEvent(t.c, t, t.w, e, EventNameTrayEventCreated)
 	return
 }
@@ -69,6 +65,5 @@ func (t *Tray) Destroy() (err error) {
 
 // NewMenu creates a new tray menu
 func (t *Tray) NewMenu(i []*MenuItemOptions) *Menu {
-	t.m = newMenu(t.ctx, t, i, t.c, t.d, t.i, t.w)
-	return t.m
+	return newMenu(t.ctx, t.id, i, t.c, t.d, t.i, t.w)
 }

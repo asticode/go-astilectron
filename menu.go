@@ -21,9 +21,9 @@ type Menu struct {
 }
 
 // newMenu creates a new menu
-func newMenu(parentCtx context.Context, root interface{}, items []*MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (m *Menu) {
+func newMenu(parentCtx context.Context, rootID string, items []*MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (m *Menu) {
 	// Init
-	m = &Menu{newSubMenu(parentCtx, root, items, c, d, i, w)}
+	m = &Menu{newSubMenu(parentCtx, rootID, items, c, d, i, w)}
 
 	// Make sure the menu's context is cancelled once the destroyed event is received
 	m.On(EventNameMenuEventDestroyed, func(e Event) (deleteListener bool) {

@@ -171,7 +171,7 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 
 // NewMenu creates a new window menu
 func (w *Window) NewMenu(i []*MenuItemOptions) *Menu {
-	return newMenu(w.ctx, w, i, w.c, w.d, w.i, w.w)
+	return newMenu(w.ctx, w.id, i, w.c, w.d, w.i, w.w)
 }
 
 // Blur blurs the window

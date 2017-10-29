@@ -19,7 +19,7 @@ import (
 
 // Versions
 const (
-	VersionAstilectron = "0.9.0"
+	VersionAstilectron = "0.10.0"
 	VersionElectron    = "1.6.5"
 )
 
@@ -357,7 +357,7 @@ func (a *Astilectron) PrimaryDisplay() *Display {
 
 // NewMenu creates a new app menu
 func (a *Astilectron) NewMenu(i []*MenuItemOptions) *Menu {
-	return newMenu(nil, a, i, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return newMenu(nil, mainTargetID, i, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewWindow creates a new window

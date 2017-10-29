@@ -10,7 +10,7 @@ import (
 
 func TestSubMenu_ToEvent(t *testing.T) {
 	// App sub menu
-	var s = newSubMenu(nil, nil, []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), newIdentifier(), nil)
+	var s = newSubMenu(nil, "main", []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), newIdentifier(), nil)
 	e := s.toEvent()
 	assert.Equal(t, &EventSubMenu{ID: "1", Items: []*EventMenuItem{{ID: "2", Options: &MenuItemOptions{Label: PtrStr("1")}, RootID: "main"}, {ID: "3", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: "main"}}, RootID: "main"}, e)
 
@@ -18,7 +18,7 @@ func TestSubMenu_ToEvent(t *testing.T) {
 	var i = newIdentifier()
 	w, err := newWindow(Options{}, "http://test.com", &WindowOptions{}, asticontext.NewCanceller(), newDispatcher(), i, nil)
 	assert.NoError(t, err)
-	s = newSubMenu(nil, w, []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), i, nil)
+	s = newSubMenu(nil, w.id, []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), i, nil)
 	e = s.toEvent()
 	assert.Equal(t, &EventSubMenu{ID: "2", Items: []*EventMenuItem{{ID: "3", Options: &MenuItemOptions{Label: PtrStr("1")}, RootID: "1"}, {ID: "4", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: "1"}}, RootID: "1"}, e)
 }
@@ -37,7 +37,7 @@ func TestSubMenu_SubMenu(t *testing.T) {
 		}},
 		{},
 	}
-	var m = newMenu(context.Background(), nil, o, nil, newDispatcher(), newIdentifier(), nil)
+	var m = newMenu(context.Background(), "main", o, nil, newDispatcher(), newIdentifier(), nil)
 	s, err := m.SubMenu(0, 1)
 	assert.EqualError(t, err, "No submenu at 0")
 	s, err = m.SubMenu(1)
@@ -66,7 +66,7 @@ func TestSubMenu_Item(t *testing.T) {
 		}},
 		{Label: PtrStr("3")},
 	}
-	var m = newMenu(context.Background(), nil, o, nil, newDispatcher(), newIdentifier(), nil)
+	var m = newMenu(context.Background(), "main", o, nil, newDispatcher(), newIdentifier(), nil)
 	i, err := m.Item(3)
 	assert.EqualError(t, err, "Submenu has 3 items, invalid index 3")
 	i, err = m.Item(0)
@@ -90,7 +90,7 @@ func TestSubMenu_Actions(t *testing.T) {
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
 	var w = newWriter(wrt)
-	var s = newSubMenu(nil, nil, []*MenuItemOptions{{Label: PtrStr("0")}}, c, d, i, w)
+	var s = newSubMenu(nil, "main", []*MenuItemOptions{{Label: PtrStr("0")}}, c, d, i, w)
 
 	// Actions
 	var mi = s.NewItem(&MenuItemOptions{Label: PtrStr("1")})
