@@ -181,3 +181,10 @@ func TestAstilectron_Wait(t *testing.T) {
 	}()
 	a.Wait()
 }
+
+func TestAstilectron_NewMenu(t *testing.T) {
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	m := a.NewMenu([]*MenuItemOptions{})
+	assert.Equal(t, mainTargetID, m.rootID)
+}

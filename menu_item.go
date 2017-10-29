@@ -69,9 +69,9 @@ var (
 type MenuItem struct {
 	*object
 	o *MenuItemOptions
-	// We must store the root since everytime we update a sub menu we need to set the root menu all over again in electron
-	root interface{}
-	s    *SubMenu
+	// We must store the root ID since everytime we update a sub menu we need to set the root menu all over again in electron
+	rootID string
+	s      *SubMenu
 }
 
 // MenuItemOptions represents menu item options
@@ -94,17 +94,17 @@ type MenuItemOptions struct {
 }
 
 // newMenu creates a new menu item
-func newMenuItem(parentCtx context.Context, root interface{}, o *MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (m *MenuItem) {
+func newMenuItem(parentCtx context.Context, rootID string, o *MenuItemOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) (m *MenuItem) {
 	m = &MenuItem{
 		o:      o,
 		object: newObject(parentCtx, c, d, i, w),
-		root:   root,
+		rootID: rootID,
 	}
 	if o.OnClick != nil {
 		m.On(EventNameMenuItemEventClicked, o.OnClick)
 	}
 	if len(o.SubMenu) > 0 {
-		m.s = &SubMenu{newSubMenu(parentCtx, root, o.SubMenu, c, d, i, w)}
+		m.s = &SubMenu{newSubMenu(parentCtx, rootID, o.SubMenu, c, d, i, w)}
 	}
 	return
 }
@@ -114,13 +114,10 @@ func (i *MenuItem) toEvent() (e *EventMenuItem) {
 	e = &EventMenuItem{
 		ID:      i.id,
 		Options: i.o,
-		RootID:  mainTargetID,
+		RootID:  i.rootID,
 	}
 	if i.s != nil {
 		e.SubMenu = i.s.toEvent()
-	}
-	if w, ok := i.root.(*Window); ok {
-		e.RootID = w.id
 	}
 	return
 }
