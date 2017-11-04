@@ -68,7 +68,8 @@ type Window struct {
 // https://github.com/electron/electron/blob/v1.6.5/docs/api/browser-window.md
 type WindowOptions struct {
 	// Custom
-	MinimizeOnClose *bool `json:"minimizeOnClose,omitempty"`
+	MessageBoxOnClose *MessageBoxOptions `json:"messageBoxOnClose,omitempty"`
+	MinimizeOnClose   *bool              `json:"minimizeOnClose,omitempty"`
 
 	// Default
 	AcceptFirstMouse       *bool           `json:"acceptFirstMouse,omitempty"`
