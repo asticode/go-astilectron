@@ -188,3 +188,18 @@ func TestAstilectron_NewMenu(t *testing.T) {
 	m := a.NewMenu([]*MenuItemOptions{})
 	assert.Equal(t, mainTargetID, m.rootID)
 }
+
+func TestAstilectron_Actions(t *testing.T) {
+	// Init
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+	go a.dispatcher.start()
+	wrt := &mockedWriter{}
+	a.writer = newWriter(wrt)
+
+	// Actions
+	err = a.Quit()
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"{\"name\":\"app.cmd.quit\"}\n"}, wrt.w)
+}
