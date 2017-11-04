@@ -67,6 +67,10 @@ type Window struct {
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.6.5/docs/api/browser-window.md
 type WindowOptions struct {
+	// Custom
+	MinimizeOnClose *bool `json:"minimizeOnClose,omitempty"`
+
+	// Default
 	AcceptFirstMouse       *bool           `json:"acceptFirstMouse,omitempty"`
 	AlwaysOnTop            *bool           `json:"alwaysOnTop,omitempty"`
 	AutoHideMenuBar        *bool           `json:"autoHideMenuBar,omitempty"`

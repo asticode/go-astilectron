@@ -19,7 +19,7 @@ import (
 
 // Versions
 const (
-	VersionAstilectron = "0.10.0"
+	VersionAstilectron = "0.11.0"
 	VersionElectron    = "1.6.5"
 )
 
@@ -35,7 +35,8 @@ var (
 // App event names
 const (
 	EventNameAppClose         = "app.close"
-	EventNameAppCmdStop       = "app.cmd.stop"
+	EventNameAppCmdQuit       = "app.cmd.quit" // Sends an event to Electron to properly quit the app
+	EventNameAppCmdStop       = "app.cmd.stop" // Cancel the context which results in exiting abruptly Electron's app
 	EventNameAppCrash         = "app.crash"
 	EventNameAppErrorAccept   = "app.error.accept"
 	EventNameAppEventReady    = "app.event.ready"
@@ -338,6 +339,11 @@ func (a *Astilectron) Stop() {
 // Wait is a blocking pattern
 func (a *Astilectron) Wait() {
 	<-a.channelQuit
+}
+
+// Quit quits the app
+func (a *Astilectron) Quit() error {
+	return a.writer.write(Event{Name: EventNameAppCmdQuit})
 }
 
 // Paths returns the paths
