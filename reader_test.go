@@ -60,7 +60,8 @@ func TestReader(t *testing.T) {
 	// Test read
 	go r.read()
 	wg.Wait()
-	assert.Equal(t, []int{1, 2}, dispatched)
+	assert.Contains(t, dispatched, 1)
+	assert.Contains(t, dispatched, 2)
 
 	// Test close
 	r.close()
