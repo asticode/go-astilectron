@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/os"
-	"github.com/asticode/go-astitools/regexp"
 	"github.com/pkg/errors"
+	"github.com/tehsphinx/go-astilog"
+	"github.com/tehsphinx/go-astitools/os"
+	"github.com/tehsphinx/go-astitools/regexp"
 )
 
 // Provision event names

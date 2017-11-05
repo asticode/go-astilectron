@@ -3,9 +3,9 @@ package astilectron
 import (
 	"net/url"
 
-	"github.com/asticode/go-astitools/context"
-	"github.com/asticode/go-astitools/url"
 	"github.com/pkg/errors"
+	"github.com/tehsphinx/go-astitools/context"
+	"github.com/tehsphinx/go-astitools/url"
 )
 
 // Window event names

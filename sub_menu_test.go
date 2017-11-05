@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/asticode/go-astitools/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/tehsphinx/go-astitools/context"
 )
 
 func TestSubMenu_ToEvent(t *testing.T) {

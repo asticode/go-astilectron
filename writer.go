@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/asticode/go-astilog"
 	"github.com/pkg/errors"
+	"github.com/tehsphinx/go-astilog"
 )
 
 // writer represents an object capable of writing in the TCP server

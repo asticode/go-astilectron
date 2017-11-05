@@ -11,10 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/context"
-	"github.com/asticode/go-astitools/exec"
 	"github.com/pkg/errors"
+	"github.com/tehsphinx/go-astilog"
+	"github.com/tehsphinx/go-astitools/context"
+	"github.com/tehsphinx/go-astitools/exec"
 )
 
 // Versions

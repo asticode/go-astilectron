@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/asticode/go-astilog"
+	"github.com/tehsphinx/go-astilog"
 )
 
 // reader represents an object capable of reading in the TCP server
