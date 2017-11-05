@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/asticode/go-astitools/context"
+	"github.com/tehsphinx/go-astitools/context"
 )
 
 // Object errors

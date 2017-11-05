@@ -2,20 +2,18 @@ package astilectron
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync"
 	"testing"
 
-	"fmt"
-
-	"sync"
-
-	"github.com/asticode/go-astitools/context"
 	"github.com/pkg/errors"
 	"github.com/rs/xid"
 	"github.com/stretchr/testify/assert"
+	"github.com/tehsphinx/go-astitools/context"
 )
 
 // mockedHandler is a mocked handler

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/asticode/go-astitools/context"
+	"github.com/tehsphinx/go-astitools/context"
 )
 
 // Sub menu event names

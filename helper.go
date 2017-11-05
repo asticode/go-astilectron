@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/context"
-	"github.com/asticode/go-astitools/http"
-	"github.com/asticode/go-astitools/io"
-	"github.com/asticode/go-astitools/zip"
 	"github.com/pkg/errors"
+	"github.com/tehsphinx/go-astilog"
+	"github.com/tehsphinx/go-astitools/context"
+	"github.com/tehsphinx/go-astitools/http"
+	"github.com/tehsphinx/go-astitools/io"
+	"github.com/tehsphinx/go-astitools/zip"
 )
 
 // Download is a cancellable function that downloads a src into a dst using a specific *http.Client and cleans up on

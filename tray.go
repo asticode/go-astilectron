@@ -1,6 +1,6 @@
 package astilectron
 
-import "github.com/asticode/go-astitools/context"
+import "github.com/tehsphinx/go-astitools/context"
 
 // Tray event names
 const (
