@@ -3,10 +3,8 @@ package astilectron
 import (
 	"bufio"
 	"bytes"
-	"io"
-
 	"encoding/json"
-
+	"io"
 	"strings"
 
 	"github.com/asticode/go-astilog"
@@ -62,6 +60,7 @@ func (r *reader) read() {
 		}
 
 		// Dispatch
-		r.d.Dispatch(e)
+		// needs goroutine so reader does not wait for dispatching
+		go r.d.Dispatch(e)
 	}
 }

@@ -10,9 +10,14 @@ type listenable interface {
 	On(eventName string, l Listener)
 }
 
+type dispatchCmd struct {
+	event Event
+	done  chan bool
+}
+
 // Dispatcher represents an object capable of dispatching events
 type Dispatcher struct {
-	c  chan Event
+	c  chan dispatchCmd
 	cq chan bool
 	co sync.Once
 	id int
@@ -26,7 +31,7 @@ type Dispatcher struct {
 // newDispatcher creates a new dispatcher
 func newDispatcher() *Dispatcher {
 	return &Dispatcher{
-		c:  make(chan Event),
+		c:  make(chan dispatchCmd),
 		cq: make(chan bool),
 		l:  make(map[string]map[string]map[int]Listener),
 	}
@@ -68,19 +73,28 @@ func (d *Dispatcher) delListener(targetID, eventName string, id int) {
 
 // Dispatch dispatches an event
 func (d *Dispatcher) Dispatch(e Event) {
-	d.c <- e
+	done := make(chan bool)
+	d.c <- dispatchCmd{
+		event: e,
+		done:  done,
+	}
+	<-done
 }
 
 // start starts the dispatcher and listens to dispatched events
 func (d *Dispatcher) start() {
 	for {
 		select {
-		case e := <-d.c:
-			for id, l := range d.listeners(e.TargetID, e.Name) {
-				if l(e) {
-					d.delListener(e.TargetID, e.Name, id)
+		case cmd := <-d.c:
+			// needed so dispatches of events triggered in the listeners can be received without blocking
+			go func() {
+				for id, l := range d.listeners(cmd.event.TargetID, cmd.event.Name) {
+					if l(cmd.event) {
+						d.delListener(cmd.event.TargetID, cmd.event.Name, id)
+					}
 				}
-			}
+				cmd.done <- true
+			}()
 		case <-d.cq:
 			return
 		}
