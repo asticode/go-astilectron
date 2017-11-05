@@ -135,7 +135,10 @@ func TestSynchronousFunc(t *testing.T) {
 	var c = asticontext.NewCanceller()
 	var l = &mockedListenable{d: d, id: "1"}
 	var done bool
+	var m sync.Mutex
 	l.On("done", func(e Event) bool {
+		m.Lock()
+		defer m.Unlock()
 		done = true
 		return false
 	})
@@ -148,7 +151,9 @@ func TestSynchronousFunc(t *testing.T) {
 	c = asticontext.NewCanceller()
 	var ed = Event{Name: "done", TargetID: "1"}
 	var e = synchronousFunc(c, l, func() { d.Dispatch(ed) }, "done")
+	m.Lock()
 	assert.True(t, done)
+	m.Unlock()
 	assert.Equal(t, ed, e)
 }
 
