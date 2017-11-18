@@ -20,7 +20,7 @@ import (
 // Versions
 const (
 	VersionAstilectron = "0.12.0"
-	VersionElectron    = "1.6.5"
+	VersionElectron    = "1.8.1"
 )
 
 // Misc vars
@@ -45,7 +45,6 @@ const (
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
-// TODO Fix race conditions
 type Astilectron struct {
 	canceller    *asticontext.Canceller
 	channelQuit  chan bool
