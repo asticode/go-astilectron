@@ -1,7 +1,7 @@
 [![GoReportCard](http://goreportcard.com/badge/github.com/asticode/go-astilectron)](http://goreportcard.com/report/github.com/asticode/go-astilectron)
 [![GoDoc](https://godoc.org/github.com/asticode/go-astilectron?status.svg)](https://godoc.org/github.com/asticode/go-astilectron)
-[![GoCoverage](https://cover.run/go/github.com/asticode/go-astilectron.svg)](https://cover.run/go/github.com/asticode/go-astilectron)
 [![Travis](https://travis-ci.org/asticode/go-astilectron.svg?branch=master)](https://travis-ci.org/asticode/go-astilectron#)
+[![Coveralls](https://coveralls.io/repos/github/asticode/go-astilectron/badge.svg?branch=master)](https://coveralls.io/repos/github/asticode/go-astilectron)
 
 Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
