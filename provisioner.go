@@ -16,49 +16,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Provision event names
-const (
-	EventNameProvisionAstilectronAlreadyProvisioned = "provision.astilectron.already.provisioned"
-	EventNameProvisionAstilectronFinished           = "provision.astilectron.finished"
-	EventNameProvisionAstilectronMoved              = "provision.astilectron.moved"
-	EventNameProvisionAstilectronUnzipped           = "provision.astilectron.unzipped"
-	EventNameProvisionElectronAlreadyProvisioned    = "provision.electron.already.provisioned"
-	EventNameProvisionElectronFinished              = "provision.electron.finished"
-	EventNameProvisionElectronMoved                 = "provision.electron.moved"
-	EventNameProvisionElectronUnzipped              = "provision.electron.unzipped"
-)
-
-// Provision event names mapping keys
-const (
-	provisionEventNamesMappingKeyAlreadyProvisioned = "already.provisioned"
-	provisionEventNamesMappingKeyFinished           = "finished"
-	provisionEventNamesMappingKeyMoved              = "moved"
-	provisionEventNamesMappingKeyUnzipped           = "unzipped"
-)
-
 // Var
 var (
-	defaultHTTPClient          = &http.Client{}
-	provisionEventNamesMapping = map[string]map[string]string{
-		"Astilectron": {
-			provisionEventNamesMappingKeyAlreadyProvisioned: EventNameProvisionAstilectronAlreadyProvisioned,
-			provisionEventNamesMappingKeyFinished:           EventNameProvisionAstilectronFinished,
-			provisionEventNamesMappingKeyMoved:              EventNameProvisionAstilectronMoved,
-			provisionEventNamesMappingKeyUnzipped:           EventNameProvisionAstilectronUnzipped,
-		},
-		"Electron": {
-			provisionEventNamesMappingKeyAlreadyProvisioned: EventNameProvisionElectronAlreadyProvisioned,
-			provisionEventNamesMappingKeyFinished:           EventNameProvisionElectronFinished,
-			provisionEventNamesMappingKeyMoved:              EventNameProvisionElectronMoved,
-			provisionEventNamesMappingKeyUnzipped:           EventNameProvisionElectronUnzipped,
-		},
-	}
+	defaultHTTPClient     = &http.Client{}
 	regexpDarwinInfoPList = regexp.MustCompile("<string>Electron")
 )
 
 // Provisioner represents an object capable of provisioning Astilectron
 type Provisioner interface {
-	Provision(ctx context.Context, d *Dispatcher, appName, os, arch string, p Paths) error
+	Provision(ctx context.Context, appName, os, arch string, p Paths) error
 }
 
 // mover is a function that moves a package
@@ -93,7 +59,7 @@ func provisionStatusElectronKey(os, arch string) string {
 
 // Provision implements the provisioner interface
 // TODO Package app using electron instead of downloading Electron + Astilectron separately
-func (p *defaultProvisioner) Provision(ctx context.Context, d *Dispatcher, appName, os, arch string, paths Paths) (err error) {
+func (p *defaultProvisioner) Provision(ctx context.Context, appName, os, arch string, paths Paths) (err error) {
 	// Retrieve provision status
 	var s ProvisionStatus
 	if s, err = p.ProvisionStatus(paths); err != nil {
@@ -103,14 +69,14 @@ func (p *defaultProvisioner) Provision(ctx context.Context, d *Dispatcher, appNa
 	defer p.updateProvisionStatus(paths, &s)
 
 	// Provision astilectron
-	if err = p.provisionAstilectron(ctx, d, paths, s); err != nil {
+	if err = p.provisionAstilectron(ctx, paths, s); err != nil {
 		err = errors.Wrap(err, "provisioning astilectron failed")
 		return
 	}
 	s.Astilectron = &ProvisionStatusPackage{Version: VersionAstilectron}
 
 	// Provision electron
-	if err = p.provisionElectron(ctx, d, paths, s, appName, os, arch); err != nil {
+	if err = p.provisionElectron(ctx, paths, s, appName, os, arch); err != nil {
 		err = errors.Wrap(err, "provisioning electron failed")
 		return
 	}
@@ -146,7 +112,7 @@ func (p *defaultProvisioner) ProvisionStatus(paths Paths) (s ProvisionStatus, er
 
 	// Unmarshal
 	if errLocal := json.NewDecoder(f).Decode(&s); errLocal != nil {
-		// For retrocompatibility purposes, if there's an unmarshal error we delete the status file and make the
+		// For backward compatibility purposes, if there's an unmarshal error we delete the status file and make the
 		// assumption that provisioning has to be done all over again
 		astilog.Error(errors.Wrapf(errLocal, "json decoding from %s failed", paths.ProvisionStatus()))
 		astilog.Debugf("Removing %s", f.Name())
@@ -177,13 +143,13 @@ func (p *defaultProvisioner) updateProvisionStatus(paths Paths, s *ProvisionStat
 }
 
 // provisionAstilectron provisions astilectron
-func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, d *Dispatcher, paths Paths, s ProvisionStatus) error {
-	return p.provisionPackage(ctx, d, paths, s.Astilectron, p.moverAstilectron, "Astilectron", VersionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
+func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths, s ProvisionStatus) error {
+	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", VersionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
 }
 
 // provisionElectron provisions electron
-func (p *defaultProvisioner) provisionElectron(ctx context.Context, d *Dispatcher, paths Paths, s ProvisionStatus, appName, os, arch string) error {
-	return p.provisionPackage(ctx, d, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
+func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName, os, arch string) error {
+	return p.provisionPackage(ctx, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
 		switch os {
 		case "darwin":
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
@@ -197,11 +163,10 @@ func (p *defaultProvisioner) provisionElectron(ctx context.Context, d *Dispatche
 }
 
 // provisionPackage provisions a package
-func (p *defaultProvisioner) provisionPackage(ctx context.Context, d *Dispatcher, paths Paths, s *ProvisionStatusPackage, m mover, name, version, pathUnzipSrc, pathDirectory string, finish func() error) (err error) {
+func (p *defaultProvisioner) provisionPackage(ctx context.Context, paths Paths, s *ProvisionStatusPackage, m mover, name, version, pathUnzipSrc, pathDirectory string, finish func() error) (err error) {
 	// Package has already been provisioned
 	if s != nil && s.Version == version {
 		astilog.Debugf("%s has already been provisioned to version %s, moving on...", name, version)
-		d.Dispatch(Event{Name: provisionEventNamesMapping[name][provisionEventNamesMappingKeyAlreadyProvisioned], TargetID: mainTargetID})
 		return
 	}
 	astilog.Debugf("Provisioning %s...", name)
@@ -216,7 +181,6 @@ func (p *defaultProvisioner) provisionPackage(ctx context.Context, d *Dispatcher
 	if err = m(ctx, paths); err != nil {
 		return errors.Wrapf(err, "moving %s failed", name)
 	}
-	d.Dispatch(Event{Name: provisionEventNamesMapping[name][provisionEventNamesMappingKeyMoved], TargetID: mainTargetID})
 
 	// Create directory
 	astilog.Debugf("Creating directory %s", pathDirectory)
@@ -228,7 +192,6 @@ func (p *defaultProvisioner) provisionPackage(ctx context.Context, d *Dispatcher
 	if err = Unzip(ctx, pathUnzipSrc, pathDirectory); err != nil {
 		return errors.Wrapf(err, "unzipping %s into %s failed", pathUnzipSrc, pathDirectory)
 	}
-	d.Dispatch(Event{Name: provisionEventNamesMapping[name][provisionEventNamesMappingKeyUnzipped], TargetID: mainTargetID})
 
 	// Finish
 	if finish != nil {
@@ -236,7 +199,6 @@ func (p *defaultProvisioner) provisionPackage(ctx context.Context, d *Dispatcher
 			return errors.Wrap(err, "finishing failed")
 		}
 	}
-	d.Dispatch(Event{Name: provisionEventNamesMapping[name][provisionEventNamesMappingKeyFinished], TargetID: mainTargetID})
 	return
 }
 

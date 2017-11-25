@@ -29,7 +29,7 @@ type TrayOptions struct {
 }
 
 // newTray creates a new tray
-func newTray(o *TrayOptions, c *asticontext.Canceller, d *Dispatcher, i *identifier, wrt *writer) (t *Tray) {
+func newTray(o *TrayOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (t *Tray) {
 	// Init
 	t = &Tray{
 		o:      o,

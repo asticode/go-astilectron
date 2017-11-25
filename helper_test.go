@@ -118,7 +118,7 @@ func TestPtr(t *testing.T) {
 
 // mockedListenable is a mocked listenable
 type mockedListenable struct {
-	d  *Dispatcher
+	d  *dispatcher
 	id string
 }
 
@@ -150,7 +150,7 @@ func TestSynchronousFunc(t *testing.T) {
 	// Test done event
 	c = asticontext.NewCanceller()
 	var ed = Event{Name: "done", TargetID: "1"}
-	var e = synchronousFunc(c, l, func() { d.Dispatch(ed) }, "done")
+	var e = synchronousFunc(c, l, func() { d.dispatch(ed) }, "done")
 	m.Lock()
 	assert.True(t, done)
 	m.Unlock()
@@ -163,7 +163,7 @@ func TestSynchronousEvent(t *testing.T) {
 	defer d.close()
 	go d.start()
 	var ed = Event{Name: "done", TargetID: "1"}
-	var mw = &mockedWriter{fn: func() { d.Dispatch(ed) }}
+	var mw = &mockedWriter{fn: func() { d.dispatch(ed) }}
 	var w = newWriter(mw)
 	var c = asticontext.NewCanceller()
 	var l = &mockedListenable{d: d, id: "1"}
