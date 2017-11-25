@@ -32,7 +32,7 @@ func testObjectAction(t *testing.T, fn func() error, o *object, wrt *mockedWrite
 	o.c = asticontext.NewCanceller()
 	o.ctx, o.cancel = o.c.NewContext()
 	if eventNameDone != "" {
-		wrt.fn = func() { o.d.Dispatch(Event{Name: eventNameDone, TargetID: o.id}) }
+		wrt.fn = func() { o.d.dispatch(Event{Name: eventNameDone, TargetID: o.id}) }
 	}
 	err = fn()
 	assert.NoError(t, err)

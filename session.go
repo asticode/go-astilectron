@@ -21,7 +21,7 @@ type Session struct {
 }
 
 // newSession creates a new session
-func newSession(parentCtx context.Context, c *asticontext.Canceller, d *Dispatcher, i *identifier, w *writer) *Session {
+func newSession(parentCtx context.Context, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) *Session {
 	return &Session{object: newObject(parentCtx, c, d, i, w)}
 }
 

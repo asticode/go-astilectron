@@ -20,25 +20,10 @@ func TestAstilectron_Provision(t *testing.T) {
 	defer a.dispatcher.close()
 	go a.dispatcher.start()
 	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux"))
-	var hasStarted, hasStopped bool
-	a.On(EventNameProvisionAstilectronMoved, func(e Event) bool {
-		hasStarted = true
-		return false
-	})
-	var wg = &sync.WaitGroup{}
-	a.On(EventNameProvisionElectronFinished, func(e Event) bool {
-		hasStopped = true
-		wg.Done()
-		return false
-	})
-	wg.Add(1)
 
-	// Test provision is successful and sends the correct events
+	// Test provision is successful
 	err = a.provision()
 	assert.NoError(t, err)
-	wg.Wait()
-	assert.True(t, hasStarted)
-	assert.True(t, hasStopped)
 }
 
 func TestAstilectron_WatchNoAccept(t *testing.T) {

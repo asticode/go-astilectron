@@ -46,8 +46,8 @@ func TestDispatcher(t *testing.T) {
 
 	// Test dispatch
 	wg.Add(4)
-	d.Dispatch(Event{Name: "2", TargetID: "1"})
-	d.Dispatch(Event{Name: "1", TargetID: "1"})
+	d.dispatch(Event{Name: "2", TargetID: "1"})
+	d.dispatch(Event{Name: "1", TargetID: "1"})
 	wg.Wait()
 	for _, v := range []int{1, 2, 3, 4} {
 		assert.Contains(t, dispatched, v)
