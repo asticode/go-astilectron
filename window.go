@@ -58,8 +58,9 @@ var (
 // TODO Add missing window events
 type Window struct {
 	*object
-	o   *WindowOptions
-	url *url.URL
+	o       *WindowOptions
+	Session *Session
+	url     *url.URL
 }
 
 // WindowOptions represents window options
@@ -151,6 +152,7 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 		o:      wo,
 		object: newObject(nil, c, d, i, wrt),
 	}
+	w.Session = newSession(w.ctx, c, d, i, wrt)
 
 	// Check app details
 	if wo.Icon == nil && o.AppIconDefaultPath != "" {
@@ -221,7 +223,7 @@ func (w *Window) Create() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, SessionID: w.Session.id, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
 	return
 }
 

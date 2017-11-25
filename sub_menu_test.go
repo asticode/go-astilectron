@@ -20,7 +20,7 @@ func TestSubMenu_ToEvent(t *testing.T) {
 	assert.NoError(t, err)
 	s = newSubMenu(nil, w.id, []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), i, nil)
 	e = s.toEvent()
-	assert.Equal(t, &EventSubMenu{ID: "2", Items: []*EventMenuItem{{ID: "3", Options: &MenuItemOptions{Label: PtrStr("1")}, RootID: "1"}, {ID: "4", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: "1"}}, RootID: "1"}, e)
+	assert.Equal(t, &EventSubMenu{ID: "3", Items: []*EventMenuItem{{ID: "4", Options: &MenuItemOptions{Label: PtrStr("1")}, RootID: "1"}, {ID: "5", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: "1"}}, RootID: "1"}, e)
 }
 
 func TestSubMenu_SubMenu(t *testing.T) {

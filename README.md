@@ -155,6 +155,13 @@ And that's it!
 
 NOTE: needless to say that the message can be something other than a string. A custom struct for instance!
 
+## Play with the window's session
+
+```go
+// Clear window's HTTP cache
+w.Session.ClearCache()
+```
+
 ## Handle several screens/displays
 
 ```go
@@ -376,6 +383,7 @@ In your webserver add one of the following javascript to achieve any kind of dia
 - [x] dialogs (open or save file, alerts, ...)
 - [x] tray
 - [x] bundler
+- [x] session
 - [ ] loader
 - [ ] accelerators (shortcuts)
 - [ ] file methods (drag & drop, ...)
@@ -383,8 +391,6 @@ In your webserver add one of the following javascript to achieve any kind of dia
 - [ ] power monitor events (suspend, resume, ...)
 - [ ] notifications (macosx)
 - [ ] desktop capturer (audio and video)
-- [ ] session methods
-- [ ] session events
 - [ ] window advanced options (add missing ones)
 - [ ] window advanced methods (add missing ones)
 - [ ] window advanced events (add missing ones)

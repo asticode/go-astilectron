@@ -47,7 +47,7 @@ func TestWindow_Actions(t *testing.T) {
 	w, err = a.NewWindow("http://test.com", &WindowOptions{Center: PtrBool(true)})
 	assert.NoError(t, err)
 	testObjectAction(t, func() error { return w.CloseDevTools() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdWebContentsCloseDevTools+"\",\"targetID\":\""+w.id+"\"}\n", "")
-	testObjectAction(t, func() error { return w.Create() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdCreate+"\",\"targetID\":\""+w.id+"\",\"url\":\"http://test.com\",\"windowOptions\":{\"center\":true}}\n", EventNameWindowEventDidFinishLoad)
+	testObjectAction(t, func() error { return w.Create() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdCreate+"\",\"targetID\":\""+w.id+"\",\"sessionId\":\"4\",\"url\":\"http://test.com\",\"windowOptions\":{\"center\":true}}\n", EventNameWindowEventDidFinishLoad)
 	testObjectAction(t, func() error { return w.Destroy() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdDestroy+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventClosed)
 	assert.True(t, w.IsDestroyed())
 	w, err = a.NewWindow("http://test.com", &WindowOptions{})
