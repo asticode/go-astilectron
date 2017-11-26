@@ -60,7 +60,6 @@ func (r *reader) read() {
 		}
 
 		// Dispatch
-		// needs goroutine so reader does not wait for dispatching
-		go r.d.Dispatch(e)
+		r.d.Dispatch(e)
 	}
 }
