@@ -25,7 +25,7 @@ func (r *mockedReader) Close() error {
 }
 
 func TestReader_IsEOFErr(t *testing.T) {
-	var r = newReader(&Dispatcher{}, ioutil.NopCloser(&bytes.Buffer{}))
+	var r = newReader(&dispatcher{}, ioutil.NopCloser(&bytes.Buffer{}))
 	assert.True(t, r.isEOFErr(io.EOF))
 	assert.True(t, r.isEOFErr(errors.New("read tcp 127.0.0.1:56093->127.0.0.1:56092: wsarecv: An existing connection was forcibly closed by the remote host.")))
 	assert.False(t, r.isEOFErr(errors.New("random error")))

@@ -19,8 +19,8 @@ import (
 
 // Versions
 const (
-	VersionAstilectron = "0.12.0"
-	VersionElectron    = "1.6.5"
+	VersionAstilectron = "0.13.0"
+	VersionElectron    = "1.8.1"
 )
 
 // Misc vars
@@ -45,12 +45,11 @@ const (
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
-// TODO Fix race conditions
 type Astilectron struct {
 	canceller    *asticontext.Canceller
 	channelQuit  chan bool
 	closeOnce    sync.Once
-	dispatcher   *Dispatcher
+	dispatcher   *dispatcher
 	displayPool  *displayPool
 	identifier   *identifier
 	listener     net.Listener
@@ -164,7 +163,7 @@ func (a *Astilectron) Start() (err error) {
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, a.dispatcher, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
+	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -196,8 +195,8 @@ func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan boo
 			return
 		case <-t.C:
 			astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
-			a.dispatcher.Dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
-			a.dispatcher.Dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 			return
 		}
 	}
@@ -211,8 +210,8 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		var err error
 		if conn, err = a.listener.Accept(); err != nil {
 			astilog.Errorf("%s while TCP accepting", err)
-			a.dispatcher.Dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
-			a.dispatcher.Dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 			return
 		}
 
@@ -220,8 +219,8 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		// the app
 		if i > 0 {
 			astilog.Errorf("Too many TCP connections")
-			a.dispatcher.Dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: mainTargetID})
-			a.dispatcher.Dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 			conn.Close()
 			return
 		}
@@ -285,12 +284,12 @@ func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
 	// Check the canceller to check whether it was a crash
 	if !a.canceller.Cancelled() {
 		astilog.Debug("App has crashed")
-		a.dispatcher.Dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
+		a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
 	} else {
 		astilog.Debug("App has closed")
-		a.dispatcher.Dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
+		a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
 	}
-	a.dispatcher.Dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+	a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
 }
 
 // Close closes Astilectron properly

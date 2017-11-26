@@ -26,6 +26,7 @@ type Event struct {
 	MenuItemPosition *int              `json:"menuItemPosition,omitempty"`
 	MenuPopupOptions *MenuPopupOptions `json:"menuPopupOptions,omitempty"`
 	Message          *EventMessage     `json:"message,omitempty"`
+	SessionID        string            `json:"sessionId,omitempty"`
 	TrayOptions      *TrayOptions      `json:"trayOptions,omitempty"`
 	URL              string            `json:"url,omitempty"`
 	WindowID         string            `json:"windowId,omitempty"`

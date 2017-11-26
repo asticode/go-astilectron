@@ -10,8 +10,8 @@ type listenable interface {
 	On(eventName string, l Listener)
 }
 
-// Dispatcher represents an object capable of dispatching events
-type Dispatcher struct {
+// dispatcher represents an object capable of dispatching events
+type dispatcher struct {
 	c  chan Event
 	cq chan bool
 	co sync.Once
@@ -24,8 +24,8 @@ type Dispatcher struct {
 }
 
 // newDispatcher creates a new dispatcher
-func newDispatcher() *Dispatcher {
-	return &Dispatcher{
+func newDispatcher() *dispatcher {
+	return &dispatcher{
 		c:  make(chan Event),
 		cq: make(chan bool),
 		l:  make(map[string]map[string]map[int]Listener),
@@ -33,7 +33,7 @@ func newDispatcher() *Dispatcher {
 }
 
 // addListener adds a listener
-func (d *Dispatcher) addListener(targetID, eventName string, l Listener) {
+func (d *dispatcher) addListener(targetID, eventName string, l Listener) {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
@@ -47,14 +47,14 @@ func (d *Dispatcher) addListener(targetID, eventName string, l Listener) {
 }
 
 // close closes the dispatcher properly
-func (d *Dispatcher) close() {
+func (d *dispatcher) close() {
 	d.co.Do(func() {
 		close(d.cq)
 	})
 }
 
 // delListener delete a specific listener
-func (d *Dispatcher) delListener(targetID, eventName string, id int) {
+func (d *dispatcher) delListener(targetID, eventName string, id int) {
 	d.m.Lock()
 	defer d.m.Unlock()
 	if _, ok := d.l[targetID]; !ok {
@@ -67,12 +67,12 @@ func (d *Dispatcher) delListener(targetID, eventName string, id int) {
 }
 
 // Dispatch dispatches an event
-func (d *Dispatcher) Dispatch(e Event) {
+func (d *dispatcher) dispatch(e Event) {
 	d.c <- e
 }
 
 // start starts the dispatcher and listens to dispatched events
-func (d *Dispatcher) start() {
+func (d *dispatcher) start() {
 	for {
 		select {
 		case e := <-d.c:
@@ -91,7 +91,7 @@ func (d *Dispatcher) start() {
 }
 
 // listeners returns the listeners for a target ID and an event name
-func (d *Dispatcher) listeners(targetID, eventName string) (l map[int]Listener) {
+func (d *dispatcher) listeners(targetID, eventName string) (l map[int]Listener) {
 	d.m.Lock()
 	defer d.m.Unlock()
 	l = map[int]Listener{}

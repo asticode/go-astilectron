@@ -1,7 +1,7 @@
 [![GoReportCard](http://goreportcard.com/badge/github.com/asticode/go-astilectron)](http://goreportcard.com/report/github.com/asticode/go-astilectron)
 [![GoDoc](https://godoc.org/github.com/asticode/go-astilectron?status.svg)](https://godoc.org/github.com/asticode/go-astilectron)
-[![GoCoverage](https://cover.run/go/github.com/asticode/go-astilectron.svg)](https://cover.run/go/github.com/asticode/go-astilectron)
 [![Travis](https://travis-ci.org/asticode/go-astilectron.svg?branch=master)](https://travis-ci.org/asticode/go-astilectron#)
+[![Coveralls](https://coveralls.io/repos/github/asticode/go-astilectron/badge.svg?branch=master)](https://coveralls.io/repos/github/asticode/go-astilectron)
 
 Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
@@ -154,6 +154,13 @@ w.Send("What's up?")
 And that's it!
 
 NOTE: needless to say that the message can be something other than a string. A custom struct for instance!
+
+## Play with the window's session
+
+```go
+// Clear window's HTTP cache
+w.Session.ClearCache()
+```
 
 ## Handle several screens/displays
 
@@ -376,6 +383,7 @@ In your webserver add one of the following javascript to achieve any kind of dia
 - [x] dialogs (open or save file, alerts, ...)
 - [x] tray
 - [x] bundler
+- [x] session
 - [ ] loader
 - [ ] accelerators (shortcuts)
 - [ ] file methods (drag & drop, ...)
@@ -383,8 +391,6 @@ In your webserver add one of the following javascript to achieve any kind of dia
 - [ ] power monitor events (suspend, resume, ...)
 - [ ] notifications (macosx)
 - [ ] desktop capturer (audio and video)
-- [ ] session methods
-- [ ] session events
 - [ ] window advanced options (add missing ones)
 - [ ] window advanced methods (add missing ones)
 - [ ] window advanced events (add missing ones)
