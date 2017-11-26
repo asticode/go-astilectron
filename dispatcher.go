@@ -68,9 +68,7 @@ func (d *Dispatcher) delListener(targetID, eventName string, id int) {
 
 // Dispatch dispatches an event
 func (d *Dispatcher) Dispatch(e Event) {
-	done := make(chan bool)
 	d.c <- e
-	<-done
 }
 
 // start starts the dispatcher and listens to dispatched events
