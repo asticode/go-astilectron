@@ -121,9 +121,6 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	// Init
 	var o = Options{BaseDirectoryPath: mockedTempPath()}
 	defer os.RemoveAll(o.BaseDirectoryPath)
-	var d = newDispatcher()
-	defer d.close()
-	go d.start()
 	p, err := newPaths("linux", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")

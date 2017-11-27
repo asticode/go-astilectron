@@ -33,7 +33,6 @@ func TestWindow_Actions(t *testing.T) {
 	a, err := New(Options{})
 	assert.NoError(t, err)
 	defer a.Close()
-	go a.dispatcher.start()
 	wrt := &mockedWriter{}
 	a.writer = newWriter(wrt)
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})

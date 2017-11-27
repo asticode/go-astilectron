@@ -17,8 +17,6 @@ func TestAstilectron_Provision(t *testing.T) {
 	defer os.RemoveAll(o.BaseDirectoryPath)
 	a, err := New(o)
 	assert.NoError(t, err)
-	defer a.dispatcher.close()
-	go a.dispatcher.start()
 	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux"))
 
 	// Test provision is successful
@@ -30,8 +28,6 @@ func TestAstilectron_WatchNoAccept(t *testing.T) {
 	// Init
 	a, err := New(Options{})
 	assert.NoError(t, err)
-	defer a.dispatcher.close()
-	go a.dispatcher.start()
 	var isStopped bool
 	var wg = &sync.WaitGroup{}
 	a.On(EventNameAppCmdStop, func(e Event) bool {
@@ -98,7 +94,6 @@ func TestAstilectron_AcceptTCP(t *testing.T) {
 	a, err := New(Options{})
 	assert.NoError(t, err)
 	defer a.Close()
-	go a.dispatcher.start()
 	var l = &mockedListener{c: make(chan bool), e: make(chan bool)}
 	a.listener = l
 	var isStopped bool
@@ -179,7 +174,6 @@ func TestAstilectron_Actions(t *testing.T) {
 	a, err := New(Options{})
 	assert.NoError(t, err)
 	defer a.Close()
-	go a.dispatcher.start()
 	wrt := &mockedWriter{}
 	a.writer = newWriter(wrt)
 

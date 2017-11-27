@@ -35,8 +35,6 @@ func TestReader(t *testing.T) {
 	// Init
 	var mr = &mockedReader{Buffer: bytes.NewBuffer([]byte("{\"name\":\"1\",\"targetId\":\"1\"}\n{\n{\"name\":\"2\",\"targetId\":\"2\"}\n"))}
 	var d = newDispatcher()
-	defer d.close()
-	go d.start()
 	var wg = &sync.WaitGroup{}
 	var dispatched = []int{}
 	var dispatchedMutex = sync.Mutex{}

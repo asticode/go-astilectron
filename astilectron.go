@@ -137,9 +137,6 @@ func (a *Astilectron) Start() (err error) {
 	// Log
 	astilog.Debug("Starting...")
 
-	// Start the dispatcher
-	go a.dispatcher.start()
-
 	// Provision
 	if err = a.provision(); err != nil {
 		return errors.Wrap(err, "provisioning failed")
@@ -296,7 +293,6 @@ func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
 func (a *Astilectron) Close() {
 	astilog.Debug("Closing...")
 	a.canceller.Cancel()
-	a.dispatcher.close()
 	if a.listener != nil {
 		a.listener.Close()
 	}
