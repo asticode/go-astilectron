@@ -39,13 +39,18 @@ func TestReader(t *testing.T) {
 	go d.start()
 	var wg = &sync.WaitGroup{}
 	var dispatched = []int{}
+	var dispatchedMutex = sync.Mutex{}
 	d.addListener("1", "1", func(e Event) (deleteListener bool) {
+		dispatchedMutex.Lock()
 		dispatched = append(dispatched, 1)
+		dispatchedMutex.Unlock()
 		wg.Done()
 		return
 	})
 	d.addListener("2", "2", func(e Event) (deleteListener bool) {
+		dispatchedMutex.Lock()
 		dispatched = append(dispatched, 2)
+		dispatchedMutex.Unlock()
 		wg.Done()
 		return
 	})
@@ -55,7 +60,8 @@ func TestReader(t *testing.T) {
 	// Test read
 	go r.read()
 	wg.Wait()
-	assert.Equal(t, []int{1, 2}, dispatched)
+	assert.Contains(t, dispatched, 1)
+	assert.Contains(t, dispatched, 2)
 
 	// Test close
 	r.close()
