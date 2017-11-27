@@ -20,25 +20,34 @@ func TestDispatcher(t *testing.T) {
 
 	var wg = sync.WaitGroup{}
 	var dispatched = []int{}
+	var m sync.Mutex
 
 	// Test adding listener
 	d.addListener("1", "1", func(e Event) (deleteListener bool) {
+		m.Lock()
 		dispatched = append(dispatched, 1)
+		m.Unlock()
 		wg.Done()
 		return
 	})
 	d.addListener("1", "1", func(e Event) (deleteListener bool) {
+		m.Lock()
 		dispatched = append(dispatched, 2)
+		m.Unlock()
 		wg.Done()
 		return true
 	})
 	d.addListener("1", "1", func(e Event) (deleteListener bool) {
+		m.Lock()
 		dispatched = append(dispatched, 3)
+		m.Unlock()
 		wg.Done()
 		return true
 	})
 	d.addListener("1", "2", func(e Event) (deleteListener bool) {
+		m.Lock()
 		dispatched = append(dispatched, 4)
+		m.Unlock()
 		wg.Done()
 		return
 	})
