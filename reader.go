@@ -3,10 +3,8 @@ package astilectron
 import (
 	"bufio"
 	"bytes"
-	"io"
-
 	"encoding/json"
-
+	"io"
 	"strings"
 
 	"github.com/asticode/go-astilog"

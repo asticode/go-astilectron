@@ -76,11 +76,14 @@ func (d *dispatcher) start() {
 	for {
 		select {
 		case e := <-d.c:
-			for id, l := range d.listeners(e.TargetID, e.Name) {
-				if l(e) {
-					d.delListener(e.TargetID, e.Name, id)
+			// needed so dispatches of events triggered in the listeners can be received without blocking
+			go func() {
+				for id, l := range d.listeners(e.TargetID, e.Name) {
+					if l(e) {
+						d.delListener(e.TargetID, e.Name, id)
+					}
 				}
-			}
+			}()
 		case <-d.cq:
 			return
 		}
