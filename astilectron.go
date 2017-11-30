@@ -19,7 +19,7 @@ import (
 
 // Versions
 const (
-	VersionAstilectron = "0.13.0"
+	VersionAstilectron = "0.14.0"
 	VersionElectron    = "1.8.1"
 )
 
