@@ -75,7 +75,7 @@ func TestWindow_OnMessage(t *testing.T) {
 	a.writer = newWriter(wrt)
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
-	w.OnMessage(func(e Event) interface{} {
+	w.OnMessage(func(m *EventMessage) interface{} {
 		return "test"
 	})
 	wrt.wg.Add(1)
@@ -99,8 +99,8 @@ func TestWindow_SendMessage(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	var s string
-	w.SendMessage("foo", func(e Event) {
-		e.Message.Unmarshal(&s)
+	w.SendMessage("foo", func(m *EventMessage) {
+		m.Unmarshal(&s)
 		wg.Done()
 	})
 	wg.Wait()
