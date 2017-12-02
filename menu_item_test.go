@@ -20,7 +20,6 @@ func TestMenuItem_Actions(t *testing.T) {
 	// Init
 	var c = asticontext.NewCanceller()
 	var d = newDispatcher()
-	go d.start()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
 	var w = newWriter(wrt)

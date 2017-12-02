@@ -12,9 +12,6 @@ type listenable interface {
 
 // dispatcher represents an object capable of dispatching events
 type dispatcher struct {
-	c  chan Event
-	cq chan bool
-	co sync.Once
 	id int
 	// Indexed by target ID then by event name then be listener id
 	// We use a map[int]Listener so that deletion is as smooth as possible
@@ -26,9 +23,7 @@ type dispatcher struct {
 // newDispatcher creates a new dispatcher
 func newDispatcher() *dispatcher {
 	return &dispatcher{
-		c:  make(chan Event),
-		cq: make(chan bool),
-		l:  make(map[string]map[string]map[int]Listener),
+		l: make(map[string]map[string]map[int]Listener),
 	}
 }
 
@@ -46,13 +41,6 @@ func (d *dispatcher) addListener(targetID, eventName string, l Listener) {
 	d.l[targetID][eventName][d.id] = l
 }
 
-// close closes the dispatcher properly
-func (d *dispatcher) close() {
-	d.co.Do(func() {
-		close(d.cq)
-	})
-}
-
 // delListener delete a specific listener
 func (d *dispatcher) delListener(targetID, eventName string, id int) {
 	d.m.Lock()
@@ -68,26 +56,14 @@ func (d *dispatcher) delListener(targetID, eventName string, id int) {
 
 // Dispatch dispatches an event
 func (d *dispatcher) dispatch(e Event) {
-	d.c <- e
-}
-
-// start starts the dispatcher and listens to dispatched events
-func (d *dispatcher) start() {
-	for {
-		select {
-		case e := <-d.c:
-			// needed so dispatches of events triggered in the listeners can be received without blocking
-			go func() {
-				for id, l := range d.listeners(e.TargetID, e.Name) {
-					if l(e) {
-						d.delListener(e.TargetID, e.Name, id)
-					}
-				}
-			}()
-		case <-d.cq:
-			return
+	// needed so dispatches of events triggered in the listeners can be received without blocking
+	go func() {
+		for id, l := range d.listeners(e.TargetID, e.Name) {
+			if l(e) {
+				d.delListener(e.TargetID, e.Name, id)
+			}
 		}
-	}
+	}()
 }
 
 // listeners returns the listeners for a target ID and an event name

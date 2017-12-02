@@ -10,14 +10,6 @@ import (
 func TestDispatcher(t *testing.T) {
 	// Init
 	var d = newDispatcher()
-	defer d.close()
-
-	waitChan := make(chan struct{})
-	go func() {
-		d.start()
-		waitChan <- struct{}{}
-	}()
-
 	var wg = sync.WaitGroup{}
 	var dispatched = []int{}
 	var m sync.Mutex
@@ -62,9 +54,4 @@ func TestDispatcher(t *testing.T) {
 		assert.Contains(t, dispatched, v)
 	}
 	assert.Len(t, d.listeners("1", "1"), 1)
-
-	// Test close
-	d.close()
-	<-waitChan
-	d.close() // this shouldn't try to close the channel again and therefore don't panic
 }

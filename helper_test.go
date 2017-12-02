@@ -130,8 +130,6 @@ func (m *mockedListenable) On(eventName string, l Listener) {
 func TestSynchronousFunc(t *testing.T) {
 	// Init
 	var d = newDispatcher()
-	defer d.close()
-	go d.start()
 	var c = asticontext.NewCanceller()
 	var l = &mockedListenable{d: d, id: "1"}
 	var done bool
@@ -160,8 +158,6 @@ func TestSynchronousFunc(t *testing.T) {
 func TestSynchronousEvent(t *testing.T) {
 	// Init
 	var d = newDispatcher()
-	defer d.close()
-	go d.start()
 	var ed = Event{Name: "done", TargetID: "1"}
 	var mw = &mockedWriter{fn: func() { d.dispatch(ed) }}
 	var w = newWriter(mw)
