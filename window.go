@@ -304,14 +304,14 @@ func (w *Window) MoveInDisplay(d *Display, x, y int) error {
 }
 
 // ListenerMessage represents a message listener executed when receiving a message from the JS
-type ListenerMessage func(e Event) (v interface{})
+type ListenerMessage func(m *EventMessage) (v interface{})
 
 // OnMessage adds a specific listener executed when receiving a message from the JS
 // This method can be called only once
 func (w *Window) OnMessage(l ListenerMessage) {
 	w.onMessageOnce.Do(func() {
 		w.On(eventNameWindowEventMessage, func(i Event) (deleteListener bool) {
-			v := l(i)
+			v := l(i.Message)
 			if len(i.CallbackID) > 0 {
 				o := Event{CallbackID: i.CallbackID, Name: eventNameWindowCmdMessageCallback, TargetID: w.id}
 				if v != nil {
@@ -355,7 +355,7 @@ func (w *Window) Restore() (err error) {
 }
 
 // CallbackMessage represents a message callback
-type CallbackMessage func(e Event)
+type CallbackMessage func(m *EventMessage)
 
 // SendMessage sends a message to the JS window and execute optional callbacks upon receiving a response from the JS
 // Use astilectron.onMessage method to capture those messages in JS
@@ -369,7 +369,7 @@ func (w *Window) SendMessage(message interface{}, callbacks ...CallbackMessage) 
 		w.On(eventNameWindowEventMessageCallback, func(i Event) (deleteListener bool) {
 			if i.CallbackID == e.CallbackID {
 				for _, c := range callbacks {
-					c(i)
+					c(i.Message)
 				}
 				deleteListener = true
 			}
