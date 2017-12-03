@@ -19,6 +19,7 @@ type Event struct {
 	// This is a list of all possible payloads.
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
+	CallbackID       string            `json:"callbackId,omitempty"`
 	Displays         *EventDisplays    `json:"displays,omitempty"`
 	Menu             *EventMenu        `json:"menu,omitempty"`
 	MenuItem         *EventMenuItem    `json:"menuItem,omitempty"`

@@ -117,43 +117,72 @@ w.Maximize()
     
 Check out the [Window doc](https://godoc.org/github.com/asticode/go-astilectron#Window) for a list of all exported methods
 
-## Send messages between GO and your webserver
+## Send messages from GO to Javascript
 
-In your webserver add the following javascript to any of the pages you want to interact with:
+### Javascript
 
-```html
-<script>
-    // This will wait for the astilectron namespace to be ready
-    document.addEventListener('astilectron-ready', function() {
-    
-        // This will listen to messages sent by GO
-        astilectron.listen(function(message) {
-                            
-            // This will send a message back to GO
-            astilectron.send("I'm good bro")
-        });
-    })
-</script>
+```javascript
+// This will wait for the astilectron namespace to be ready
+document.addEventListener('astilectron-ready', function() {
+    // This will listen to messages sent by GO
+    astilectron.onMessage(function(message) {
+        // Process message
+        if (message === "hello") {
+            return "world";
+        }
+    });
+})
 ```
-    
-In your GO app add the following:
+
+### GO
 
 ```go
-// Listen to messages sent by webserver
-w.On(astilectron.EventNameWindowEventMessage, func(e astilectron.Event) (deleteListener bool) {
-    var m string
-    e.Message.Unmarshal(&m)
-    astilog.Infof("Received message %s", m)
-    return
+// This will send a message and execute a callback
+// Callbacks are optional
+w.SendMessage("hello", func(e Event) {
+        // Unmarshal
+        var s string
+        e.Message.Unmarshal(&s)
+
+        // Process message
+        astilog.Debugf("received %s", s)
 })
-
-// Send message to webserver
-w.Send("What's up?")
 ```
-    
-And that's it!
 
-NOTE: needless to say that the message can be something other than a string. A custom struct for instance!
+This will print `received world` in the GO output
+
+## Send messages from Javascript to GO
+
+### GO
+
+```go
+// This will listen to messages sent by Javascript
+w.OnMessage(func(e Event) interface{} {
+        // Unmarshal
+        var s string
+        e.Message.Unmarshal(&s)
+
+        // Process message
+        if *e.Message == "hello" {
+                return "world"
+        }
+        return nil
+})
+```
+
+### Javascript
+
+```javascript
+// This will wait for the astilectron namespace to be ready
+document.addEventListener('astilectron-ready', function() {
+    // This will send a message to GO
+    astilectron.sendMessage("hello", function(message) {
+        console.log("received " + message)
+    });
+})
+```
+
+This will print "received world" in the Javascript output
 
 ## Play with the window's session
 
@@ -316,58 +345,48 @@ t.Create()
 
 ## Dialogs
 
-In your webserver add one of the following javascript to achieve any kind of dialog.
-
 ### Error box
 
-```html
-<script>
-    // This will wait for the astilectron namespace to be ready
-    document.addEventListener('astilectron-ready', function() {
-        // This will open the dialog
-        astilectron.showErrorBox("My Title", "My content")
-    })
-</script>
+```javascript
+// This will wait for the astilectron namespace to be ready
+document.addEventListener('astilectron-ready', function() {
+    // This will open the dialog
+    astilectron.showErrorBox("My Title", "My content")
+})
 ```
 
 ### Message box
 
-```html
-<script>
-    // This will wait for the astilectron namespace to be ready
-    document.addEventListener('astilectron-ready', function() {
-        // This will open the dialog
-        astilectron.showMessageBox({message: "My message", title: "My Title"})
-    })
-</script>
+```javascript
+// This will wait for the astilectron namespace to be ready
+document.addEventListener('astilectron-ready', function() {
+    // This will open the dialog
+    astilectron.showMessageBox({message: "My message", title: "My Title"})
+})
 ```
 
 ### Open dialog
 
-```html
-<script>
-    // This will wait for the astilectron namespace to be ready
-    document.addEventListener('astilectron-ready', function() {
-        // This will open the dialog
-        astilectron.showOpenDialog({properties: ['openFile', 'multiSelections'], title: "My Title"}, function(paths) {
-            console.log("chosen paths are ", paths)
-        })
+```javascript
+// This will wait for the astilectron namespace to be ready
+document.addEventListener('astilectron-ready', function() {
+    // This will open the dialog
+    astilectron.showOpenDialog({properties: ['openFile', 'multiSelections'], title: "My Title"}, function(paths) {
+        console.log("chosen paths are ", paths)
     })
-</script>
+})
 ```
 
 ### Save dialog
 
-```html
-<script>
-    // This will wait for the astilectron namespace to be ready
-    document.addEventListener('astilectron-ready', function() {
-        // This will open the dialog
-        astilectron.showSaveDialog({title: "My title"}, function(filename) {
-            console.log("chosen filename is ", filename)
-        })
+```javascript
+// This will wait for the astilectron namespace to be ready
+document.addEventListener('astilectron-ready', function() {
+    // This will open the dialog
+    astilectron.showSaveDialog({title: "My title"}, function(filename) {
+        console.log("chosen filename is ", filename)
     })
-</script>
+})
 ```
 
 # Features and roadmap
@@ -375,7 +394,7 @@ In your webserver add one of the following javascript to achieve any kind of dia
 - [x] custom branding (custom app name, app icon, etc.)
 - [x] window basic methods (create, show, close, resize, minimize, maximize, ...)
 - [x] window basic events (close, blur, focus, unresponsive, crashed, ...)
-- [x] remote messaging (messages between GO and the JS in the webserver)
+- [x] remote messaging (messages between GO and Javascript)
 - [x] single binary distribution
 - [x] multi screens/displays
 - [x] menu methods and events (create, insert, append, popup, clicked, ...)

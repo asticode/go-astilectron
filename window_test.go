@@ -1,6 +1,7 @@
 package astilectron
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,9 +63,49 @@ func TestWindow_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return w.MoveInDisplay(d, 3, 4) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdMove+"\",\"targetID\":\""+w.id+"\",\"windowOptions\":{\"x\":4,\"y\":6}}\n", EventNameWindowEventMove)
 	testObjectAction(t, func() error { return w.Resize(1, 2) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdResize+"\",\"targetID\":\""+w.id+"\",\"windowOptions\":{\"height\":2,\"width\":1}}\n", EventNameWindowEventResize)
 	testObjectAction(t, func() error { return w.Restore() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdRestore+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventRestore)
-	testObjectAction(t, func() error { return w.Send(true) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdMessage+"\",\"targetID\":\""+w.id+"\",\"message\":true}\n", "")
 	testObjectAction(t, func() error { return w.Show() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdShow+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventShow)
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize)
+}
+
+func TestWindow_OnMessage(t *testing.T) {
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+	wrt := &mockedWriter{wg: &sync.WaitGroup{}}
+	a.writer = newWriter(wrt)
+	w, err := a.NewWindow("http://test.com", &WindowOptions{})
+	assert.NoError(t, err)
+	w.OnMessage(func(e Event) interface{} {
+		return "test"
+	})
+	wrt.wg.Add(1)
+	a.dispatcher.dispatch(Event{CallbackID: "1", Name: eventNameWindowEventMessage, TargetID: w.id})
+	wrt.wg.Wait()
+	assert.Equal(t, []string{"{\"name\":\"window.cmd.message.callback\",\"targetID\":\"1\",\"callbackId\":\"1\",\"message\":\"test\"}\n"}, wrt.w)
+}
+
+func TestWindow_SendMessage(t *testing.T) {
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+	wrt := &mockedWriter{}
+	a.writer = newWriter(wrt)
+	w, err := a.NewWindow("http://test.com", &WindowOptions{})
+	assert.NoError(t, err)
+	wrt.fn = func() {
+		a.dispatcher.dispatch(Event{CallbackID: "1", Message: newEventMessage([]byte("\"bar\"")), Name: eventNameWindowEventMessageCallback, TargetID: w.id})
+		wrt.fn = nil
+	}
+	var wg sync.WaitGroup
+	wg.Add(1)
+	var s string
+	w.SendMessage("foo", func(e Event) {
+		e.Message.Unmarshal(&s)
+		wg.Done()
+	})
+	wg.Wait()
+	assert.Equal(t, []string{"{\"name\":\"window.cmd.message\",\"targetID\":\"1\",\"callbackId\":\"1\",\"message\":\"foo\"}\n"}, wrt.w)
+	assert.Equal(t, "bar", s)
 }
 
 func TestWindow_NewMenu(t *testing.T) {

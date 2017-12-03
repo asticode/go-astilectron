@@ -2,7 +2,9 @@ package astilectron
 
 import (
 	"net/url"
+	"sync"
 
+	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/context"
 	"github.com/asticode/go-astitools/url"
 	"github.com/pkg/errors"
@@ -19,7 +21,8 @@ const (
 	EventNameWindowCmdHide                     = "window.cmd.hide"
 	EventNameWindowCmdLog                      = "window.cmd.log"
 	EventNameWindowCmdMaximize                 = "window.cmd.maximize"
-	EventNameWindowCmdMessage                  = "window.cmd.message"
+	eventNameWindowCmdMessage                  = "window.cmd.message"
+	eventNameWindowCmdMessageCallback          = "window.cmd.message.callback"
 	EventNameWindowCmdMinimize                 = "window.cmd.minimize"
 	EventNameWindowCmdMove                     = "window.cmd.move"
 	EventNameWindowCmdResize                   = "window.cmd.resize"
@@ -34,7 +37,8 @@ const (
 	EventNameWindowEventFocus                  = "window.event.focus"
 	EventNameWindowEventHide                   = "window.event.hide"
 	EventNameWindowEventMaximize               = "window.event.maximize"
-	EventNameWindowEventMessage                = "window.event.message"
+	eventNameWindowEventMessage                = "window.event.message"
+	eventNameWindowEventMessageCallback        = "window.event.message.callback"
 	EventNameWindowEventMinimize               = "window.event.minimize"
 	EventNameWindowEventMove                   = "window.event.move"
 	EventNameWindowEventReadyToShow            = "window.event.ready.to.show"
@@ -58,9 +62,11 @@ var (
 // TODO Add missing window events
 type Window struct {
 	*object
-	o       *WindowOptions
-	Session *Session
-	url     *url.URL
+	callbackIdentifier *identifier
+	o                  *WindowOptions
+	onMessageOnce      sync.Once
+	Session            *Session
+	url                *url.URL
 }
 
 // WindowOptions represents window options
@@ -149,8 +155,9 @@ type WebPreferences struct {
 func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
 	// Init
 	w = &Window{
-		o:      wo,
-		object: newObject(nil, c, d, i, wrt),
+		callbackIdentifier: newIdentifier(),
+		o:                  wo,
+		object:             newObject(nil, c, d, i, wrt),
 	}
 	w.Session = newSession(w.ctx, c, d, i, wrt)
 
@@ -296,6 +303,29 @@ func (w *Window) MoveInDisplay(d *Display, x, y int) error {
 	return w.Move(d.Bounds().X+x, d.Bounds().Y+y)
 }
 
+// ListenerMessage represents a message listener executed when receiving a message from the JS
+type ListenerMessage func(e Event) (v interface{})
+
+// OnMessage adds a specific listener executed when receiving a message from the JS
+// This method can be called only once
+func (w *Window) OnMessage(l ListenerMessage) {
+	w.onMessageOnce.Do(func() {
+		w.On(eventNameWindowEventMessage, func(i Event) (deleteListener bool) {
+			v := l(i)
+			if len(i.CallbackID) > 0 {
+				o := Event{CallbackID: i.CallbackID, Name: eventNameWindowCmdMessageCallback, TargetID: w.id}
+				if v != nil {
+					o.Message = newEventMessage(v)
+				}
+				if err := w.w.write(o); err != nil {
+					astilog.Error(errors.Wrap(err, "writing callback message failed"))
+				}
+			}
+			return
+		})
+	})
+}
+
 // OpenDevTools opens the dev tools
 func (w *Window) OpenDevTools() (err error) {
 	if err = w.isActionable(); err != nil {
@@ -324,12 +354,29 @@ func (w *Window) Restore() (err error) {
 	return
 }
 
-// Send sends a message to the inner JS of the Web content of the window
-func (w *Window) Send(message interface{}) (err error) {
+// CallbackMessage represents a message callback
+type CallbackMessage func(e Event)
+
+// SendMessage sends a message to the JS window and execute optional callbacks upon receiving a response from the JS
+// Use astilectron.onMessage method to capture those messages in JS
+func (w *Window) SendMessage(message interface{}, callbacks ...CallbackMessage) (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	return w.w.write(Event{Message: newEventMessage(message), Name: EventNameWindowCmdMessage, TargetID: w.id})
+	var e = Event{Message: newEventMessage(message), Name: eventNameWindowCmdMessage, TargetID: w.id}
+	if len(callbacks) > 0 {
+		e.CallbackID = w.callbackIdentifier.new()
+		w.On(eventNameWindowEventMessageCallback, func(i Event) (deleteListener bool) {
+			if i.CallbackID == e.CallbackID {
+				for _, c := range callbacks {
+					c(i)
+				}
+				deleteListener = true
+			}
+			return
+		})
+	}
+	return w.w.write(e)
 }
 
 // Show shows the window

@@ -1,6 +1,7 @@
 package astilectron
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,6 +12,7 @@ type mockedWriter struct {
 	c  bool
 	fn func()
 	w  []string
+	wg *sync.WaitGroup
 }
 
 // Close implements the io.Closer interface
@@ -24,6 +26,9 @@ func (w *mockedWriter) Write(p []byte) (int, error) {
 	w.w = append(w.w, string(p))
 	if w.fn != nil {
 		w.fn()
+	}
+	if w.wg != nil {
+		w.wg.Done()
 	}
 	return len(p), nil
 }
