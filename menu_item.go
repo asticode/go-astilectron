@@ -77,20 +77,20 @@ type MenuItem struct {
 // MenuItemOptions represents menu item options
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use PtrBool, PtrInt or PtrStr
 // to fill the struct
-// https://github.com/electron/electron/blob/v1.6.5/docs/api/menu-item.md
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/menu-item.md
 type MenuItemOptions struct {
-	// TODO Accelerator *string `json:"label,omitempty"`
-	Checked  *bool              `json:"checked,omitempty"`
-	Enabled  *bool              `json:"enabled,omitempty"`
-	Icon     *string            `json:"icon,omitempty"`
-	Label    *string            `json:"label,omitempty"`
-	OnClick  Listener           `json:"-"`
-	Position *string            `json:"position,omitempty"`
-	Role     *string            `json:"role,omitempty"`
-	SubLabel *string            `json:"sublabel,omitempty"`
-	SubMenu  []*MenuItemOptions `json:"-"`
-	Type     *string            `json:"type,omitempty"`
-	Visible  *bool              `json:"visible,omitempty"`
+	Accelerator *Accelerator       `json:"accelerator,omitempty"`
+	Checked     *bool              `json:"checked,omitempty"`
+	Enabled     *bool              `json:"enabled,omitempty"`
+	Icon        *string            `json:"icon,omitempty"`
+	Label       *string            `json:"label,omitempty"`
+	OnClick     Listener           `json:"-"`
+	Position    *string            `json:"position,omitempty"`
+	Role        *string            `json:"role,omitempty"`
+	SubLabel    *string            `json:"sublabel,omitempty"`
+	SubMenu     []*MenuItemOptions `json:"-"`
+	Type        *string            `json:"type,omitempty"`
+	Visible     *bool              `json:"visible,omitempty"`
 }
 
 // newMenu creates a new menu item

@@ -8,14 +8,14 @@ const (
 )
 
 // Display represents a display
-// https://github.com/electron/electron/blob/v1.6.5/docs/api/structures/display.md
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/structures/display.md
 type Display struct {
 	o       *DisplayOptions
 	primary bool
 }
 
 // DisplayOptions represents display options
-// https://github.com/electron/electron/blob/v1.6.5/docs/api/structures/display.md
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/structures/display.md
 type DisplayOptions struct {
 	Bounds       *RectangleOptions `json:"bounds,omitempty"`
 	ID           *int64            `json:"id,omitempty"`

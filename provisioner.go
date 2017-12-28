@@ -203,7 +203,7 @@ func (p *defaultProvisioner) provisionPackage(ctx context.Context, paths Paths, 
 }
 
 // provisionElectronFinishDarwin finishes provisioning electron for Darwin systems
-// https://github.com/electron/electron/blob/v1.6.5/docs/tutorial/application-distribution.md#macos
+// https://github.com/electron/electron/blob/v1.8.1/docs/tutorial/application-distribution.md#macos
 func (p *defaultProvisioner) provisionElectronFinishDarwin(appName string, paths Paths) (err error) {
 	// Log
 	astilog.Debug("Finishing provisioning electron for darwin system")
