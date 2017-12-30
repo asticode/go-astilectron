@@ -403,8 +403,8 @@ document.addEventListener('astilectron-ready', function() {
 - [x] tray
 - [x] bundler
 - [x] session
+- [x] accelerators (shortcuts)
 - [ ] loader
-- [ ] accelerators (shortcuts)
 - [ ] file methods (drag & drop, ...)
 - [ ] clipboard methods
 - [ ] power monitor events (suspend, resume, ...)

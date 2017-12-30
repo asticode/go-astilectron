@@ -15,7 +15,7 @@ const (
 )
 
 // Menu represents a menu
-// https://github.com/electron/electron/blob/v1.6.5/docs/api/menu.md
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/menu.md
 type Menu struct {
 	*subMenu
 }
