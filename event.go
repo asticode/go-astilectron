@@ -50,6 +50,14 @@ func newEventMessage(i interface{}) *EventMessage {
 	return &EventMessage{i: i}
 }
 
+// ToString format message to string
+func (p *EventMessage) ToString() (string, error) {
+	if b, ok := p.i.([]byte); ok {
+		return string(b), nil
+	}
+	return "", errors.New("event message should []byte")
+}
+
 // MarshalJSON implements the JSONMarshaler interface
 func (p *EventMessage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.i)
