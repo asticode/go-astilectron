@@ -3,6 +3,7 @@ package astilectron
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 // Misc constants
@@ -52,10 +53,7 @@ func newEventMessage(i interface{}) *EventMessage {
 
 // ToString format message to string
 func (p *EventMessage) ToString() (string, error) {
-	if b, ok := p.i.([]byte); ok {
-		return string(b), nil
-	}
-	return "", errors.New("event message should []byte")
+	return fmt.Sprintf("%#v", p.i)
 }
 
 // MarshalJSON implements the JSONMarshaler interface
