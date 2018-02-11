@@ -60,6 +60,9 @@ defer a.Close()
 
 // Start astilectron
 a.Start()
+
+// Blocking pattern
+a.Wait()
 ```
 
 For everything to work properly we need to fetch 2 dependencies : [astilectron](https://github.com/asticode/astilectron) and [Electron](https://github.com/electron/electron). `.Start()` takes care of it by downloading the sources and setting them up properly.
