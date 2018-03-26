@@ -47,6 +47,8 @@ const (
 	EventNameWindowEventShow                   = "window.event.show"
 	EventNameWindowEventUnmaximize             = "window.event.unmaximize"
 	EventNameWindowEventUnresponsive           = "window.event.unresponsive"
+	EventNameWindowEventDidGetRedirectRequest  = "window.event.did.get.redirect.request"
+	EventNameWindowEventWillNavigate           = "window.event.will.navigate"
 )
 
 // Title bar styles
