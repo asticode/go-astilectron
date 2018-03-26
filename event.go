@@ -30,6 +30,8 @@ type Event struct {
 	SessionID        string            `json:"sessionId,omitempty"`
 	TrayOptions      *TrayOptions      `json:"trayOptions,omitempty"`
 	URL              string            `json:"url,omitempty"`
+	URLNew           string            `json:"newUrl,omitempty"`
+	URLOld           string            `json:"oldUrl,omitempty"`
 	WindowID         string            `json:"windowId,omitempty"`
 	WindowOptions    *WindowOptions    `json:"windowOptions,omitempty"`
 }
