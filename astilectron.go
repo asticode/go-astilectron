@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"runtime"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -60,6 +59,7 @@ type Astilectron struct {
 	stderrWriter *astiexec.StdWriter
 	stdoutWriter *astiexec.StdWriter
 	writer       *writer
+	executer     Executer
 }
 
 // Options represents Astilectron options
@@ -69,6 +69,7 @@ type Options struct {
 	AppIconDefaultPath string
 	BaseDirectoryPath  string
 	ElectronSwitches   []string
+	AcceptTCPTimeout   time.Duration
 }
 
 // New creates a new Astilectron instance
@@ -88,6 +89,7 @@ func New(o Options) (a *Astilectron, err error) {
 		identifier:  newIdentifier(),
 		options:     o,
 		provisioner: DefaultProvisioner,
+		executer:    DefaultExecuter,
 	}
 
 	// Set paths
@@ -125,6 +127,12 @@ func IsValidOS(os string) (ok bool) {
 // SetProvisioner sets the provisioner
 func (a *Astilectron) SetProvisioner(p Provisioner) *Astilectron {
 	a.provisioner = p
+	return a
+}
+
+// SetExecuter sets the executer
+func (a *Astilectron) SetExecuter(e Executer) *Astilectron {
+	a.executer = e
 	return a
 }
 
@@ -176,7 +184,7 @@ func (a *Astilectron) listenTCP() (err error) {
 
 	// Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
-	go a.watchNoAccept(30*time.Second, chanAccepted)
+	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
 
 	// Accept connections
 	go a.acceptTCP(chanAccepted)
@@ -256,15 +264,7 @@ func (a *Astilectron) execute() (err error) {
 // executeCmd executes the command
 func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 	var e = synchronousFunc(a.canceller, a, func() {
-		// Start command
-		astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
-		if err = cmd.Start(); err != nil {
-			err = errors.Wrapf(err, "starting cmd %s failed", strings.Join(cmd.Args, " "))
-			return
-		}
-
-		// Watch command
-		go a.watchCmd(cmd)
+		err = a.executer(a, cmd)
 	}, EventNameAppEventReady)
 
 	// Update display pool
