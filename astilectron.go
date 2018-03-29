@@ -29,6 +29,7 @@ var (
 		"linux":   true,
 		"windows": true,
 	}
+	defaultAcceptTCPTimeout = 30 * time.Second
 )
 
 // App event names
@@ -81,7 +82,7 @@ func New(o Options) (a *Astilectron, err error) {
 	}
 	//check AcceptTCPTimeout
 	if o.AcceptTCPTimeout == 0 {
-		o.AcceptTCPTimeout = 30 * time.Second
+		o.AcceptTCPTimeout = defaultAcceptTCPTimeout
 	}
 
 	// Init
