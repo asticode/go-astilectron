@@ -79,6 +79,10 @@ func New(o Options) (a *Astilectron, err error) {
 		err = errors.Wrapf(err, "OS %s is invalid")
 		return
 	}
+	//check AcceptTCPTimeout
+	if o.AcceptTCPTimeout == 0 {
+		o.AcceptTCPTimeout = 30 * time.Second
+	}
 
 	// Init
 	a = &Astilectron{
