@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"os/exec"
+
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,7 +71,7 @@ func (l mockedListener) Accept() (net.Conn, error) {
 	}
 }
 func (l mockedListener) Close() error   { return nil }
-func (l mockedListener) Addr() net.Addr { return nil }
+func (l mockedListener) Addr() net.Addr { return mockedAddr{} }
 
 // mockedConn implements the net.Conn interface
 type mockedConn struct{}
@@ -181,4 +183,36 @@ func TestAstilectron_Actions(t *testing.T) {
 	err = a.Quit()
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"{\"name\":\"app.cmd.quit\"}\n"}, wrt.w)
+}
+
+func TestAstilectron_Execute(t *testing.T) {
+	// Init
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+	var l = &mockedListener{c: nil, e: nil}
+	a.listener = l
+	var executer Executer
+
+	//with error
+	executer = func(a *Astilectron, cmd *exec.Cmd) (err error) {
+		err = errors.New("fake error")
+		return
+	}
+	a.SetExecuter(executer)
+	go func() {
+		time.Sleep(1 * time.Second)
+		a.canceller.Cancel()
+	}()
+	assert.Error(t, a.execute())
+
+	// without error
+	executer = func(a *Astilectron, cmd *exec.Cmd) (err error) {
+		return
+	}
+	a.SetExecuter(executer)
+	go func() {
+		time.Sleep(1 * time.Second)
+		a.canceller.Cancel()
+	}()
 }
