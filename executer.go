@@ -12,7 +12,7 @@ import (
 type Executer func(a *Astilectron, cmd *exec.Cmd) (err error)
 
 // DefaultExecuter represents the default executer
-var DefaultExecuter = func(a *Astilectron, cmd *exec.Cmd) (err error) {
+func DefaultExecuter(a *Astilectron, cmd *exec.Cmd) (err error) {
 	// Start command
 	astilog.Debugf("Starting cmd %s", strings.Join(cmd.Args, " "))
 	if err = cmd.Start(); err != nil {

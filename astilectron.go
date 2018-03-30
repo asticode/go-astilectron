@@ -18,8 +18,9 @@ import (
 
 // Versions
 const (
-	VersionAstilectron = "0.16.0"
-	VersionElectron    = "1.8.1"
+	DefaultAcceptTCPTimeout = 30 * time.Second
+	VersionAstilectron      = "0.16.0"
+	VersionElectron         = "1.8.1"
 )
 
 // Misc vars
@@ -29,7 +30,6 @@ var (
 		"linux":   true,
 		"windows": true,
 	}
-	defaultAcceptTCPTimeout = 30 * time.Second
 )
 
 // App event names
@@ -51,6 +51,7 @@ type Astilectron struct {
 	closeOnce    sync.Once
 	dispatcher   *dispatcher
 	displayPool  *displayPool
+	executer     Executer
 	identifier   *identifier
 	listener     net.Listener
 	options      Options
@@ -60,17 +61,16 @@ type Astilectron struct {
 	stderrWriter *astiexec.StdWriter
 	stdoutWriter *astiexec.StdWriter
 	writer       *writer
-	executer     Executer
 }
 
 // Options represents Astilectron options
 type Options struct {
+	AcceptTCPTimeout   time.Duration
 	AppName            string
 	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
 	AppIconDefaultPath string
 	BaseDirectoryPath  string
 	ElectronSwitches   []string
-	AcceptTCPTimeout   time.Duration
 }
 
 // New creates a new Astilectron instance
@@ -80,10 +80,6 @@ func New(o Options) (a *Astilectron, err error) {
 		err = errors.Wrapf(err, "OS %s is invalid")
 		return
 	}
-	//check AcceptTCPTimeout
-	if o.AcceptTCPTimeout == 0 {
-		o.AcceptTCPTimeout = defaultAcceptTCPTimeout
-	}
 
 	// Init
 	a = &Astilectron{
@@ -91,10 +87,10 @@ func New(o Options) (a *Astilectron, err error) {
 		channelQuit: make(chan bool),
 		dispatcher:  newDispatcher(),
 		displayPool: newDisplayPool(),
+		executer:    DefaultExecuter,
 		identifier:  newIdentifier(),
 		options:     o,
 		provisioner: DefaultProvisioner,
-		executer:    DefaultExecuter,
 	}
 
 	// Set paths
@@ -198,6 +194,10 @@ func (a *Astilectron) listenTCP() (err error) {
 
 // watchNoAccept checks whether a TCP connection is accepted quickly enough
 func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan bool) {
+	//check timeout
+	if timeout == 0 {
+		timeout = DefaultAcceptTCPTimeout
+	}
 	var t = time.NewTimer(timeout)
 	defer t.Stop()
 	for {
