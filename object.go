@@ -25,12 +25,12 @@ type object struct {
 }
 
 // newObject returns a new base object
-func newObject(parentCtx context.Context, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (o *object) {
+func newObject(parentCtx context.Context, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer, id string) (o *object) {
 	o = &object{
 		c:  c,
 		d:  d,
 		i:  i,
-		id: i.new(),
+		id: id,
 		w:  w,
 	}
 	if parentCtx != nil {

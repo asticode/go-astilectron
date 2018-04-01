@@ -10,7 +10,7 @@ import (
 func TestObject_IsActionable(t *testing.T) {
 	// Init
 	var c = asticontext.NewCanceller()
-	var o = newObject(nil, c, nil, newIdentifier(), nil)
+	var o = newObject(nil, c, nil, newIdentifier(), nil, "")
 
 	// Test success
 	assert.NoError(t, o.isActionable())

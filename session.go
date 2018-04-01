@@ -22,7 +22,7 @@ type Session struct {
 
 // newSession creates a new session
 func newSession(parentCtx context.Context, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) *Session {
-	return &Session{object: newObject(parentCtx, c, d, i, w)}
+	return &Session{object: newObject(parentCtx, c, d, i, w, i.new())}
 }
 
 // ClearCache clears the Session's HTTP cache

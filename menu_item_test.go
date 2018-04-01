@@ -10,9 +10,9 @@ import (
 
 func TestMenuItem_ToEvent(t *testing.T) {
 	var o = &MenuItemOptions{Label: PtrStr("1"), SubMenu: []*MenuItemOptions{{Label: PtrStr("2")}, {Label: PtrStr("3")}}}
-	var mi = newMenuItem(context.Background(), "main", o, nil, nil, newIdentifier(), nil)
+	var mi = newMenuItem(context.Background(), targetIDApp, o, nil, nil, newIdentifier(), nil)
 	e := mi.toEvent()
-	assert.Equal(t, &EventMenuItem{ID: "1", RootID: "main", Options: o, SubMenu: &EventSubMenu{ID: "2", Items: []*EventMenuItem{{ID: "3", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: "main"}, {ID: "4", Options: &MenuItemOptions{Label: PtrStr("3")}, RootID: "main"}}, RootID: "main"}}, e)
+	assert.Equal(t, &EventMenuItem{ID: "1", RootID: targetIDApp, Options: o, SubMenu: &EventSubMenu{ID: "2", Items: []*EventMenuItem{{ID: "3", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: targetIDApp}, {ID: "4", Options: &MenuItemOptions{Label: PtrStr("3")}, RootID: targetIDApp}}, RootID: targetIDApp}}, e)
 	assert.Len(t, mi.SubMenu().items, 2)
 }
 
@@ -23,7 +23,7 @@ func TestMenuItem_Actions(t *testing.T) {
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
 	var w = newWriter(wrt)
-	var mi = newMenuItem(context.Background(), "main", &MenuItemOptions{Label: PtrStr("label")}, c, d, i, w)
+	var mi = newMenuItem(context.Background(), targetIDApp, &MenuItemOptions{Label: PtrStr("label")}, c, d, i, w)
 
 	// Actions
 	testObjectAction(t, func() error { return mi.SetChecked(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetChecked+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"checked\":true}}\n", EventNameMenuItemEventCheckedSet)

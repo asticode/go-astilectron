@@ -5,9 +5,10 @@ import (
 	"errors"
 )
 
-// Misc constants
+// Target IDs
 const (
-	mainTargetID = "main"
+	targetIDApp  = "app"
+	targetIDDock = "dock"
 )
 
 // Event represents an event
@@ -19,8 +20,12 @@ type Event struct {
 	// This is a list of all possible payloads.
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
+	Badge            string            `json:"badge,omitempty"`
+	BounceType       string            `json:"bounceType,omitempty"`
 	CallbackID       string            `json:"callbackId,omitempty"`
 	Displays         *EventDisplays    `json:"displays,omitempty"`
+	FilePath         string            `json:"filePath,omitempty"`
+	ID               *int              `json:"id,omitempty"`
 	Image            string            `json:"image,omitempty"`
 	Menu             *EventMenu        `json:"menu,omitempty"`
 	MenuItem         *EventMenuItem    `json:"menuItem,omitempty"`

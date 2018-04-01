@@ -35,7 +35,7 @@ func newTray(o *TrayOptions, c *asticontext.Canceller, d *dispatcher, i *identif
 	// Init
 	t = &Tray{
 		o:      o,
-		object: newObject(nil, c, d, i, wrt),
+		object: newObject(nil, c, d, i, wrt, i.new()),
 	}
 
 	// Make sure the tray's context is cancelled once the destroyed event is received

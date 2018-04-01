@@ -97,7 +97,7 @@ type MenuItemOptions struct {
 func newMenuItem(parentCtx context.Context, rootID string, o *MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (m *MenuItem) {
 	m = &MenuItem{
 		o:      o,
-		object: newObject(parentCtx, c, d, i, w),
+		object: newObject(parentCtx, c, d, i, w, i.new()),
 		rootID: rootID,
 	}
 	if o.OnClick != nil {

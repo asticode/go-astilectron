@@ -10,9 +10,9 @@ import (
 
 func TestSubMenu_ToEvent(t *testing.T) {
 	// App sub menu
-	var s = newSubMenu(nil, "main", []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), newIdentifier(), nil)
+	var s = newSubMenu(nil, targetIDApp, []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), newIdentifier(), nil)
 	e := s.toEvent()
-	assert.Equal(t, &EventSubMenu{ID: "1", Items: []*EventMenuItem{{ID: "2", Options: &MenuItemOptions{Label: PtrStr("1")}, RootID: "main"}, {ID: "3", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: "main"}}, RootID: "main"}, e)
+	assert.Equal(t, &EventSubMenu{ID: "1", Items: []*EventMenuItem{{ID: "2", Options: &MenuItemOptions{Label: PtrStr("1")}, RootID: targetIDApp}, {ID: "3", Options: &MenuItemOptions{Label: PtrStr("2")}, RootID: targetIDApp}}, RootID: targetIDApp}, e)
 
 	// Window sub menu
 	var i = newIdentifier()
@@ -37,7 +37,7 @@ func TestSubMenu_SubMenu(t *testing.T) {
 		}},
 		{},
 	}
-	var m = newMenu(context.Background(), "main", o, nil, newDispatcher(), newIdentifier(), nil)
+	var m = newMenu(context.Background(), targetIDApp, o, nil, newDispatcher(), newIdentifier(), nil)
 	s, err := m.SubMenu(0, 1)
 	assert.EqualError(t, err, "No submenu at 0")
 	s, err = m.SubMenu(1)
@@ -66,7 +66,7 @@ func TestSubMenu_Item(t *testing.T) {
 		}},
 		{Label: PtrStr("3")},
 	}
-	var m = newMenu(context.Background(), "main", o, nil, newDispatcher(), newIdentifier(), nil)
+	var m = newMenu(context.Background(), targetIDApp, o, nil, newDispatcher(), newIdentifier(), nil)
 	i, err := m.Item(3)
 	assert.EqualError(t, err, "Submenu has 3 items, invalid index 3")
 	i, err = m.Item(0)
@@ -89,17 +89,17 @@ func TestSubMenu_Actions(t *testing.T) {
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
 	var w = newWriter(wrt)
-	var s = newSubMenu(nil, "main", []*MenuItemOptions{{Label: PtrStr("0")}}, c, d, i, w)
+	var s = newSubMenu(nil, targetIDApp, []*MenuItemOptions{{Label: PtrStr("0")}}, c, d, i, w)
 
 	// Actions
 	var mi = s.NewItem(&MenuItemOptions{Label: PtrStr("1")})
-	testObjectAction(t, func() error { return s.Append(mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdAppend+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"3\",\"options\":{\"label\":\"1\"},\"rootId\":\"main\"}}\n", EventNameSubMenuEventAppended)
+	testObjectAction(t, func() error { return s.Append(mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdAppend+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"3\",\"options\":{\"label\":\"1\"},\"rootId\":\""+targetIDApp+"\"}}\n", EventNameSubMenuEventAppended)
 	assert.Len(t, s.items, 2)
 	assert.Equal(t, "1", *s.items[1].o.Label)
 	mi = s.NewItem(&MenuItemOptions{Label: PtrStr("2")})
 	err := s.Insert(3, mi)
 	assert.EqualError(t, err, "Submenu has 2 items, position 3 is invalid")
-	testObjectAction(t, func() error { return s.Insert(1, mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdInsert+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"4\",\"options\":{\"label\":\"2\"},\"rootId\":\"main\"},\"menuItemPosition\":1}\n", EventNameSubMenuEventInserted)
+	testObjectAction(t, func() error { return s.Insert(1, mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdInsert+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"4\",\"options\":{\"label\":\"2\"},\"rootId\":\""+targetIDApp+"\"},\"menuItemPosition\":1}\n", EventNameSubMenuEventInserted)
 	assert.Len(t, s.items, 3)
 	assert.Equal(t, "2", *s.items[1].o.Label)
 	testObjectAction(t, func() error {

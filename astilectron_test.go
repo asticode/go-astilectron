@@ -166,7 +166,7 @@ func TestAstilectron_NewMenu(t *testing.T) {
 	a, err := New(Options{})
 	assert.NoError(t, err)
 	m := a.NewMenu([]*MenuItemOptions{})
-	assert.Equal(t, mainTargetID, m.rootID)
+	assert.Equal(t, targetIDApp, m.rootID)
 }
 
 func TestAstilectron_Actions(t *testing.T) {

@@ -19,7 +19,7 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout = 30 * time.Second
-	VersionAstilectron      = "0.17.0"
+	VersionAstilectron      = "0.18.0"
 	VersionElectron         = "1.8.1"
 )
 
@@ -51,6 +51,7 @@ type Astilectron struct {
 	closeOnce    sync.Once
 	dispatcher   *dispatcher
 	displayPool  *displayPool
+	dock         *Dock
 	executer     Executer
 	identifier   *identifier
 	listener     net.Listener
@@ -139,7 +140,7 @@ func (a *Astilectron) SetExecuter(e Executer) *Astilectron {
 
 // On implements the Listenable interface
 func (a *Astilectron) On(eventName string, l Listener) {
-	a.dispatcher.addListener(mainTargetID, eventName, l)
+	a.dispatcher.addListener(targetIDApp, eventName, l)
 }
 
 // Start starts Astilectron
@@ -206,8 +207,8 @@ func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan boo
 			return
 		case <-t.C:
 			astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
-			a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: mainTargetID})
-			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: targetIDApp})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			return
 		}
 	}
@@ -221,8 +222,8 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		var err error
 		if conn, err = a.listener.Accept(); err != nil {
 			astilog.Errorf("%s while TCP accepting", err)
-			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: mainTargetID})
-			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: targetIDApp})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			return
 		}
 
@@ -230,8 +231,8 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		// the app
 		if i > 0 {
 			astilog.Errorf("Too many TCP connections")
-			a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: mainTargetID})
-			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+			a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: targetIDApp})
+			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			conn.Close()
 			return
 		}
@@ -276,6 +277,9 @@ func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 	if e.Displays != nil {
 		a.displayPool.update(e.Displays)
 	}
+
+	// Create dock
+	a.dock = newDock(a.canceller, a.dispatcher, a.identifier, a.writer)
 	return
 }
 
@@ -287,12 +291,12 @@ func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
 	// Check the canceller to check whether it was a crash
 	if !a.canceller.Cancelled() {
 		astilog.Debug("App has crashed")
-		a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: mainTargetID})
+		a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: targetIDApp})
 	} else {
 		astilog.Debug("App has closed")
-		a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: mainTargetID})
+		a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: targetIDApp})
 	}
-	a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: mainTargetID})
+	a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 }
 
 // Close closes Astilectron properly
@@ -357,6 +361,11 @@ func (a *Astilectron) Displays() []*Display {
 	return a.displayPool.all()
 }
 
+// Dock returns the dock
+func (a *Astilectron) Dock() *Dock {
+	return a.dock
+}
+
 // PrimaryDisplay returns the primary display
 func (a *Astilectron) PrimaryDisplay() *Display {
 	return a.displayPool.primary()
@@ -364,7 +373,7 @@ func (a *Astilectron) PrimaryDisplay() *Display {
 
 // NewMenu creates a new app menu
 func (a *Astilectron) NewMenu(i []*MenuItemOptions) *Menu {
-	return newMenu(nil, mainTargetID, i, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return newMenu(nil, targetIDApp, i, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewWindow creates a new window

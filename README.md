@@ -350,6 +350,50 @@ time.Sleep(time.Second)
 t.SetImage(astilectron.PtrStr("/path/to/image-2.png"))
 ```
 
+## Dock (MacOSX only)
+
+```go
+// Get the dock
+var d = a.Dock()
+
+// Hide and show the dock
+d.Hide()
+d.Show()
+
+// Make the Dock bounce
+id, _ := d.Bounce(astilectron.DockBounceTypeCritical)
+
+// Cancel the bounce
+d.CancelBounce(id)
+
+// Update badge and icon
+d.SetBadge("test")
+d.SetIcon("/path/to/icon")
+
+// New dock menu
+var m = d.NewMenu([]*astilectron.MenuItemOptions{
+    {
+        Label: astilectron.PtrStr("Root 1"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Item 1")},
+            {Label: astilectron.PtrStr("Item 2")},
+            {Type: astilectron.MenuItemTypeSeparator},
+            {Label: astilectron.PtrStr("Item 3")},
+        },
+    },
+        {
+        Label: astilectron.PtrStr("Root 2"),
+        SubMenu: []*astilectron.MenuItemOptions{
+            {Label: astilectron.PtrStr("Item 1")},
+            {Label: astilectron.PtrStr("Item 2")},
+        },
+    },
+})
+
+// Create the menu
+m.Create()
+```
+
 ## Dialogs
 
 ### Error box
@@ -411,11 +455,12 @@ document.addEventListener('astilectron-ready', function() {
 - [x] bundler
 - [x] session
 - [x] accelerators (shortcuts)
+- [x] dock
+- [ ] notifications (macosx)
 - [ ] loader
 - [ ] file methods (drag & drop, ...)
 - [ ] clipboard methods
 - [ ] power monitor events (suspend, resume, ...)
-- [ ] notifications (macosx)
 - [ ] desktop capturer (audio and video)
 - [ ] window advanced options (add missing ones)
 - [ ] window advanced methods (add missing ones)

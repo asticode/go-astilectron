@@ -159,7 +159,7 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 	w = &Window{
 		callbackIdentifier: newIdentifier(),
 		o:                  wo,
-		object:             newObject(nil, c, d, i, wrt),
+		object:             newObject(nil, c, d, i, wrt, i.new()),
 	}
 	w.Session = newSession(w.ctx, c, d, i, wrt)
 

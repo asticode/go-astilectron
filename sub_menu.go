@@ -40,7 +40,7 @@ type subMenu struct {
 func newSubMenu(parentCtx context.Context, rootID string, items []*MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) *subMenu {
 	// Init
 	var m = &subMenu{
-		object: newObject(parentCtx, c, d, i, w),
+		object: newObject(parentCtx, c, d, i, w, i.new()),
 		rootID: rootID,
 	}
 
