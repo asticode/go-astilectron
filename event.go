@@ -21,6 +21,7 @@ type Event struct {
 	// We use pointers so that omitempty works
 	CallbackID       string            `json:"callbackId,omitempty"`
 	Displays         *EventDisplays    `json:"displays,omitempty"`
+	Image            string            `json:"image,omitempty"`
 	Menu             *EventMenu        `json:"menu,omitempty"`
 	MenuItem         *EventMenuItem    `json:"menuItem,omitempty"`
 	MenuItemOptions  *MenuItemOptions  `json:"menuItemOptions,omitempty"`

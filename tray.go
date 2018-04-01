@@ -6,10 +6,12 @@ import "github.com/asticode/go-astitools/context"
 const (
 	EventNameTrayCmdCreate          = "tray.cmd.create"
 	EventNameTrayCmdDestroy         = "tray.cmd.destroy"
+	EventNameTrayCmdSetImage        = "tray.cmd.set.image"
 	EventNameTrayEventClicked       = "tray.event.clicked"
 	EventNameTrayEventCreated       = "tray.event.created"
 	EventNameTrayEventDestroyed     = "tray.event.destroyed"
 	EventNameTrayEventDoubleClicked = "tray.event.double.clicked"
+	EventNameTrayEventImageSet      = "tray.event.image.set"
 	EventNameTrayEventRightClicked  = "tray.event.right.clicked"
 )
 
@@ -66,4 +68,14 @@ func (t *Tray) Destroy() (err error) {
 // NewMenu creates a new tray menu
 func (t *Tray) NewMenu(i []*MenuItemOptions) *Menu {
 	return newMenu(t.ctx, t.id, i, t.c, t.d, t.i, t.w)
+}
+
+// SetImage sets the tray image
+func (t *Tray) SetImage(image string) (err error) {
+	if err = t.isActionable(); err != nil {
+		return
+	}
+	t.o.Image = PtrStr(image)
+	_, err = synchronousEvent(t.c, t, t.w, Event{Name: EventNameTrayCmdSetImage, Image: image, TargetID: t.id}, EventNameTrayEventImageSet)
+	return
 }

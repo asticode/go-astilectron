@@ -344,6 +344,10 @@ m.Create()
 
 // Create tray
 t.Create()
+
+// Change tray's image
+time.Sleep(time.Second)
+t.SetImage(astilectron.PtrStr("/path/to/image-2.png"))
 ```
 
 ## Dialogs
