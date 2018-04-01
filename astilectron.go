@@ -19,7 +19,7 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout = 30 * time.Second
-	VersionAstilectron      = "0.18.0"
+	VersionAstilectron      = "0.19.0"
 	VersionElectron         = "1.8.1"
 )
 
@@ -61,6 +61,7 @@ type Astilectron struct {
 	reader       *reader
 	stderrWriter *astiexec.StdWriter
 	stdoutWriter *astiexec.StdWriter
+	supported    *Supported
 	writer       *writer
 }
 
@@ -72,6 +73,11 @@ type Options struct {
 	AppIconDefaultPath string
 	BaseDirectoryPath  string
 	ElectronSwitches   []string
+}
+
+// Supported represents Astilectron supported features
+type Supported struct {
+	Notification *bool `json:"notification"`
 }
 
 // New creates a new Astilectron instance
@@ -280,6 +286,9 @@ func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 
 	// Create dock
 	a.dock = newDock(a.canceller, a.dispatcher, a.identifier, a.writer)
+
+	// Update supported features
+	a.supported = e.Supported
 	return
 }
 
@@ -400,4 +409,9 @@ func (a *Astilectron) NewWindowInDisplay(d *Display, url string, o *WindowOption
 // NewTray creates a new tray
 func (a *Astilectron) NewTray(o *TrayOptions) *Tray {
 	return newTray(o, a.canceller, a.dispatcher, a.identifier, a.writer)
+}
+
+// NewNotification creates a new notification
+func (a *Astilectron) NewNotification(o *NotificationOptions) *Notification {
+	return newNotification(o, a.supported != nil && a.supported.Notification != nil && *a.supported.Notification, a.canceller, a.dispatcher, a.identifier, a.writer)
 }

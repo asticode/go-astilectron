@@ -350,6 +350,33 @@ time.Sleep(time.Second)
 t.SetImage(astilectron.PtrStr("/path/to/image-2.png"))
 ```
 
+## Notifications
+
+```go
+// Create the notification
+var n = a.NewNotification(&astilectron.NotificationOptions{
+	Body: "My Body",
+	HasReply: astilectron.PtrBool(true), // Only MacOSX
+	Icon: "/path/to/icon",
+	ReplyPlaceholder: "type your reply here", // Only MacOSX
+	Title: "My title",
+})
+
+// Add listeners
+n.On(astilectron.EventNameNotificationEventClicked, func(e astilectron.Event) (deleteListener bool) {
+	astilog.Debug("the notification has been clicked!")
+	return
+})
+// Only for MacOSX
+n.On(astilectron.EventNameNotificationEventReplied, func(e astilectron.Event) (deleteListener bool) {
+	astilog.Debugf("the user has replied to the notification: %s", e.Reply)
+	return
+})
+
+// Show notification
+n.Show()
+```
+
 ## Dock (MacOSX only)
 
 ```go
@@ -456,7 +483,7 @@ document.addEventListener('astilectron-ready', function() {
 - [x] session
 - [x] accelerators (shortcuts)
 - [x] dock
-- [ ] notifications (macosx)
+- [x] notifications
 - [ ] loader
 - [ ] file methods (drag & drop, ...)
 - [ ] clipboard methods
