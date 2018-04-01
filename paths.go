@@ -19,6 +19,7 @@ type Paths struct {
 	astilectronDownloadDst string
 	astilectronUnzipSrc    string
 	baseDirectory          string
+	dataDirectory          string
 	electronDirectory      string
 	electronDownloadSrc    string
 	electronDownloadDst    string
@@ -38,8 +39,9 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 
 	// Init other paths
 	//!\\ Order matters
+	p.initDataDirectory(o.AppName)
 	p.appIconDarwinSrc = o.AppIconDarwinPath
-	p.vendorDirectory = filepath.Join(p.baseDirectory, "vendor")
+	p.vendorDirectory = filepath.Join(p.dataDirectory, "vendor")
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.astilectronDirectory = filepath.Join(p.vendorDirectory, "astilectron")
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
@@ -76,7 +78,15 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 	return
 }
 
-// AstilectronDownloadSrc returns the download URL of the (currently platform-independant) astilectron zipfile
+func (p *Paths) initDataDirectory(appName string) {
+	if v := os.Getenv("APPDATA"); len(v) > 0 {
+		p.dataDirectory = filepath.Join(v, appName)
+		return
+	}
+	p.dataDirectory = p.baseDirectory
+}
+
+// AstilectronDownloadSrc returns the download URL of the (currently platform-independent) astilectron zip file
 func AstilectronDownloadSrc() string {
 	return fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", VersionAstilectron)
 }
@@ -159,6 +169,11 @@ func (p Paths) AstilectronDownloadSrc() string {
 // AstilectronUnzipSrc returns the astilectron unzip source path
 func (p Paths) AstilectronUnzipSrc() string {
 	return p.astilectronUnzipSrc
+}
+
+// DataDirectory returns the data directory path
+func (p Paths) DataDirectory() string {
+	return p.dataDirectory
 }
 
 // ElectronDirectory returns the electron directory path

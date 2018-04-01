@@ -11,6 +11,9 @@ import (
 )
 
 func TestPaths(t *testing.T) {
+	const k = "APPDATA"
+	ad := os.Getenv(k)
+	os.Setenv(k, "")
 	ep, err := os.Executable()
 	ep = filepath.Dir(ep)
 	assert.NoError(t, err)
@@ -19,6 +22,7 @@ func TestPaths(t *testing.T) {
 	assert.Equal(t, ep+"/vendor/electron-linux-amd64/electron", p.AppExecutable())
 	assert.Equal(t, "", p.AppIconDarwinSrc())
 	assert.Equal(t, ep, p.BaseDirectory())
+	assert.Equal(t, ep, p.DataDirectory())
 	assert.Equal(t, ep+"/vendor/astilectron/main.js", p.AstilectronApplication())
 	assert.Equal(t, ep+"/vendor/astilectron", p.AstilectronDirectory())
 	assert.Equal(t, ep+"/vendor/astilectron-v"+VersionAstilectron+".zip", p.AstilectronDownloadDst())
@@ -46,13 +50,18 @@ func TestPaths(t *testing.T) {
 	assert.Equal(t, "/path/to/base/directory/vendor/electron-darwin-amd64/Test app.app/Contents/MacOS/Test app", p.AppExecutable())
 	assert.Equal(t, "/path/to/base/directory/vendor/electron-darwin-amd64-v"+VersionElectron+".zip", p.ElectronDownloadDst())
 	assert.Equal(t, "/path/to/base/directory/vendor/electron-darwin-amd64-v"+VersionElectron+".zip", p.ElectronUnzipSrc())
+	const pad = "/path/to/appdata"
+	os.Setenv(k, pad)
 	p, err = newPaths("windows", "amd64", Options{})
 	assert.NoError(t, err)
-	assert.Equal(t, ep+"/vendor/electron-windows-amd64/electron.exe", p.AppExecutable())
+	assert.Equal(t, pad, p.DataDirectory())
+	assert.Equal(t, pad+"/vendor", p.VendorDirectory())
+	assert.Equal(t, pad+"/vendor/electron-windows-amd64/electron.exe", p.AppExecutable())
 	assert.Equal(t, "https://github.com/electron/electron/releases/download/v"+VersionElectron+"/electron-v"+VersionElectron+"-win32-x64.zip", p.ElectronDownloadSrc())
-	assert.Equal(t, ep+"/vendor/electron-windows-amd64-v"+VersionElectron+".zip", p.ElectronDownloadDst())
-	assert.Equal(t, ep+"/vendor/electron-windows-amd64-v"+VersionElectron+".zip", p.ElectronUnzipSrc())
+	assert.Equal(t, pad+"/vendor/electron-windows-amd64-v"+VersionElectron+".zip", p.ElectronDownloadDst())
+	assert.Equal(t, pad+"/vendor/electron-windows-amd64-v"+VersionElectron+".zip", p.ElectronUnzipSrc())
 	p, err = newPaths("windows", "", Options{})
 	assert.NoError(t, err)
 	assert.Equal(t, "https://github.com/electron/electron/releases/download/v"+VersionElectron+"/electron-v"+VersionElectron+"-win32-ia32.zip", p.ElectronDownloadSrc())
+	os.Setenv(k, ad)
 }
