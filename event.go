@@ -39,6 +39,7 @@ type Event struct {
 	SessionID           string               `json:"sessionId,omitempty"`
 	Supported           *Supported           `json:"supported,omitempty"`
 	TrayOptions         *TrayOptions         `json:"trayOptions,omitempty"`
+	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
 	URL                 string               `json:"url,omitempty"`
 	URLNew              string               `json:"newUrl,omitempty"`
 	URLOld              string               `json:"oldUrl,omitempty"`
