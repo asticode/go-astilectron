@@ -22,6 +22,7 @@ type Event struct {
 	// We use pointers so that omitempty works
 	Badge               string               `json:"badge,omitempty"`
 	BounceType          string               `json:"bounceType,omitempty"`
+	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
 	CallbackID          string               `json:"callbackId,omitempty"`
 	Displays            *EventDisplays       `json:"displays,omitempty"`
 	FilePath            string               `json:"filePath,omitempty"`
@@ -39,7 +40,6 @@ type Event struct {
 	SessionID           string               `json:"sessionId,omitempty"`
 	Supported           *Supported           `json:"supported,omitempty"`
 	TrayOptions         *TrayOptions         `json:"trayOptions,omitempty"`
-	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
 	URL                 string               `json:"url,omitempty"`
 	URLNew              string               `json:"newUrl,omitempty"`
 	URLOld              string               `json:"oldUrl,omitempty"`
