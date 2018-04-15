@@ -248,7 +248,8 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 
 		// Create reader and writer
 		a.writer = newWriter(conn)
-		a.reader = newReader(a.dispatcher, conn)
+		ctx, _ := a.canceller.NewContext()
+		a.reader = newReader(ctx, a.dispatcher, conn)
 		go a.reader.read()
 	}
 }

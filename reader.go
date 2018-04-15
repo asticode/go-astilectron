@@ -3,6 +3,7 @@ package astilectron
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"strings"
@@ -12,15 +13,17 @@ import (
 
 // reader represents an object capable of reading in the TCP server
 type reader struct {
-	d *dispatcher
-	r io.ReadCloser
+	ctx context.Context
+	d   *dispatcher
+	r   io.ReadCloser
 }
 
 // newReader creates a new reader
-func newReader(d *dispatcher, r io.ReadCloser) *reader {
+func newReader(ctx context.Context, d *dispatcher, r io.ReadCloser) *reader {
 	return &reader{
-		d: d,
-		r: r,
+		ctx: ctx,
+		d:   d,
+		r:   r,
 	}
 }
 
@@ -39,6 +42,11 @@ func (r *reader) isEOFErr(err error) bool {
 func (r *reader) read() {
 	var reader = bufio.NewReader(r.r)
 	for {
+		// Check context error
+		if r.ctx.Err() != nil {
+			return
+		}
+
 		// Read next line
 		var b []byte
 		var err error
