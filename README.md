@@ -467,6 +467,20 @@ document.addEventListener('astilectron-ready', function() {
 })
 ```
 
+## Basic auth
+
+```go
+// Listen to login events
+w.OnLogin(func(i astilectron.Event) (username, password string, err error) {
+	// Process the request and auth info
+	if i.Request.Method == "GET" && i.AuthInfo.Scheme == "http://" {
+		username = "username"
+		password = "password"
+	}
+    return
+})
+```
+
 # Features and roadmap
 
 - [x] custom branding (custom app name, app icon, etc.)

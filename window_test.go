@@ -67,6 +67,23 @@ func TestWindow_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize)
 }
 
+func TestWindow_OnLogin(t *testing.T) {
+	a, err := New(Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+	wrt := &mockedWriter{wg: &sync.WaitGroup{}}
+	a.writer = newWriter(wrt)
+	w, err := a.NewWindow("http://test.com", &WindowOptions{})
+	assert.NoError(t, err)
+	w.OnLogin(func(i Event) (username, password string, err error) {
+		return "username", "password", nil
+	})
+	wrt.wg.Add(1)
+	a.dispatcher.dispatch(Event{CallbackID: "1", Name: EventNameWebContentsEventLogin, TargetID: w.id})
+	wrt.wg.Wait()
+	assert.Equal(t, []string{"{\"name\":\"web.contents.event.login.callback\",\"targetID\":\"1\",\"callbackId\":\"1\",\"password\":\"password\",\"username\":\"username\"}\n"}, wrt.w)
+}
+
 func TestWindow_OnMessage(t *testing.T) {
 	a, err := New(Options{})
 	assert.NoError(t, err)

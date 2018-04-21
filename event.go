@@ -20,6 +20,7 @@ type Event struct {
 	// This is a list of all possible payloads.
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
+	AuthInfo            *EventAuthInfo       `json:"authInfo,omitempty"`
 	Badge               string               `json:"badge,omitempty"`
 	BounceType          string               `json:"bounceType,omitempty"`
 	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
@@ -36,15 +37,27 @@ type Event struct {
 	MenuPopupOptions    *MenuPopupOptions    `json:"menuPopupOptions,omitempty"`
 	Message             *EventMessage        `json:"message,omitempty"`
 	NotificationOptions *NotificationOptions `json:"notificationOptions,omitempty"`
+	Password            string               `json:"password,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
+	Request             *EventRequest        `json:"request,omitempty"`
 	SessionID           string               `json:"sessionId,omitempty"`
 	Supported           *Supported           `json:"supported,omitempty"`
 	TrayOptions         *TrayOptions         `json:"trayOptions,omitempty"`
 	URL                 string               `json:"url,omitempty"`
 	URLNew              string               `json:"newUrl,omitempty"`
 	URLOld              string               `json:"oldUrl,omitempty"`
+	Username            string               `json:"username,omitempty"`
 	WindowID            string               `json:"windowId,omitempty"`
 	WindowOptions       *WindowOptions       `json:"windowOptions,omitempty"`
+}
+
+// EventAuthInfo represents an event auth info
+type EventAuthInfo struct {
+	Host    string `json:"host,omitempty"`
+	IsProxy *bool  `json:"isProxy,omitempty"`
+	Port    *int   `json:"port,omitempty"`
+	Realm   string `json:"realm,omitempty"`
+	Scheme  string `json:"scheme,omitempty"`
 }
 
 // EventDisplays represents events displays
@@ -93,6 +106,13 @@ type EventMenuItem struct {
 	Options *MenuItemOptions `json:"options,omitempty"`
 	RootID  string           `json:"rootId"`
 	SubMenu *EventSubMenu    `json:"submenu,omitempty"`
+}
+
+// EventRequest represents an event request
+type EventRequest struct {
+	Method   string `json:"method,omitempty"`
+	Referrer string `json:"referrer,omitempty"`
+	URL      string `json:"url,omitempty"`
 }
 
 // EventSubMenu represents a sub menu event

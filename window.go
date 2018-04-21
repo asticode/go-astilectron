@@ -12,6 +12,8 @@ import (
 
 // Window event names
 const (
+	EventNameWebContentsEventLogin             = "web.contents.event.login"
+	EventNameWebContentsEventLoginCallback     = "web.contents.event.login.callback"
 	EventNameWindowCmdBlur                     = "window.cmd.blur"
 	EventNameWindowCmdCenter                   = "window.cmd.center"
 	EventNameWindowCmdClose                    = "window.cmd.close"
@@ -303,6 +305,29 @@ func (w *Window) Move(x, y int) (err error) {
 // MoveInDisplay moves the window in the proper display
 func (w *Window) MoveInDisplay(d *Display, x, y int) error {
 	return w.Move(d.Bounds().X+x, d.Bounds().Y+y)
+}
+
+func (w *Window) OnLogin(fn func(i Event) (username, password string, err error)) {
+	w.On(EventNameWebContentsEventLogin, func(i Event) (deleteListener bool) {
+		// Get username and password
+		username, password, err := fn(i)
+		if err != nil {
+			astilog.Error(errors.Wrap(err, "getting username and password failed"))
+			return
+		}
+
+		// No auth
+		if len(username) == 0 && len(password) == 0 {
+			return
+		}
+
+		// Send message back
+		if err = w.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventLoginCallback, Password: password, TargetID: w.id, Username: username}); err != nil {
+			astilog.Error(errors.Wrap(err, "writing login callback message failed"))
+			return
+		}
+		return
+	})
 }
 
 // ListenerMessage represents a message listener executed when receiving a message from the JS
