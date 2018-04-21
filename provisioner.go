@@ -155,6 +155,10 @@ func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths,
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
 				return errors.Wrap(err, "finishing provisioning electron for darwin systems failed")
 			}
+		case "windows":
+			if err = p.provisionElectronFinishWindows(appName, paths); err != nil {
+				return errors.Wrap(err, "finishing provisioning electron for windows systems failed")
+			}
 		default:
 			astilog.Debug("System doesn't require finshing provisioning electron, moving on...")
 		}
@@ -299,6 +303,34 @@ func (p *defaultProvisioner) provisionElectronFinishDarwinRename(appName string,
 		{src: filepath.Join(helperNP, "Contents", "MacOS", "Electron Helper NP"), dst: filepath.Join(helperNP, "Contents", "MacOS", appName+" Helper NP")},
 		{src: filepath.Join(frameworksDirectory, "Electron Helper.app"), dst: filepath.Join(helper)},
 		{src: filepath.Join(helper, "Contents", "MacOS", "Electron Helper"), dst: filepath.Join(helper, "Contents", "MacOS", appName+" Helper")},
+	} {
+		astilog.Debugf("Renaming %s into %s", r.src, r.dst)
+		if err = os.Rename(r.src, r.dst); err != nil {
+			return errors.Wrapf(err, "renaming %s into %s failed", r.src, r.dst)
+		}
+	}
+	return
+}
+
+// provisionElectronFinishWindows finishes provisioning electron for Windows systems
+func (p *defaultProvisioner) provisionElectronFinishWindows(appName string, paths Paths) (err error) {
+	// Log
+	astilog.Debug("Finishing provisioning electron for windows system")
+
+	// Custom app name
+	if appName != "" {
+		// Rename
+		if err = p.provisionElectronFinishWindowsRename(appName, paths); err != nil {
+			return errors.Wrap(err, "renaming for windows system finish failed")
+		}
+	}
+	return
+}
+
+// provisionElectronFinishWindowsRename renames the proper windows files
+func (p *defaultProvisioner) provisionElectronFinishWindowsRename(appName string, paths Paths) (err error) {
+	for _, r := range []rename{
+		{src: filepath.Join(paths.electronDirectory, "electron.exe"), dst: filepath.Join(paths.electronDirectory, appName+".exe")},
 	} {
 		astilog.Debugf("Renaming %s into %s", r.src, r.dst)
 		if err = os.Rename(r.src, r.dst); err != nil {

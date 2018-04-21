@@ -79,7 +79,7 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 }
 
 func (p *Paths) initDataDirectory(appName string) {
-	if v := os.Getenv("APPDATA"); len(v) > 0 {
+	if v := os.Getenv("APPDATA"); len(v) > 0 && len(appName) > 0 {
 		p.dataDirectory = filepath.Join(v, appName)
 		return
 	}
@@ -127,7 +127,10 @@ func (p *Paths) initAppExecutable(os, appName string) {
 	case "linux":
 		p.appExecutable = filepath.Join(p.electronDirectory, "electron")
 	case "windows":
-		p.appExecutable = filepath.Join(p.electronDirectory, "electron.exe")
+		if appName == "" {
+			appName = "electron"
+		}
+		p.appExecutable = filepath.Join(p.electronDirectory, appName+".exe")
 	}
 }
 
