@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 
 	"github.com/asticode/go-astilog"
+	"github.com/asticode/go-astitools/archive"
 	"github.com/asticode/go-astitools/context"
 	"github.com/asticode/go-astitools/http"
 	"github.com/asticode/go-astitools/io"
-	"github.com/asticode/go-astitools/zip"
 	"github.com/pkg/errors"
 )
 
@@ -115,7 +115,7 @@ func Unzip(ctx context.Context, src, dst string) (err error) {
 
 	// Unzipping
 	astilog.Debugf("Unzipping %s into %s", src, dst)
-	if err = astizip.Unzip(ctx, src, dst); err != nil {
+	if err = astiarchive.Unzip(ctx, src, dst); err != nil {
 		err = errors.Wrapf(err, "unzipping %s into %s failed", src, dst)
 		return
 	}
