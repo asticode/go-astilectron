@@ -15,18 +15,18 @@ func TestNewWindow(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test app name + icon
-	assert.Equal(t, "app name", *w.o.Title)
-	assert.Equal(t, "/path/to/default/icon", *w.o.Icon)
+	assert.Equal(t, "app name", *w.Options.Title)
+	assert.Equal(t, "/path/to/default/icon", *w.Options.Icon)
 
 	// Test in display
 	w, err = a.NewWindowInDisplay(newDisplay(&DisplayOptions{Bounds: &RectangleOptions{PositionOptions: PositionOptions{X: PtrInt(1), Y: PtrInt(2)}, SizeOptions: SizeOptions{Height: PtrInt(5), Width: PtrInt(6)}}}, true), "http://test.com", &WindowOptions{X: PtrInt(3), Y: PtrInt(4)})
 	assert.NoError(t, err)
-	assert.Equal(t, 4, *w.o.X)
-	assert.Equal(t, 6, *w.o.Y)
+	assert.Equal(t, 4, *w.Options.X)
+	assert.Equal(t, 6, *w.Options.Y)
 	w, err = a.NewWindowInDisplay(newDisplay(&DisplayOptions{Bounds: &RectangleOptions{PositionOptions: PositionOptions{X: PtrInt(1), Y: PtrInt(2)}, SizeOptions: SizeOptions{Height: PtrInt(5), Width: PtrInt(6)}}}, true), "http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, 1, *w.o.X)
-	assert.Equal(t, 2, *w.o.Y)
+	assert.Equal(t, 1, *w.Options.X)
+	assert.Equal(t, 2, *w.Options.Y)
 }
 
 func TestWindow_Actions(t *testing.T) {
