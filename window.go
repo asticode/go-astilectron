@@ -67,8 +67,8 @@ var (
 type Window struct {
 	*object
 	callbackIdentifier *identifier
-	o                  *WindowOptions
 	onMessageOnce      sync.Once
+	Options            *WindowOptions
 	Session            *Session
 	url                *url.URL
 }
@@ -160,7 +160,7 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 	// Init
 	w = &Window{
 		callbackIdentifier: newIdentifier(),
-		o:                  wo,
+		Options:            wo,
 		object:             newObject(nil, c, d, i, wrt, i.new()),
 	}
 	w.Session = newSession(w.ctx, c, d, i, wrt)
@@ -234,7 +234,7 @@ func (w *Window) Create() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, SessionID: w.Session.id, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, SessionID: w.Session.id, TargetID: w.id, URL: w.url.String(), WindowOptions: w.Options}, EventNameWindowEventDidFinishLoad)
 	return
 }
 
@@ -296,9 +296,9 @@ func (w *Window) Move(x, y int) (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	w.o.X = PtrInt(x)
-	w.o.Y = PtrInt(y)
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: w.o.X, Y: w.o.Y}}, EventNameWindowEventMove)
+	w.Options.X = PtrInt(x)
+	w.Options.Y = PtrInt(y)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: w.Options.X, Y: w.Options.Y}}, EventNameWindowEventMove)
 	return
 }
 
@@ -366,9 +366,9 @@ func (w *Window) Resize(width, height int) (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	w.o.Height = PtrInt(height)
-	w.o.Width = PtrInt(width)
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: w.o.Height, Width: w.o.Width}}, EventNameWindowEventResize)
+	w.Options.Height = PtrInt(height)
+	w.Options.Width = PtrInt(width)
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: w.Options.Height, Width: w.Options.Width}}, EventNameWindowEventResize)
 	return
 }
 
