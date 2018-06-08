@@ -261,6 +261,7 @@ func (w *Window) Hide() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
+	w.o.Show = PtrBool(false)
 	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
 	return
 }
@@ -411,6 +412,7 @@ func (w *Window) Show() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
+	w.o.Show = PtrBool(true)
 	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
 	return
 }
