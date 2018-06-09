@@ -84,7 +84,7 @@ type Supported struct {
 func New(o Options) (a *Astilectron, err error) {
 	// Validate the OS
 	if !IsValidOS(runtime.GOOS) {
-		err = errors.Wrapf(err, "OS %s is invalid")
+		err = errors.Wrapf(err, "OS %s is invalid", runtime.GOOS)
 		return
 	}
 
