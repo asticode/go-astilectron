@@ -179,6 +179,16 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 		return true
 	})
 
+	// Show
+	w.On(EventNameWindowEventHide, func(e Event) (deleteListener bool) {
+		w.o.Show = PtrBool(false)
+		return
+	})
+	w.On(EventNameWindowEventShow, func(e Event) (deleteListener bool) {
+		w.o.Show = PtrBool(true)
+		return
+	})
+
 	// Parse url
 	if w.url, err = astiurl.Parse(url); err != nil {
 		err = errors.Wrapf(err, "parsing url %s failed", url)
@@ -261,9 +271,16 @@ func (w *Window) Hide() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	w.o.Show = PtrBool(false)
 	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
 	return
+}
+
+// IsShown returns whether the window is shown
+func (w *Window) IsShown() bool {
+	if err := w.isActionable(); err != nil {
+		return false
+	}
+	return w.o.Show != nil && *w.o.Show
 }
 
 // Log logs a message in the JS console of the window
@@ -412,7 +429,6 @@ func (w *Window) Show() (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
-	w.o.Show = PtrBool(true)
 	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
 	return
 }
