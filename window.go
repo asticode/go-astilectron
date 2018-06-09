@@ -67,6 +67,7 @@ var (
 type Window struct {
 	*object
 	callbackIdentifier *identifier
+	m                  sync.Mutex // Locks o
 	o                  *WindowOptions
 	onMessageOnce      sync.Once
 	Session            *Session
@@ -181,10 +182,14 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 
 	// Show
 	w.On(EventNameWindowEventHide, func(e Event) (deleteListener bool) {
+		w.m.Lock()
+		defer w.m.Unlock()
 		w.o.Show = PtrBool(false)
 		return
 	})
 	w.On(EventNameWindowEventShow, func(e Event) (deleteListener bool) {
+		w.m.Lock()
+		defer w.m.Unlock()
 		w.o.Show = PtrBool(true)
 		return
 	})
