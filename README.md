@@ -52,8 +52,8 @@ To import `go-astilectron` run:
 // Initialize astilectron
 var a, _ = astilectron.New(astilectron.Options{
     AppName: "<your app name>",
-    AppIconDefaultPath: "<your .png icon>",
-    AppIconDarwinPath:  "<your .icns icon>",
+    AppIconDefaultPath: "<your .png icon>", // If path is relative, it must be relative to the data directory
+    AppIconDarwinPath:  "<your .icns icon>", // Same here
     BaseDirectoryPath: "<where you want the provisioner to install the dependencies>",
 })
 defer a.Close()
@@ -74,8 +74,6 @@ Beware when trying to add your own app icon as you'll need 2 icons : one compati
 If no BaseDirectoryPath is provided, it defaults to the executable's directory path.
 
 The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
-
-Chances are your app icon paths will be in your data directory paths. If it is so, put `%data_directory%` in your path and it will be replaced with the proper value.
 
 ## Create a window
 

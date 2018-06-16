@@ -41,8 +41,14 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	// Init other paths
 	//!\\ Order matters
 	p.initDataDirectory(o.AppName)
-	p.appIconDarwinSrc = strings.Replace(o.AppIconDarwinPath, "%data_directory%", p.dataDirectory, -1)
-	p.appIconDefaultSrc = strings.Replace(o.AppIconDefaultPath, "%data_directory%", p.dataDirectory, -1)
+	p.appIconDarwinSrc = o.AppIconDarwinPath
+	if len(p.appIconDarwinSrc) > 0 && !filepath.IsAbs(p.appIconDarwinSrc) {
+		p.appIconDarwinSrc = filepath.Join(p.dataDirectory, p.appIconDarwinSrc)
+	}
+	p.appIconDefaultSrc = o.AppIconDefaultPath
+	if len(p.appIconDefaultSrc) > 0 && !filepath.IsAbs(p.appIconDefaultSrc) {
+		p.appIconDefaultSrc = filepath.Join(p.dataDirectory, p.appIconDefaultSrc)
+	}
 	p.vendorDirectory = filepath.Join(p.dataDirectory, "vendor")
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.astilectronDirectory = filepath.Join(p.vendorDirectory, "astilectron")

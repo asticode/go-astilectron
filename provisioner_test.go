@@ -72,7 +72,9 @@ func TestDefaultProvisioner(t *testing.T) {
 	// Test darwin with custom app name + icon
 	os.RemoveAll(o.BaseDirectoryPath)
 	o.AppName = "Test app"
-	o.AppIconDarwinPath = "testdata/provisioner/icon.icns"
+	wd, err := os.Getwd()
+	assert.NoError(t, err)
+	o.AppIconDarwinPath = filepath.Join(wd, "testdata", "provisioner", "icon.icns")
 	p, err = newPaths("darwin", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
