@@ -80,6 +80,7 @@ type Window struct {
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/browser-window.md
 type WindowOptions struct {
 	// Custom
+	HideOnClose       *bool              `json:"hideOnClose,omitempty"`
 	MessageBoxOnClose *MessageBoxOptions `json:"messageBoxOnClose,omitempty"`
 	MinimizeOnClose   *bool              `json:"minimizeOnClose,omitempty"`
 
