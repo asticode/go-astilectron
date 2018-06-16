@@ -13,6 +13,7 @@ import (
 type Paths struct {
 	appExecutable          string
 	appIconDarwinSrc       string
+	appIconDefaultSrc      string
 	astilectronApplication string
 	astilectronDirectory   string
 	astilectronDownloadSrc string
@@ -40,7 +41,8 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	// Init other paths
 	//!\\ Order matters
 	p.initDataDirectory(o.AppName)
-	p.appIconDarwinSrc = o.AppIconDarwinPath
+	p.appIconDarwinSrc = strings.Replace(o.AppIconDarwinPath, "%data_directory%", p.dataDirectory, -1)
+	p.appIconDefaultSrc = strings.Replace(o.AppIconDefaultPath, "%data_directory%", p.dataDirectory, -1)
 	p.vendorDirectory = filepath.Join(p.dataDirectory, "vendor")
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.astilectronDirectory = filepath.Join(p.vendorDirectory, "astilectron")
@@ -139,6 +141,11 @@ func (p Paths) AppExecutable() string {
 // AppIconDarwinSrc returns the darwin app icon path
 func (p Paths) AppIconDarwinSrc() string {
 	return p.appIconDarwinSrc
+}
+
+// AppIconDefaultSrc returns the default app icon path
+func (p Paths) AppIconDefaultSrc() string {
+	return p.appIconDefaultSrc
 }
 
 // BaseDirectory returns the base directory path

@@ -16,7 +16,7 @@ func TestSubMenu_ToEvent(t *testing.T) {
 
 	// Window sub menu
 	var i = newIdentifier()
-	w, err := newWindow(Options{}, "http://test.com", &WindowOptions{}, asticontext.NewCanceller(), newDispatcher(), i, nil)
+	w, err := newWindow(Options{}, Paths{}, "http://test.com", &WindowOptions{}, asticontext.NewCanceller(), newDispatcher(), i, nil)
 	assert.NoError(t, err)
 	s = newSubMenu(nil, w.id, []*MenuItemOptions{{Label: PtrStr("1")}, {Label: PtrStr("2")}}, asticontext.NewCanceller(), newDispatcher(), i, nil)
 	e = s.toEvent()

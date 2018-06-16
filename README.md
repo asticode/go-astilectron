@@ -75,6 +75,8 @@ If no BaseDirectoryPath is provided, it defaults to the executable's directory p
 
 The majority of methods are synchrone which means that when executing them `go-astilectron` will block until it receives a specific Electron event or until the overall context is cancelled. This is the case of `.Start()` which will block until it receives the `app.event.ready` `astilectron` event or until the overall context is cancelled.
 
+Chances are your app icon paths will be in your data directory paths. If it is so, put `%data_directory%` in your path and it will be replaced with the proper value.
+
 ## Create a window
 
 ```go

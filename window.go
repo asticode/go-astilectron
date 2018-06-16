@@ -157,7 +157,7 @@ type WebPreferences struct {
 }
 
 // newWindow creates a new window
-func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
+func newWindow(o Options, p Paths, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
 	// Init
 	w = &Window{
 		callbackIdentifier: newIdentifier(),
@@ -167,8 +167,8 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 	w.Session = newSession(w.ctx, c, d, i, wrt)
 
 	// Check app details
-	if wo.Icon == nil && o.AppIconDefaultPath != "" {
-		wo.Icon = PtrStr(o.AppIconDefaultPath)
+	if wo.Icon == nil && p.AppIconDefaultSrc() != "" {
+		wo.Icon = PtrStr(p.AppIconDefaultSrc())
 	}
 	if wo.Title == nil && o.AppName != "" {
 		wo.Title = PtrStr(o.AppName)

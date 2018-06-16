@@ -388,7 +388,7 @@ func (a *Astilectron) NewMenu(i []*MenuItemOptions) *Menu {
 
 // NewWindow creates a new window
 func (a *Astilectron) NewWindow(url string, o *WindowOptions) (*Window, error) {
-	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return newWindow(a.options, a.Paths(), url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewWindowInDisplay creates a new window in a specific display
@@ -404,7 +404,7 @@ func (a *Astilectron) NewWindowInDisplay(d *Display, url string, o *WindowOption
 	} else {
 		o.Y = PtrInt(d.Bounds().Y)
 	}
-	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return newWindow(a.options, a.Paths(), url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewTray creates a new tray
