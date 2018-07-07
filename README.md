@@ -91,6 +91,18 @@ When creating a window you need to indicate a URL as well as options such as pos
 
 This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers and used pointers in structs sent to Electron.
 
+## Open the dev tools
+
+When developing in JS, it's very convenient to debug your code using the browser window's dev tools:
+
+````go
+// Open dev tools
+w.OpenDevTools()
+
+// Close dev tools
+w.CloseDevTools()
+````
+
 ## Add listeners
 
 ```go
