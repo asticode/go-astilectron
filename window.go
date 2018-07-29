@@ -286,6 +286,8 @@ func (w *Window) IsShown() bool {
 	if err := w.isActionable(); err != nil {
 		return false
 	}
+	w.m.Lock()
+	defer w.m.Unlock()
 	return w.o.Show != nil && *w.o.Show
 }
 
@@ -320,9 +322,11 @@ func (w *Window) Move(x, y int) (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
+	w.m.Lock()
 	w.o.X = PtrInt(x)
 	w.o.Y = PtrInt(y)
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: w.o.X, Y: w.o.Y}}, EventNameWindowEventMove)
+	w.m.Unlock()
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: PtrInt(x), Y: PtrInt(y)}}, EventNameWindowEventMove)
 	return
 }
 
@@ -390,9 +394,11 @@ func (w *Window) Resize(width, height int) (err error) {
 	if err = w.isActionable(); err != nil {
 		return
 	}
+	w.m.Lock()
 	w.o.Height = PtrInt(height)
 	w.o.Width = PtrInt(width)
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: w.o.Height, Width: w.o.Width}}, EventNameWindowEventResize)
+	w.m.Unlock()
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: PtrInt(height), Width: PtrInt(width)}}, EventNameWindowEventResize)
 	return
 }
 
