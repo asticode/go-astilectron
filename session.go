@@ -16,6 +16,7 @@ const (
 // Session represents a session
 // TODO Add missing session methods
 // TODO Add missing session events
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/session.md
 type Session struct {
 	*object
 }

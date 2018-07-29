@@ -118,6 +118,7 @@ type WindowOptions struct {
 	// Additional options
 	Custom *WindowCustomOptions `json:"custom,omitempty"`
 	Load   *WindowLoadOptions   `json:"load,omitempty"`
+	Proxy  *WindowProxyOptions  `json:"proxy,omitempty"`
 }
 
 // WindowCustomOptions represents window custom options
@@ -134,6 +135,14 @@ type WindowLoadOptions struct {
 	ExtraHeaders string `json:"extraHeaders,omitempty"`
 	HTTPReferer  string `json:"httpReferrer,omitempty"`
 	UserAgent    string `json:"userAgent,omitempty"`
+}
+
+// WindowProxyOptions represents window proxy options
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/session.md#sessetproxyconfig-callback
+type WindowProxyOptions struct {
+	BypassRules string `json:"proxyBypassRules,omitempty"`
+	PACScript   string `json:"pacScript,omitempty"`
+	Rules       string `json:"proxyRules,omitempty"`
 }
 
 // WebPreferences represents web preferences in window options.
