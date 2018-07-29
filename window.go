@@ -79,13 +79,6 @@ type Window struct {
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/browser-window.md
 type WindowOptions struct {
-	// Custom
-	HideOnClose       *bool              `json:"hideOnClose,omitempty"`
-	MessageBoxOnClose *MessageBoxOptions `json:"messageBoxOnClose,omitempty"`
-	MinimizeOnClose   *bool              `json:"minimizeOnClose,omitempty"`
-	Script            string             `json:"script,omitempty"`
-
-	// Default
 	AcceptFirstMouse       *bool           `json:"acceptFirstMouse,omitempty"`
 	AlwaysOnTop            *bool           `json:"alwaysOnTop,omitempty"`
 	AutoHideMenuBar        *bool           `json:"autoHideMenuBar,omitempty"`
@@ -121,6 +114,26 @@ type WindowOptions struct {
 	Width                  *int            `json:"width,omitempty"`
 	X                      *int            `json:"x,omitempty"`
 	Y                      *int            `json:"y,omitempty"`
+
+	// Additional options
+	Custom *WindowCustomOptions `json:"custom,omitempty"`
+	Load   *WindowLoadOptions   `json:"load,omitempty"`
+}
+
+// WindowCustomOptions represents window custom options
+type WindowCustomOptions struct {
+	HideOnClose       *bool              `json:"hideOnClose,omitempty"`
+	MessageBoxOnClose *MessageBoxOptions `json:"messageBoxOnClose,omitempty"`
+	MinimizeOnClose   *bool              `json:"minimizeOnClose,omitempty"`
+	Script            string             `json:"script,omitempty"`
+}
+
+// WindowLoadOptions represents window load options
+// https://github.com/electron/electron/blob/v1.8.1/docs/api/browser-window.md#winloadurlurl-options
+type WindowLoadOptions struct {
+	ExtraHeaders string `json:"extraHeaders,omitempty"`
+	HTTPReferer  string `json:"httpReferrer,omitempty"`
+	UserAgent    string `json:"userAgent,omitempty"`
 }
 
 // WebPreferences represents web preferences in window options.
