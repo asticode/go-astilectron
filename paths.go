@@ -38,9 +38,14 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 		return
 	}
 
+	// Init data directory path
+	if err = p.initDataDirectory(o.DataDirectoryPath, o.AppName); err != nil {
+		err = errors.Wrap(err, "initializing data directory failed")
+		return
+	}
+
 	// Init other paths
 	//!\\ Order matters
-	p.initDataDirectory(o.AppName)
 	p.appIconDarwinSrc = o.AppIconDarwinPath
 	if len(p.appIconDarwinSrc) > 0 && !filepath.IsAbs(p.appIconDarwinSrc) {
 		p.appIconDarwinSrc = filepath.Join(p.dataDirectory, p.appIconDarwinSrc)
@@ -86,12 +91,26 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 	return
 }
 
-func (p *Paths) initDataDirectory(appName string) {
+func (p *Paths) initDataDirectory(dataDirectoryPath, appName string) (err error) {
+	// Path is specified in the options
+	if len(dataDirectoryPath) > 0 {
+		// We need the absolute path
+		if p.dataDirectory, err = filepath.Abs(dataDirectoryPath); err != nil {
+			err = errors.Wrapf(err, "computing absolute path of %s failed", dataDirectoryPath)
+			return
+		}
+		return
+	}
+
+	// If the APPDATA env exists, we use it
 	if v := os.Getenv("APPDATA"); len(v) > 0 {
 		p.dataDirectory = filepath.Join(v, appName)
 		return
 	}
+
+	// Default to base directory path
 	p.dataDirectory = p.baseDirectory
+	return
 }
 
 // AstilectronDownloadSrc returns the download URL of the (currently platform-independent) astilectron zip file
