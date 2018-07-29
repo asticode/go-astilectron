@@ -83,6 +83,7 @@ type WindowOptions struct {
 	HideOnClose       *bool              `json:"hideOnClose,omitempty"`
 	MessageBoxOnClose *MessageBoxOptions `json:"messageBoxOnClose,omitempty"`
 	MinimizeOnClose   *bool              `json:"minimizeOnClose,omitempty"`
+	Script            string             `json:"script,omitempty"`
 
 	// Default
 	AcceptFirstMouse       *bool           `json:"acceptFirstMouse,omitempty"`
