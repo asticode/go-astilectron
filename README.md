@@ -385,6 +385,9 @@ n.On(astilectron.EventNameNotificationEventReplied, func(e astilectron.Event) (d
 	return
 })
 
+// Create notification
+n.Create()
+
 // Show notification
 n.Show()
 ```
