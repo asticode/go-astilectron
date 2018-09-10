@@ -74,6 +74,7 @@ type Options struct {
 	BaseDirectoryPath  string
 	DataDirectoryPath  string
 	ElectronSwitches   []string
+	SingleInstance     string
 }
 
 // Supported represents Astilectron supported features
@@ -262,7 +263,7 @@ func (a *Astilectron) execute() (err error) {
 
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
-	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String()}, a.options.ElectronSwitches...)...)
+	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), a.options.SingleInstance}, a.options.ElectronSwitches...)...)
 	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
