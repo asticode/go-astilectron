@@ -2,19 +2,16 @@ package astilectron
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"testing"
-
-	"fmt"
-
 	"sync"
+	"testing"
 
 	"github.com/asticode/go-astitools/context"
 	"github.com/pkg/errors"
-	"github.com/rs/xid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,8 +50,11 @@ func (h *mockedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var tempPathCount int
+
 func mockedTempPath() string {
-	return "testdata/tmp/" + xid.New().String()
+	tempPathCount++
+	return fmt.Sprintf("testdata/tmp/%d", tempPathCount)
 }
 
 func TestDownload(t *testing.T) {
