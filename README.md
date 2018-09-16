@@ -154,7 +154,7 @@ document.addEventListener('astilectron-ready', function() {
 ```go
 // This will send a message and execute a callback
 // Callbacks are optional
-w.SendMessage("hello", func(m *EventMessage) {
+w.SendMessage("hello", func(m *astilectron.EventMessage) {
         // Unmarshal
         var s string
         m.Unmarshal(&s)
@@ -172,7 +172,7 @@ This will print `received world` in the GO output
 
 ```go
 // This will listen to messages sent by Javascript
-w.OnMessage(func(m *EventMessage) interface{} {
+w.OnMessage(func(m *astilectron.EventMessage) interface{} {
         // Unmarshal
         var s string
         m.Unmarshal(&s)
