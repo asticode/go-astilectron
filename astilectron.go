@@ -19,7 +19,7 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout = 30 * time.Second
-	VersionAstilectron      = "0.27.0"
+	VersionAstilectron      = "0.28.0"
 	VersionElectron         = "1.8.1"
 )
 
@@ -74,7 +74,7 @@ type Options struct {
 	BaseDirectoryPath  string
 	DataDirectoryPath  string
 	ElectronSwitches   []string
-	SingleInstance     string
+	SingleInstance     bool
 }
 
 // Supported represents Astilectron supported features
@@ -263,7 +263,13 @@ func (a *Astilectron) execute() (err error) {
 
 	// Create command
 	var ctx, _ = a.canceller.NewContext()
-	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), a.options.SingleInstance}, a.options.ElectronSwitches...)...)
+	var singleInstance string
+	if a.options.SingleInstance == true {
+		singleInstance = "true"
+	} else {
+		singleInstance = "false"
+	}
+	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
 	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
