@@ -247,8 +247,6 @@ func (p *defaultProvisioner) provisionElectronFinishDarwinCopy(paths Paths) (err
 func (p *defaultProvisioner) provisionElectronFinishDarwinReplace(appName string, paths Paths) (err error) {
 	for _, p := range []string{
 		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Info.plist"),
-		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Frameworks", "Electron Helper EH.app", "Contents", "Info.plist"),
-		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Frameworks", "Electron Helper NP.app", "Contents", "Info.plist"),
 		filepath.Join(paths.electronDirectory, "Electron.app", "Contents", "Frameworks", "Electron Helper.app", "Contents", "Info.plist"),
 	} {
 		// Log
@@ -287,16 +285,10 @@ type rename struct {
 func (p *defaultProvisioner) provisionElectronFinishDarwinRename(appName string, paths Paths) (err error) {
 	var appDirectory = filepath.Join(paths.electronDirectory, appName+".app")
 	var frameworksDirectory = filepath.Join(appDirectory, "Contents", "Frameworks")
-	var helperEH = filepath.Join(frameworksDirectory, appName+" Helper EH.app")
-	var helperNP = filepath.Join(frameworksDirectory, appName+" Helper NP.app")
 	var helper = filepath.Join(frameworksDirectory, appName+" Helper.app")
 	for _, r := range []rename{
 		{src: filepath.Join(paths.electronDirectory, "Electron.app"), dst: appDirectory},
 		{src: filepath.Join(appDirectory, "Contents", "MacOS", "Electron"), dst: paths.AppExecutable()},
-		{src: filepath.Join(frameworksDirectory, "Electron Helper EH.app"), dst: helperEH},
-		{src: filepath.Join(helperEH, "Contents", "MacOS", "Electron Helper EH"), dst: filepath.Join(helperEH, "Contents", "MacOS", appName+" Helper EH")},
-		{src: filepath.Join(frameworksDirectory, "Electron Helper NP.app"), dst: filepath.Join(helperNP)},
-		{src: filepath.Join(helperNP, "Contents", "MacOS", "Electron Helper NP"), dst: filepath.Join(helperNP, "Contents", "MacOS", appName+" Helper NP")},
 		{src: filepath.Join(frameworksDirectory, "Electron Helper.app"), dst: filepath.Join(helper)},
 		{src: filepath.Join(helper, "Contents", "MacOS", "Electron Helper"), dst: filepath.Join(helper, "Contents", "MacOS", appName+" Helper")},
 	} {
