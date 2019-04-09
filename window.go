@@ -116,9 +116,19 @@ type WindowOptions struct {
 	Y                      *int            `json:"y,omitempty"`
 
 	// Additional options
-	Custom *WindowCustomOptions `json:"custom,omitempty"`
-	Load   *WindowLoadOptions   `json:"load,omitempty"`
-	Proxy  *WindowProxyOptions  `json:"proxy,omitempty"`
+	Custom     *WindowCustomOptions `json:"custom,omitempty"`
+	Load       *WindowLoadOptions   `json:"load,omitempty"`
+	Proxy      *WindowProxyOptions  `json:"proxy,omitempty"`
+	AppDetails *WindowAppDetails    `json:"appDetails,omitempty"`
+}
+
+// WindowAppDetails represents window app details
+type WindowAppDetails struct {
+	AppID               *string `json:"appId,omitempty"`
+	AppIconPath         *string `json:"appIconPath,omitempty"`
+	RelaunchCommand     *string `json:"relaunchCommand,omitempty"`
+	appIconIndex        *int    `json:"appIconIndex,omitempty"`
+	RelaunchDisplayName *string `json:"relaunchDisplayName,omitempty"`
 }
 
 // WindowCustomOptions represents window custom options
