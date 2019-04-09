@@ -2,11 +2,12 @@ package astilectron
 
 import (
 	"net/url"
+	"runtime"
 	"sync"
 
 	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/context"
-	"github.com/asticode/go-astitools/url"
+	asticontext "github.com/asticode/go-astitools/context"
+	astiurl "github.com/asticode/go-astitools/url"
 	"github.com/pkg/errors"
 )
 
@@ -206,6 +207,9 @@ func newWindow(o Options, p Paths, url string, wo *WindowOptions, c *asticontext
 	}
 	if wo.Title == nil && o.AppName != "" {
 		wo.Title = PtrStr(o.AppName)
+	}
+	if runtime.GOOS != "windows" {
+		wo.AppDetails = nil
 	}
 
 	// Make sure the window's context is cancelled once the closed event is received
