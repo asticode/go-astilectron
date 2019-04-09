@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/asticode/go-astilog"
-	asticontext "github.com/asticode/go-astitools/context"
-	astiurl "github.com/asticode/go-astitools/url"
+	"github.com/asticode/go-astitools/context"
+	"github.com/asticode/go-astitools/url"
 	"github.com/pkg/errors"
 )
 
@@ -128,7 +128,7 @@ type WindowAppDetails struct {
 	AppID               *string `json:"appId,omitempty"`
 	AppIconPath         *string `json:"appIconPath,omitempty"`
 	RelaunchCommand     *string `json:"relaunchCommand,omitempty"`
-	appIconIndex        *int    `json:"appIconIndex,omitempty"`
+	AppIconIndex        *int    `json:"appIconIndex,omitempty"`
 	RelaunchDisplayName *string `json:"relaunchDisplayName,omitempty"`
 }
 
