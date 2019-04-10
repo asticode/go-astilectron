@@ -2,7 +2,6 @@ package astilectron
 
 import (
 	"net/url"
-	"runtime"
 	"sync"
 
 	"github.com/asticode/go-astilog"
@@ -117,13 +116,14 @@ type WindowOptions struct {
 	Y                      *int            `json:"y,omitempty"`
 
 	// Additional options
+	AppDetails *WindowAppDetails    `json:"appDetails,omitempty"`
 	Custom     *WindowCustomOptions `json:"custom,omitempty"`
 	Load       *WindowLoadOptions   `json:"load,omitempty"`
 	Proxy      *WindowProxyOptions  `json:"proxy,omitempty"`
-	AppDetails *WindowAppDetails    `json:"appDetails,omitempty"`
 }
 
 // WindowAppDetails represents window app details
+// https://github.com/electron/electron/blob/v4.0.1/docs/api/browser-window.md#winsetappdetailsoptions-windows
 type WindowAppDetails struct {
 	AppID               *string `json:"appId,omitempty"`
 	AppIconPath         *string `json:"appIconPath,omitempty"`
@@ -207,9 +207,6 @@ func newWindow(o Options, p Paths, url string, wo *WindowOptions, c *asticontext
 	}
 	if wo.Title == nil && o.AppName != "" {
 		wo.Title = PtrStr(o.AppName)
-	}
-	if runtime.GOOS != "windows" {
-		wo.AppDetails = nil
 	}
 
 	// Make sure the window's context is cancelled once the closed event is received
