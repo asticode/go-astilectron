@@ -28,6 +28,7 @@ const (
 	EventNameWindowCmdMinimize                 = "window.cmd.minimize"
 	EventNameWindowCmdMove                     = "window.cmd.move"
 	EventNameWindowCmdResize                   = "window.cmd.resize"
+	EventNameWindowCmdSetBounds                = "window.cmd.setbounds"
 	EventNameWindowCmdRestore                  = "window.cmd.restore"
 	EventNameWindowCmdShow                     = "window.cmd.show"
 	EventNameWindowCmdUnmaximize               = "window.cmd.unmaximize"
@@ -433,6 +434,21 @@ func (w *Window) Resize(width, height int) (err error) {
 	w.o.Width = PtrInt(width)
 	w.m.Unlock()
 	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: PtrInt(height), Width: PtrInt(width)}}, EventNameWindowEventResize)
+	return
+}
+
+// SetBounds set bounds of the window
+func (w *Window) SetBounds(r RectangleOptions) (err error) {
+	if err = w.isActionable(); err != nil {
+		return
+	}
+	w.m.Lock()
+	w.o.Height = r.Height
+	w.o.Width = r.Width
+	w.o.X = r.X
+	w.o.Y = r.Y
+	w.m.Unlock()
+	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdSetBounds, TargetID: w.id, Bounds: &r}, EventNameWindowEventResize)
 	return
 }
 
