@@ -28,7 +28,7 @@ const (
 	EventNameWindowCmdMinimize                 = "window.cmd.minimize"
 	EventNameWindowCmdMove                     = "window.cmd.move"
 	EventNameWindowCmdResize                   = "window.cmd.resize"
-	EventNameWindowCmdSetBounds                = "window.cmd.setbounds"
+	EventNameWindowCmdSetBounds                = "window.cmd.set.bounds"
 	EventNameWindowCmdRestore                  = "window.cmd.restore"
 	EventNameWindowCmdShow                     = "window.cmd.show"
 	EventNameWindowCmdUnmaximize               = "window.cmd.unmaximize"
