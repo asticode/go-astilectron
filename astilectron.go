@@ -90,6 +90,10 @@ func New(o Options) (a *Astilectron, err error) {
 		return
 	}
 
+	if o.AppName == "" {
+		o.AppName = "astilectron"
+	}
+
 	// Init
 	a = &Astilectron{
 		canceller:   asticontext.NewCanceller(),
@@ -125,6 +129,7 @@ func New(o Options) (a *Astilectron, err error) {
 		a.displayPool.update(e.Displays)
 		return
 	})
+
 	return
 }
 
@@ -269,7 +274,7 @@ func (a *Astilectron) execute() (err error) {
 	} else {
 		singleInstance = "false"
 	}
-	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
+	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), singleInstance, a.options.AppName}, a.options.ElectronSwitches...)...)
 	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
