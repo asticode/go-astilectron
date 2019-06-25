@@ -44,6 +44,11 @@ const (
 	EventNameAppTooManyAccept = "app.too.many.accept"
 )
 
+// Unix socket path
+const (
+	UNIX_SOCKET_PATH = "/tmp/astilectron.sock"
+)
+
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
 	canceller    *asticontext.Canceller
@@ -161,10 +166,8 @@ func (a *Astilectron) Start() (err error) {
 		return errors.Wrap(err, "provisioning failed")
 	}
 
-	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
-	// will be done through TCP
-	if err = a.listenTCP(); err != nil {
-		return errors.Wrap(err, "listening failed")
+	if err = a.establishConnection(); err != nil {
+		return err
 	}
 
 	// Execute
@@ -180,6 +183,48 @@ func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	var ctx, _ = a.canceller.NewContext()
 	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
+}
+
+// function to create TCP/Unix socket connection
+func (a *Astilectron) establishConnection() (err error) {
+	/*
+	 * Switching between Unix-Socket and TCP-Socket
+	 * Windows will use TCP Socket
+	 * MAC and Linux will use Unix-Socket
+	 */
+	if runtime.GOOS == "windows" {
+		// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
+		// will be done through TCP
+		if err = a.listenTCP(); err != nil {
+			return errors.Wrap(err, "TCP Socket listening failed")
+		}
+	} else {
+		if err = a.listenUnixSoc(); err != nil {
+			return errors.Wrap(err, "Unix Socket listening failed")
+		}
+	}
+	return nil
+}
+
+// Creates a unix socket
+func (a *Astilectron) listenUnixSoc() (err error) {
+	// Log
+	astilog.Debug("Listening...")
+
+	_ = os.Remove(UNIX_SOCKET_PATH)
+
+	// Listen
+	if a.listener, err = net.Listen("unix", UNIX_SOCKET_PATH); err != nil {
+		return errors.Wrap(err, "Unix net.Listen failed")
+	}
+
+	// Check a connection has been accepted quickly enough
+	var chanAccepted = make(chan bool)
+	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
+
+	// Accept connections
+	go a.acceptTCP(chanAccepted)
+	return
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
