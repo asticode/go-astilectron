@@ -161,18 +161,22 @@ func (a *Astilectron) Start() (err error) {
 		return errors.Wrap(err, "provisioning failed")
 	}
 
-	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
-	// will be done through TCP
-	if err = a.listenTCP(); err != nil {
+	if err = a.Listen(); err != nil {
 		return errors.Wrap(err, "listening failed")
 	}
-
 	// Execute
 	if err = a.execute(); err != nil {
 		err = errors.Wrap(err, "executing failed")
 		return
 	}
 	return
+}
+
+// Listen creates a TCP server for astilectron to connect to.
+func (a *Astilectron) Listen() error {
+	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
+	// will be done through TCP
+	return a.listenTCP()
 }
 
 // provision provisions Astilectron
