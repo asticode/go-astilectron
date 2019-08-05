@@ -125,6 +125,10 @@ func New(o Options) (a *Astilectron, err error) {
 		a.displayPool.update(e.Displays)
 		return
 	})
+	a.On(EventNameAppCmdQuit, func(e Event) (deleteListener bool) {
+		a.Stop()
+		return
+	})
 	return
 }
 
