@@ -164,19 +164,19 @@ func (a *Astilectron) Start() (err error) {
 
 	// Provision
 	if !a.options.SkipAstilectronSetup {
-		if err := a.provision(); err != nil {
+		if err = a.provision(); err != nil {
 			return errors.Wrap(err, "provisioning failed")
 		}
 	}
 
 	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
 	// will be done through TCP
-	if err := a.listenTCP(); err != nil {
+	if err = a.listenTCP(); err != nil {
 		return errors.Wrap(err, "listening failed")
 	}
 	// Execute
 	if !a.options.SkipAstilectronSetup {
-		if err := a.execute(); err != nil {
+		if err = a.execute(); err != nil {
 			return errors.Wrap(err, "executing failed")
 		}
 	} else {
