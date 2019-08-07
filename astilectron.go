@@ -174,6 +174,7 @@ func (a *Astilectron) Start() (err error) {
 	if err = a.listenTCP(); err != nil {
 		return errors.Wrap(err, "listening failed")
 	}
+
 	// Execute
 	if !a.options.SkipAstilectronSetup {
 		if err = a.execute(); err != nil {
