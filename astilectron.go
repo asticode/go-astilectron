@@ -169,6 +169,8 @@ func (a *Astilectron) Start() (err error) {
 		}
 	}
 
+	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
+	// will be done through TCP
 	if err := a.listenTCP(); err != nil {
 		return errors.Wrap(err, "listening failed")
 	}
