@@ -157,17 +157,6 @@ func (a *Astilectron) On(eventName string, l Listener) {
 	a.dispatcher.addListener(targetIDApp, eventName, l)
 }
 
-// WaitOn blocks until the specified event has fired.
-func (a *Astilectron) WaitOn(eventName string) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	a.On(eventName, func(e Event) (deleteListener bool) {
-		defer wg.Done()
-		return true
-	})
-	wg.Wait()
-}
-
 // Start starts Astilectron
 func (a *Astilectron) Start() (err error) {
 	// Log
