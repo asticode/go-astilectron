@@ -188,6 +188,8 @@ func (a *Astilectron) Start() (err error) {
 		if err := a.execute(); err != nil {
 			return errors.Wrap(err, "executing failed")
 		}
+	} else {
+		synchronousFunc(a.canceller, a, func() {}, "app.event.ready")
 	}
 	return nil
 }
