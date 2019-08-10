@@ -200,12 +200,12 @@ func (a *Astilectron) listenTCP() (err error) {
 	// Log
 	astilog.Debug("Listening...")
 
-	port := ""
+	addr := "127.0.0.1:"
 	if a.options.TCPPort != nil {
-		port = fmt.Sprint(*a.options.TCPPort)
+		addr += fmt.Sprint(*a.options.TCPPort)
 	}
 	// Listen
-	if a.listener, err = net.Listen("tcp", "127.0.0.1:"+port); err != nil {
+	if a.listener, err = net.Listen("tcp", addr); err != nil {
 		return errors.Wrap(err, "tcp net.Listen failed")
 	}
 
