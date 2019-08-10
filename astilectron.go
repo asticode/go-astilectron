@@ -1,6 +1,7 @@
 package astilectron
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -75,8 +76,8 @@ type Options struct {
 	DataDirectoryPath    string
 	ElectronSwitches     []string
 	SingleInstance       bool
-	SkipAstilectronSetup bool   // If true, the user must handle provisioning and executing astilectron.
-	TCPPort              string // The port to listen on.
+	SkipAstilectronSetup bool // If true, the user must handle provisioning and executing astilectron.
+	TCPPort              *int // The port to listen on.
 }
 
 // Supported represents Astilectron supported features
@@ -199,8 +200,12 @@ func (a *Astilectron) listenTCP() (err error) {
 	// Log
 	astilog.Debug("Listening...")
 
+	port := ""
+	if a.options.TCPPort != nil {
+		port = fmt.Sprint(*a.options.TCPPort)
+	}
 	// Listen
-	if a.listener, err = net.Listen("tcp", "127.0.0.1:"+a.options.TCPPort); err != nil {
+	if a.listener, err = net.Listen("tcp", "127.0.0.1:"+port); err != nil {
 		return errors.Wrap(err, "tcp net.Listen failed")
 	}
 
