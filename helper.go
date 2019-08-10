@@ -157,7 +157,9 @@ func synchronousFunc(c *asticontext.Canceller, l listenable, fn func(), eventNam
 		cancel()
 		return true
 	})
-	fn()
+	if fn != nil {
+		fn()
+	}
 	<-ctx.Done()
 	return
 }
