@@ -1,6 +1,7 @@
 package astilectron
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -67,14 +68,16 @@ type Astilectron struct {
 
 // Options represents Astilectron options
 type Options struct {
-	AcceptTCPTimeout   time.Duration
-	AppName            string
-	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
-	AppIconDefaultPath string
-	BaseDirectoryPath  string
-	DataDirectoryPath  string
-	ElectronSwitches   []string
-	SingleInstance     bool
+	AcceptTCPTimeout     time.Duration
+	AppName              string
+	AppIconDarwinPath    string // Darwin systems requires a specific .icns file
+	AppIconDefaultPath   string
+	BaseDirectoryPath    string
+	DataDirectoryPath    string
+	ElectronSwitches     []string
+	SingleInstance       bool
+	SkipSetup bool // If true, the user must handle provisioning and executing astilectron.
+	TCPPort              *int // The port to listen on.
 }
 
 // Supported represents Astilectron supported features
@@ -125,6 +128,10 @@ func New(o Options) (a *Astilectron, err error) {
 		a.displayPool.update(e.Displays)
 		return
 	})
+	a.On(EventNameAppCmdQuit, func(e Event) (deleteListener bool) {
+		a.Stop()
+		return
+	})
 	return
 }
 
@@ -157,8 +164,10 @@ func (a *Astilectron) Start() (err error) {
 	astilog.Debug("Starting...")
 
 	// Provision
-	if err = a.provision(); err != nil {
-		return errors.Wrap(err, "provisioning failed")
+	if !a.options.SkipSetup {
+		if err = a.provision(); err != nil {
+			return errors.Wrap(err, "provisioning failed")
+		}
 	}
 
 	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
@@ -168,11 +177,14 @@ func (a *Astilectron) Start() (err error) {
 	}
 
 	// Execute
-	if err = a.execute(); err != nil {
-		err = errors.Wrap(err, "executing failed")
-		return
+	if !a.options.SkipSetup {
+		if err = a.execute(); err != nil {
+			return errors.Wrap(err, "executing failed")
+		}
+	} else {
+		synchronousFunc(a.canceller, a, nil, "app.event.ready")
 	}
-	return
+	return nil
 }
 
 // provision provisions Astilectron
@@ -182,13 +194,18 @@ func (a *Astilectron) provision() error {
 	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
 }
 
-// listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
+// listenTCP creates a TCP server for astilectron to connect to
+// and listens to the first TCP connection coming its way (this should be Astilectron).
 func (a *Astilectron) listenTCP() (err error) {
 	// Log
 	astilog.Debug("Listening...")
 
+	addr := "127.0.0.1:"
+	if a.options.TCPPort != nil {
+		addr += fmt.Sprint(*a.options.TCPPort)
+	}
 	// Listen
-	if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
+	if a.listener, err = net.Listen("tcp", addr); err != nil {
 		return errors.Wrap(err, "tcp net.Listen failed")
 	}
 
