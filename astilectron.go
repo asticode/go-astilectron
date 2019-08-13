@@ -76,7 +76,7 @@ type Options struct {
 	DataDirectoryPath    string
 	ElectronSwitches     []string
 	SingleInstance       bool
-	SkipAstilectronSetup bool // If true, the user must handle provisioning and executing astilectron.
+	SkipSetup bool // If true, the user must handle provisioning and executing astilectron.
 	TCPPort              *int // The port to listen on.
 }
 
@@ -164,7 +164,7 @@ func (a *Astilectron) Start() (err error) {
 	astilog.Debug("Starting...")
 
 	// Provision
-	if !a.options.SkipAstilectronSetup {
+	if !a.options.SkipSetup {
 		if err = a.provision(); err != nil {
 			return errors.Wrap(err, "provisioning failed")
 		}
@@ -177,7 +177,7 @@ func (a *Astilectron) Start() (err error) {
 	}
 
 	// Execute
-	if !a.options.SkipAstilectronSetup {
+	if !a.options.SkipSetup {
 		if err = a.execute(); err != nil {
 			return errors.Wrap(err, "executing failed")
 		}
