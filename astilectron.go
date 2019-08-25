@@ -9,6 +9,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"path/filepath"
 
 	"github.com/asticode/go-astilog"
 	"github.com/asticode/go-astitools/context"
@@ -44,10 +45,10 @@ const (
 	EventNameAppTooManyAccept = "app.too.many.accept"
 )
 
-// Unix socket path
-const (
-	UNIX_SOCKET_PATH = "/tmp/astilectron.sock"
-)
+// // Unix socket path
+// var (
+// 	UNIX_SOCKET_PATH = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
+// )
 
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
@@ -166,7 +167,7 @@ func (a *Astilectron) Start() (err error) {
 		return errors.Wrap(err, "provisioning failed")
 	}
 
-	if err = a.establishConnection(); err != nil {
+	if err = a.listen(); err != nil {
 		return err
 	}
 
@@ -186,7 +187,7 @@ func (a *Astilectron) provision() error {
 }
 
 // function to create TCP/Unix socket connection
-func (a *Astilectron) establishConnection() (err error) {
+func (a *Astilectron) listen() (err error) {
 	/*
 	 * Switching between Unix-Socket and TCP-Socket
 	 * Windows will use TCP Socket
@@ -199,51 +200,99 @@ func (a *Astilectron) establishConnection() (err error) {
 			return errors.Wrap(err, "TCP Socket listening failed")
 		}
 	} else {
-		if err = a.listenUnixSoc(); err != nil {
+		if err = a.listenUnix(); err != nil {
 			return errors.Wrap(err, "Unix Socket listening failed")
 		}
 	}
-	return nil
+	return
 }
 
-// Creates a unix socket
-func (a *Astilectron) listenUnixSoc() (err error) {
-	// Log
+func (a *Astilectron) listenFunc(fn func() error) (err error) {
+       // Log
 	astilog.Debug("Listening...")
 
-	_ = os.Remove(UNIX_SOCKET_PATH)
+       // Custom
+       if err = fn(); err != nil {
+            err = errors.Wrap(err, "main: custom listen failed")
+            return
+       }
 
-	// Listen
-	if a.listener, err = net.Listen("unix", UNIX_SOCKET_PATH); err != nil {
-		return errors.Wrap(err, "Unix net.Listen failed")
-	}
-
-	// Check a connection has been accepted quickly enough
+       // Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
 	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
 
 	// Accept connections
 	go a.acceptTCP(chanAccepted)
 	return
+}
+
+// Creates a unix socket
+func (a *Astilectron) listenUnix() (err error) {
+
+	UNIX_SOCKET_PATH := filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
+
+	_ = os.Remove(UNIX_SOCKET_PATH)
+
+	if err := a.listenFunc(func() error {
+	    // Listen
+		if a.listener, err = net.Listen("unix", UNIX_SOCKET_PATH); err != nil {
+			return errors.Wrap(err, "Unix net.Listen failed")
+		}
+		return nil
+	}); err != nil {
+	    return errors.Wrap(err, "main: listen func failed")
+	}
+	return
+
+	// // Log
+	// astilog.Debug("Listening...")
+	// UNIX_SOCKET_PATH = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
+
+	// _ = os.Remove(UNIX_SOCKET_PATH)
+
+	// // Listen
+	// if a.listener, err = net.Listen("unix", UNIX_SOCKET_PATH); err != nil {
+	// 	return errors.Wrap(err, "Unix net.Listen failed")
+	// }
+
+	// // Check a connection has been accepted quickly enough
+	// var chanAccepted = make(chan bool)
+	// go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
+
+	// // Accept connections
+	// go a.acceptTCP(chanAccepted)
+	// return
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
 func (a *Astilectron) listenTCP() (err error) {
-	// Log
-	astilog.Debug("Listening...")
-
-	// Listen
-	if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
-		return errors.Wrap(err, "tcp net.Listen failed")
+	
+	if err = a.listenFunc(func() error {
+	    // Listen
+		if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
+			return errors.Wrap(err, "tcp net.Listen failed")
+		}
+		return nil
+	}); err != nil {
+	    return errors.Wrap(err, "main: listen func failed")
 	}
-
-	// Check a connection has been accepted quickly enough
-	var chanAccepted = make(chan bool)
-	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
-
-	// Accept connections
-	go a.acceptTCP(chanAccepted)
 	return
+
+	// // Log
+	// astilog.Debug("Listening...")
+
+	// // Listen
+	// if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
+	// 	return errors.Wrap(err, "tcp net.Listen failed")
+	// }
+
+	// // Check a connection has been accepted quickly enough
+	// var chanAccepted = make(chan bool)
+	// go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
+
+	// // Accept connections
+	// go a.acceptTCP(chanAccepted)
+	// return
 }
 
 // watchNoAccept checks whether a TCP connection is accepted quickly enough
