@@ -19,7 +19,7 @@ import (
 
 // Versions
 const (
-	DefaultAcceptTCPTimeout = 30 * time.Second
+	DefaultAcceptTimeout = 30 * time.Second
 	VersionAstilectron      = "0.32.0"
 	VersionElectron         = "4.0.1"
 )
@@ -73,7 +73,7 @@ type Astilectron struct {
 
 // Options represents Astilectron options
 type Options struct {
-	AcceptTCPTimeout   time.Duration
+	AcceptTimeout   time.Duration
 	AppName            string
 	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
 	AppIconDefaultPath string
@@ -194,8 +194,8 @@ func (a *Astilectron) listen() (err error) {
 	 * MAC and Linux will use Unix-Socket
 	 */
 	if runtime.GOOS == "windows" {
-		// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
-		// will be done through TCP
+		// Unfortunately communicating with Electron through stdin/stdout doesn't
+		// work on Windows so all communications will be done through TCP
 		if err = a.listenTCP(); err != nil {
 			return errors.Wrap(err, "TCP Socket listening failed")
 		}
@@ -219,10 +219,10 @@ func (a *Astilectron) listenFunc(fn func() error) (err error) {
 
        // Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
-	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
+	go a.watchNoAccept(a.options.AcceptTimeout, chanAccepted)
 
 	// Accept connections
-	go a.acceptTCP(chanAccepted)
+	go a.accept(chanAccepted)
 	return
 }
 
@@ -243,25 +243,6 @@ func (a *Astilectron) listenUnix() (err error) {
 	    return errors.Wrap(err, "main: listen func failed")
 	}
 	return
-
-	// // Log
-	// astilog.Debug("Listening...")
-	// UNIX_SOCKET_PATH = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
-
-	// _ = os.Remove(UNIX_SOCKET_PATH)
-
-	// // Listen
-	// if a.listener, err = net.Listen("unix", UNIX_SOCKET_PATH); err != nil {
-	// 	return errors.Wrap(err, "Unix net.Listen failed")
-	// }
-
-	// // Check a connection has been accepted quickly enough
-	// var chanAccepted = make(chan bool)
-	// go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
-
-	// // Accept connections
-	// go a.acceptTCP(chanAccepted)
-	// return
 }
 
 // listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
@@ -277,29 +258,13 @@ func (a *Astilectron) listenTCP() (err error) {
 	    return errors.Wrap(err, "main: listen func failed")
 	}
 	return
-
-	// // Log
-	// astilog.Debug("Listening...")
-
-	// // Listen
-	// if a.listener, err = net.Listen("tcp", "127.0.0.1:"); err != nil {
-	// 	return errors.Wrap(err, "tcp net.Listen failed")
-	// }
-
-	// // Check a connection has been accepted quickly enough
-	// var chanAccepted = make(chan bool)
-	// go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
-
-	// // Accept connections
-	// go a.acceptTCP(chanAccepted)
-	// return
 }
 
-// watchNoAccept checks whether a TCP connection is accepted quickly enough
+// watchNoAccept checks whether a connection is accepted quickly enough
 func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan bool) {
 	//check timeout
 	if timeout == 0 {
-		timeout = DefaultAcceptTCPTimeout
+		timeout = DefaultAcceptTimeout
 	}
 	var t = time.NewTimer(timeout)
 	defer t.Stop()
@@ -308,7 +273,7 @@ func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan boo
 		case <-chanAccepted:
 			return
 		case <-t.C:
-			astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
+			astilog.Errorf("No connection has been accepted in the past %s", timeout)
 			a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: targetIDApp})
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			return
@@ -316,14 +281,14 @@ func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan boo
 	}
 }
 
-// watchAcceptTCP accepts TCP connections
-func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
+// watchAccept accepts connections
+func (a *Astilectron) accept(chanAccepted chan bool) {
 	for i := 0; i <= 1; i++ {
 		// Accept
 		var conn net.Conn
 		var err error
 		if conn, err = a.listener.Accept(); err != nil {
-			astilog.Errorf("%s while TCP accepting", err)
+			astilog.Errorf("%s while accepting connection", err)
 			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: targetIDApp})
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			return
@@ -332,7 +297,7 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		// We only accept the first connection which should be Astilectron, close the next one and stop
 		// the app
 		if i > 0 {
-			astilog.Errorf("Too many TCP connections")
+			astilog.Errorf("Too many connections")
 			a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: targetIDApp})
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			conn.Close()
