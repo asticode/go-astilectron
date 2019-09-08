@@ -1,6 +1,7 @@
 package astilectron
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -81,6 +82,8 @@ type Options struct {
 	DataDirectoryPath  string
 	ElectronSwitches   []string
 	SingleInstance     bool
+	SkipSetup bool // If true, the user must handle provisioning and executing astilectron.
+	TCPPort              *int // The port to listen on.
 }
 
 // Supported represents Astilectron supported features
@@ -131,6 +134,10 @@ func New(o Options) (a *Astilectron, err error) {
 		a.displayPool.update(e.Displays)
 		return
 	})
+	a.On(EventNameAppCmdQuit, func(e Event) (deleteListener bool) {
+		a.Stop()
+		return
+	})
 	return
 }
 
@@ -163,8 +170,10 @@ func (a *Astilectron) Start() (err error) {
 	astilog.Debug("Starting...")
 
 	// Provision
-	if err = a.provision(); err != nil {
-		return errors.Wrap(err, "provisioning failed")
+	if !a.options.SkipSetup {
+		if err = a.provision(); err != nil {
+			return errors.Wrap(err, "provisioning failed")
+		}
 	}
 
 	if err = a.listen(); err != nil {
@@ -172,11 +181,14 @@ func (a *Astilectron) Start() (err error) {
 	}
 
 	// Execute
-	if err = a.execute(); err != nil {
-		err = errors.Wrap(err, "executing failed")
-		return
+	if !a.options.SkipSetup {
+		if err = a.execute(); err != nil {
+			return errors.Wrap(err, "executing failed")
+		}
+	} else {
+		synchronousFunc(a.canceller, a, nil, "app.event.ready")
 	}
-	return
+	return nil
 }
 
 // provision provisions Astilectron
@@ -216,7 +228,6 @@ func (a *Astilectron) listenFunc(fn func() error) (err error) {
             err = errors.Wrap(err, "main: custom listen failed")
             return
        }
-
        // Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
 	go a.watchNoAccept(a.options.AcceptTimeout, chanAccepted)
