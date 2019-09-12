@@ -332,6 +332,9 @@ var t = a.NewTray(&astilectron.TrayOptions{
     Tooltip: astilectron.PtrStr("Tray's tooltip"),
 })
 
+// Create tray
+t.Create()
+
 // New tray menu
 var m = t.NewMenu([]*astilectron.MenuItemOptions{
     {
@@ -355,12 +358,9 @@ var m = t.NewMenu([]*astilectron.MenuItemOptions{
 // Create the menu
 m.Create()
 
-// Create tray
-t.Create()
-
 // Change tray's image
 time.Sleep(time.Second)
-t.SetImage(astilectron.PtrStr("/path/to/image-2.png"))
+t.SetImage("/path/to/image-2.png")
 ```
 
 ## Notifications
