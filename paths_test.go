@@ -12,12 +12,17 @@ import (
 
 func TestPaths(t *testing.T) {
 	const k = "APPDATA"
+	const VersionAstilectron = DefaultVersionAstilectron
+	const VersionElectron = DefaultVersionElectron
+
 	ad := os.Getenv(k)
 	os.Setenv(k, "")
 	ep, err := os.Executable()
 	ep = filepath.Dir(ep)
 	assert.NoError(t, err)
-	p, err := newPaths("linux", "amd64", Options{})
+
+	o := Options{VersionAstilectron: DefaultVersionAstilectron, VersionElectron: DefaultVersionElectron}
+	p, err := newPaths("linux", "amd64", o)
 	assert.NoError(t, err)
 	assert.Equal(t, ep+"/vendor/electron-linux-amd64/electron", p.AppExecutable())
 	assert.Equal(t, "", p.AppIconDarwinSrc())

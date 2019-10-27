@@ -73,14 +73,14 @@ func (p *defaultProvisioner) Provision(ctx context.Context, appName, os, arch st
 		err = errors.Wrap(err, "provisioning astilectron failed")
 		return
 	}
-	s.Astilectron = &ProvisionStatusPackage{Version: VersionAstilectron}
+	s.Astilectron = &ProvisionStatusPackage{Version: paths.VersionAstilectron}
 
 	// Provision electron
 	if err = p.provisionElectron(ctx, paths, s, appName, os, arch); err != nil {
 		err = errors.Wrap(err, "provisioning electron failed")
 		return
 	}
-	s.Electron[provisionStatusElectronKey(os, arch)] = &ProvisionStatusPackage{Version: VersionElectron}
+	s.Electron[provisionStatusElectronKey(os, arch)] = &ProvisionStatusPackage{Version: paths.VersionElectron}
 	return
 }
 
@@ -144,12 +144,12 @@ func (p *defaultProvisioner) updateProvisionStatus(paths Paths, s *ProvisionStat
 
 // provisionAstilectron provisions astilectron
 func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths, s ProvisionStatus) error {
-	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", VersionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
+	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", paths.VersionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
 }
 
 // provisionElectron provisions electron
 func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName, os, arch string) error {
-	return p.provisionPackage(ctx, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
+	return p.provisionPackage(ctx, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", paths.VersionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
 		switch os {
 		case "darwin":
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {

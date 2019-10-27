@@ -3,3 +3,4 @@ Thumbs.db
 .idea/
 cover*
 testdata/tmp/*
+go.sum

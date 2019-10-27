@@ -27,12 +27,24 @@ type Paths struct {
 	electronUnzipSrc       string
 	provisionStatus        string
 	vendorDirectory        string
+	VersionAstilectron     string
+	VersionElectron        string
 }
 
 // newPaths creates new paths
 func newPaths(os, arch string, o Options) (p *Paths, err error) {
+	if o.VersionAstilectron == "" {
+		o.VersionAstilectron = DefaultVersionAstilectron
+	}
+	if o.VersionElectron == "" {
+		o.VersionElectron = DefaultVersionElectron
+	}
+
+
 	// Init base directory path
 	p = &Paths{}
+	p.VersionAstilectron = o.VersionAstilectron
+	p.VersionElectron = o.VersionElectron
 	if err = p.initBaseDirectory(o.BaseDirectoryPath); err != nil {
 		err = errors.Wrap(err, "initializing base directory failed")
 		return
@@ -58,12 +70,12 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.provisionStatus = filepath.Join(p.vendorDirectory, "status.json")
 	p.astilectronDirectory = filepath.Join(p.vendorDirectory, "astilectron")
 	p.astilectronApplication = filepath.Join(p.astilectronDirectory, "main.js")
-	p.astilectronDownloadSrc = AstilectronDownloadSrc()
-	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", VersionAstilectron))
-	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", VersionAstilectron))
+	p.astilectronDownloadSrc = AstilectronDownloadSrc(o.VersionAstilectron)
+	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", o.VersionAstilectron))
+	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", o.VersionAstilectron))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s", os, arch))
-	p.electronDownloadSrc = ElectronDownloadSrc(os, arch)
-	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, VersionElectron))
+	p.electronDownloadSrc = ElectronDownloadSrc(os, arch, o.VersionElectron)
+	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, o.VersionElectron))
 	p.electronUnzipSrc = p.electronDownloadDst
 	p.initAppExecutable(os, o.AppName)
 	return
@@ -114,12 +126,12 @@ func (p *Paths) initDataDirectory(dataDirectoryPath, appName string) (err error)
 }
 
 // AstilectronDownloadSrc returns the download URL of the (currently platform-independent) astilectron zip file
-func AstilectronDownloadSrc() string {
+func AstilectronDownloadSrc( VersionAstilectron string) string {
 	return fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", VersionAstilectron)
 }
 
 // ElectronDownloadSrc returns the download URL of the platform-dependant electron zipfile
-func ElectronDownloadSrc(os, arch string) string {
+func ElectronDownloadSrc(os, arch, VersionElectron string) string {
 	// Get OS name
 	var o string
 	switch strings.ToLower(os) {

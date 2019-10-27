@@ -20,8 +20,8 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout = 30 * time.Second
-	VersionAstilectron      = "0.33.0"
-	VersionElectron         = "4.0.1"
+	DefaultVersionAstilectron      = "0.33.0"
+	DefaultVersionElectron         = "4.0.1"
 )
 
 // Misc vars
@@ -78,6 +78,8 @@ type Options struct {
 	SingleInstance       bool
 	SkipSetup bool // If true, the user must handle provisioning and executing astilectron.
 	TCPPort              *int // The port to listen on.
+	VersionAstilectron   string
+	VersionElectron      string
 }
 
 // Supported represents Astilectron supported features
@@ -92,6 +94,15 @@ func New(o Options) (a *Astilectron, err error) {
 		err = errors.Wrapf(err, "OS %s is invalid", runtime.GOOS)
 		return
 	}
+
+	if o.VersionAstilectron == "" {
+		o.VersionAstilectron = DefaultVersionAstilectron
+	}
+
+	if o.VersionElectron == "" {
+		o.VersionElectron = DefaultVersionElectron
+	}
+
 
 	// Init
 	a = &Astilectron{
