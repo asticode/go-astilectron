@@ -56,8 +56,8 @@ var a, _ = astilectron.New(astilectron.Options{
     AppIconDefaultPath: "<your .png icon>", // If path is relative, it must be relative to the data directory
     AppIconDarwinPath:  "<your .icns icon>", // Same here
     BaseDirectoryPath: "<where you want the provisioner to install the dependencies>",
-	VersionAstilectron: "0.33.0",
-	VersionElectron: "4.0.1",
+    VersionAstilectron: "0.33.0",
+    VersionElectron: "4.0.1",
 })
 defer a.Close()
 

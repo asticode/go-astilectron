@@ -19,9 +19,9 @@ import (
 
 // Versions
 const (
-	DefaultAcceptTCPTimeout = 30 * time.Second
-	DefaultVersionAstilectron      = "0.33.0"
-	DefaultVersionElectron         = "4.0.1"
+	DefaultAcceptTCPTimeout   = 30 * time.Second
+	DefaultVersionAstilectron = "0.33.0"
+	DefaultVersionElectron    = "4.0.1"
 )
 
 // Misc vars
@@ -68,18 +68,18 @@ type Astilectron struct {
 
 // Options represents Astilectron options
 type Options struct {
-	AcceptTCPTimeout     time.Duration
-	AppName              string
-	AppIconDarwinPath    string // Darwin systems requires a specific .icns file
-	AppIconDefaultPath   string
-	BaseDirectoryPath    string
-	DataDirectoryPath    string
-	ElectronSwitches     []string
-	SingleInstance       bool
-	SkipSetup bool // If true, the user must handle provisioning and executing astilectron.
-	TCPPort              *int // The port to listen on.
-	VersionAstilectron   string
-	VersionElectron      string
+	AcceptTCPTimeout   time.Duration
+	AppName            string
+	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
+	AppIconDefaultPath string
+	BaseDirectoryPath  string
+	DataDirectoryPath  string
+	ElectronSwitches   []string
+	SingleInstance     bool
+	SkipSetup          bool // If true, the user must handle provisioning and executing astilectron.
+	TCPPort            *int // The port to listen on.
+	VersionAstilectron string
+	VersionElectron    string
 }
 
 // Supported represents Astilectron supported features
@@ -98,11 +98,9 @@ func New(o Options) (a *Astilectron, err error) {
 	if o.VersionAstilectron == "" {
 		o.VersionAstilectron = DefaultVersionAstilectron
 	}
-
 	if o.VersionElectron == "" {
 		o.VersionElectron = DefaultVersionElectron
 	}
-
 
 	// Init
 	a = &Astilectron{
@@ -202,7 +200,7 @@ func (a *Astilectron) Start() (err error) {
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
+	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, a.options.VersionAstilectron, a.options.VersionElectron, *a.paths)
 }
 
 // listenTCP creates a TCP server for astilectron to connect to

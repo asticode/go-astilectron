@@ -27,24 +27,13 @@ type Paths struct {
 	electronUnzipSrc       string
 	provisionStatus        string
 	vendorDirectory        string
-	VersionAstilectron     string
-	VersionElectron        string
 }
 
 // newPaths creates new paths
 func newPaths(os, arch string, o Options) (p *Paths, err error) {
-	if o.VersionAstilectron == "" {
-		o.VersionAstilectron = DefaultVersionAstilectron
-	}
-	if o.VersionElectron == "" {
-		o.VersionElectron = DefaultVersionElectron
-	}
-
 
 	// Init base directory path
 	p = &Paths{}
-	p.VersionAstilectron = o.VersionAstilectron
-	p.VersionElectron = o.VersionElectron
 	if err = p.initBaseDirectory(o.BaseDirectoryPath); err != nil {
 		err = errors.Wrap(err, "initializing base directory failed")
 		return
@@ -126,12 +115,12 @@ func (p *Paths) initDataDirectory(dataDirectoryPath, appName string) (err error)
 }
 
 // AstilectronDownloadSrc returns the download URL of the (currently platform-independent) astilectron zip file
-func AstilectronDownloadSrc( VersionAstilectron string) string {
-	return fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", VersionAstilectron)
+func AstilectronDownloadSrc(versionAstilectron string) string {
+	return fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", versionAstilectron)
 }
 
 // ElectronDownloadSrc returns the download URL of the platform-dependant electron zipfile
-func ElectronDownloadSrc(os, arch, VersionElectron string) string {
+func ElectronDownloadSrc(os, arch, versionElectron string) string {
 	// Get OS name
 	var o string
 	switch strings.ToLower(os) {
@@ -152,7 +141,7 @@ func ElectronDownloadSrc(os, arch, VersionElectron string) string {
 	}
 
 	// Return url
-	return fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-%s-%s.zip", VersionElectron, VersionElectron, o, a)
+	return fmt.Sprintf("https://github.com/electron/electron/releases/download/v%s/electron-v%s-%s-%s.zip", versionElectron, versionElectron, o, a)
 }
 
 // initAppExecutable initializes the app executable path
