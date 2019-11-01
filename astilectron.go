@@ -1,7 +1,6 @@
 package astilectron
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -46,11 +45,6 @@ const (
 	EventNameAppTooManyAccept = "app.too.many.accept"
 )
 
-// // Unix socket path
-// var (
-// 	UNIX_SOCKET_PATH = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
-// )
-
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
 	canceller    *asticontext.Canceller
@@ -82,8 +76,8 @@ type Options struct {
 	DataDirectoryPath  string
 	ElectronSwitches   []string
 	SingleInstance     bool
-	SkipSetup          bool // If true, the user must handle provisioning and executing astilectron.
-	TCPPort            *int // The port to listen on.
+	SkipSetup          bool   // If true, the user must handle provisioning and executing astilectron.
+	Addr               string // Proper address to listen on.
 }
 
 // Supported represents Astilectron supported features
@@ -176,14 +170,14 @@ func (a *Astilectron) Start() (err error) {
 		}
 	}
 
-	listenType, listenErr := a.listen()
+	listenErr := a.listen()
 	if listenErr != nil {
 		return listenErr
 	}
 
 	// Execute
 	if !a.options.SkipSetup {
-		if err = a.execute(listenType); err != nil {
+		if err = a.execute(); err != nil {
 			return errors.Wrap(err, "executing failed")
 		}
 	} else {
@@ -200,81 +194,51 @@ func (a *Astilectron) provision() error {
 }
 
 // function to create TCP/Unix socket connection
-func (a *Astilectron) listen() (string, error) {
+func (a *Astilectron) listen() (err error) {
+	// Log
+	astilog.Debug("Listening...")
+
+	var addr string
+	listenType := "tcp"
 	/*
 	 * Switching between Unix-Socket and TCP-Socket
 	 * Windows will use TCP Socket
 	 * MAC and Linux will use Unix-Socket
 	 */
-	if runtime.GOOS == "windows" {
-		// Unfortunately communicating with Electron through stdin/stdout doesn't
-		// work on Windows so all communications will be done through TCP
-		if err := a.listenTCP(); err != nil {
-			return " ", errors.Wrap(err, "TCP Socket listening failed")
+	if len(a.options.Addr) == 0 {
+		if runtime.GOOS != "windows" {
+			addr = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
+			/*
+			 * Not checking error for this, as this step
+			 * is to avoid any error for net.listen while creation
+			 * of unix socket.
+			 */
+			os.Remove(addr)
+			listenType = "unix"
+			a.options.Addr = "unix://" + a.options.Addr
+		} else {
+			addr = "127.0.0.1:0"
+			a.options.Addr = "tcp://" + addr
 		}
-		return "tcp", nil
 	} else {
-		if err := a.listenUnix(); err != nil {
-			return "", errors.Wrap(err, "Unix Socket listening failed")
+		addr = a.options.Addr
+		if runtime.GOOS != "windows" {
+			listenType = "unix"
 		}
-		return "unix", nil
+		a.options.Addr = listenType + "://" + addr
 	}
-	return "", nil
-}
 
-func (a *Astilectron) listenFunc(fn func() error) (err error) {
-	// Log
-	astilog.Debug("Listening...")
-
-	// Custom
-	if err = fn(); err != nil {
-		err = errors.Wrap(err, "main: custom listen failed")
-		return
+	// Listen
+	if a.listener, err = net.Listen(listenType, addr); err != nil {
+		return errors.Wrap(err, listenType+" net.Listen failed")
 	}
+
 	// Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
 	go a.watchNoAccept(a.options.AcceptTimeout, chanAccepted)
 
 	// Accept connections
 	go a.accept(chanAccepted)
-	return
-}
-
-// Creates a unix socket
-func (a *Astilectron) listenUnix() (err error) {
-
-	UNIX_SOCKET_PATH := filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
-
-	_ = os.Remove(UNIX_SOCKET_PATH)
-
-	if err := a.listenFunc(func() error {
-		// Listen
-		if a.listener, err = net.Listen("unix", UNIX_SOCKET_PATH); err != nil {
-			return errors.Wrap(err, "Unix net.Listen failed")
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "main: listen func failed")
-	}
-	return
-}
-
-// listenTCP listens to the first TCP connection coming its way (this should be Astilectron)
-func (a *Astilectron) listenTCP() (err error) {
-
-	if err = a.listenFunc(func() error {
-		addr := "127.0.0.1:"
-		if a.options.TCPPort != nil {
-			addr += fmt.Sprint(*a.options.TCPPort)
-		}
-		// Listen
-		if a.listener, err = net.Listen("tcp", addr); err != nil {
-			return errors.Wrap(err, "tcp net.Listen failed")
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "main: listen func failed")
-	}
 	return
 }
 
@@ -334,7 +298,7 @@ func (a *Astilectron) accept(chanAccepted chan bool) {
 }
 
 // execute executes Astilectron in Electron
-func (a *Astilectron) execute(listenType string) (err error) {
+func (a *Astilectron) execute() (err error) {
 	// Log
 	astilog.Debug("Executing...")
 
@@ -346,7 +310,8 @@ func (a *Astilectron) execute(listenType string) (err error) {
 	} else {
 		singleInstance = "false"
 	}
-	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), listenType, a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
+	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(),
+		a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
 	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
