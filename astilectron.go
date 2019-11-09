@@ -20,8 +20,8 @@ import (
 // Versions
 const (
 	DefaultAcceptTimeout = 30 * time.Second
-	VersionAstilectron   = "0.32.0"
-	VersionElectron      = "4.0.1"
+	DefaultVersionAstilectron = "0.33.0"
+	DefaultVersionElectron    = "4.0.1"
 )
 
 // Misc vars
@@ -78,6 +78,8 @@ type Options struct {
 	SingleInstance     bool
 	SkipSetup          bool   // If true, the user must handle provisioning and executing astilectron.
 	Addr               string // Proper address to listen on.
+	VersionAstilectron string
+	VersionElectron    string
 }
 
 // Supported represents Astilectron supported features
@@ -91,6 +93,13 @@ func New(o Options) (a *Astilectron, err error) {
 	if !IsValidOS(runtime.GOOS) {
 		err = errors.Wrapf(err, "OS %s is invalid", runtime.GOOS)
 		return
+	}
+
+	if o.VersionAstilectron == "" {
+		o.VersionAstilectron = DefaultVersionAstilectron
+	}
+	if o.VersionElectron == "" {
+		o.VersionElectron = DefaultVersionElectron
 	}
 
 	// Init
@@ -190,7 +199,7 @@ func (a *Astilectron) Start() (err error) {
 func (a *Astilectron) provision() error {
 	astilog.Debug("Provisioning...")
 	var ctx, _ = a.canceller.NewContext()
-	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, *a.paths)
+	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, a.options.VersionAstilectron, a.options.VersionElectron, *a.paths)
 }
 
 // function to create TCP/Unix socket connection

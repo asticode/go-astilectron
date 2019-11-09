@@ -1,7 +1,7 @@
 [![GoReportCard](http://goreportcard.com/badge/github.com/asticode/go-astilectron)](http://goreportcard.com/report/github.com/asticode/go-astilectron)
 [![GoDoc](https://godoc.org/github.com/asticode/go-astilectron?status.svg)](https://godoc.org/github.com/asticode/go-astilectron)
 [![Travis](https://travis-ci.org/asticode/go-astilectron.svg?branch=master)](https://travis-ci.org/asticode/go-astilectron#)
-[![Coveralls](https://coveralls.io/repos/github/asticode/go-astilectron/badge.svg?branch=master)](https://coveralls.io/repos/github/asticode/go-astilectron)
+[![Coveralls](https://coveralls.io/repos/github/asticode/go-astilectron/badge.svg?branch=master)](https://coveralls.io/github/asticode/go-astilectron)
 
 Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
@@ -56,6 +56,8 @@ var a, _ = astilectron.New(astilectron.Options{
     AppIconDefaultPath: "<your .png icon>", // If path is relative, it must be relative to the data directory
     AppIconDarwinPath:  "<your .icns icon>", // Same here
     BaseDirectoryPath: "<where you want the provisioner to install the dependencies>",
+    VersionAstilectron: "<version of Astilectron to utilize such as `0.33.0`>",
+    VersionElectron: "<version of Electron to utilize such as `4.0.1` | `6.1.2`>",
 })
 defer a.Close()
 
@@ -332,6 +334,9 @@ var t = a.NewTray(&astilectron.TrayOptions{
     Tooltip: astilectron.PtrStr("Tray's tooltip"),
 })
 
+// Create tray
+t.Create()
+
 // New tray menu
 var m = t.NewMenu([]*astilectron.MenuItemOptions{
     {
@@ -355,12 +360,9 @@ var m = t.NewMenu([]*astilectron.MenuItemOptions{
 // Create the menu
 m.Create()
 
-// Create tray
-t.Create()
-
 // Change tray's image
 time.Sleep(time.Second)
-t.SetImage(astilectron.PtrStr("/path/to/image-2.png"))
+t.SetImage("/path/to/image-2.png")
 ```
 
 ## Notifications
