@@ -198,7 +198,6 @@ func (a *Astilectron) listen() (err error) {
 	// Log
 	astilog.Debug("Listening...")
 
-	var addr string
 	listenType := "tcp"
 	/*
 	 * Switching between Unix-Socket and TCP-Socket
@@ -207,29 +206,25 @@ func (a *Astilectron) listen() (err error) {
 	 */
 	if len(a.options.Addr) == 0 {
 		if runtime.GOOS != "windows" {
-			addr = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
+			a.options.Addr = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
 			/*
 			 * Not checking error for this, as this step
-			 * is to avoid any error for net.listen while creation
-			 * of unix socket.
+			 * is to avoid any error for net.listen while
+			 * creation of unix socket.
 			 */
-			os.Remove(addr)
+			os.Remove(a.options.Addr)
 			listenType = "unix"
-			a.options.Addr = "unix://" + a.options.Addr
 		} else {
-			addr = "127.0.0.1:0"
-			a.options.Addr = "tcp://" + addr
+			a.options.Addr = "127.0.0.1:0"
 		}
 	} else {
-		addr = a.options.Addr
 		if runtime.GOOS != "windows" {
 			listenType = "unix"
 		}
-		a.options.Addr = listenType + "://" + addr
 	}
 
 	// Listen
-	if a.listener, err = net.Listen(listenType, addr); err != nil {
+	if a.listener, err = net.Listen(listenType, a.options.Addr); err != nil {
 		return errors.Wrap(err, listenType+" net.Listen failed")
 	}
 
