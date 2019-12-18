@@ -11,6 +11,8 @@ To see a minimal Astilectron app, checkout out the [demo](https://github.com/ast
 
 It uses the [bootstrap](https://github.com/asticode/go-astilectron-bootstrap) and the [bundler](https://github.com/asticode/go-astilectron-bundler).
 
+If you're looking for a minimalistic example, run `go run example/main.go -v`.
+
 # Real-life examples
 
 Here's a list of awesome projects using `go-astilectron` (if you're using `go-astilectron` and want your project to be listed here please submit a PR):
@@ -19,7 +21,6 @@ Here's a list of awesome projects using `go-astilectron` (if you're using `go-as
 - [GroupMatcher](https://github.com/veecue/GroupMatcher) Program to allocate persons to groups while trying to fulfill all the given wishes as good as possible
 - [ipeye-onvif](https://github.com/deepch/ipeye-onvif) ONVIF Search Tool
 - [Stellite GUI Miner](https://github.com/stellitecoin/GUI-miner) An easy to use GUI cryptocurrency miner for Stellite
-
 
 # Bootstrap
 

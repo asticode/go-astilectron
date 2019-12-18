@@ -12,15 +12,15 @@ import (
 	"time"
 
 	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/context"
-	"github.com/asticode/go-astitools/exec"
+	asticontext "github.com/asticode/go-astitools/context"
+	astiexec "github.com/asticode/go-astitools/exec"
 	"github.com/pkg/errors"
 )
 
 // Versions
 const (
 	DefaultAcceptTimeout = 30 * time.Second
-	DefaultVersionAstilectron = "0.33.0"
+	DefaultVersionAstilectron = "0.34.0"
 	DefaultVersionElectron    = "4.0.1"
 )
 
