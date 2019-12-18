@@ -1,11 +1,11 @@
 package astilectron
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"sync"
 	"syscall"
@@ -19,7 +19,7 @@ import (
 
 // Versions
 const (
-	DefaultAcceptTCPTimeout   = 30 * time.Second
+	DefaultAcceptTimeout = 30 * time.Second
 	DefaultVersionAstilectron = "0.34.0"
 	DefaultVersionElectron    = "4.0.1"
 )
@@ -68,7 +68,7 @@ type Astilectron struct {
 
 // Options represents Astilectron options
 type Options struct {
-	AcceptTCPTimeout   time.Duration
+	AcceptTimeout      time.Duration
 	AppName            string
 	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
 	AppIconDefaultPath string
@@ -76,8 +76,8 @@ type Options struct {
 	DataDirectoryPath  string
 	ElectronSwitches   []string
 	SingleInstance     bool
-	SkipSetup          bool // If true, the user must handle provisioning and executing astilectron.
-	TCPPort            *int // The port to listen on.
+	SkipSetup          bool   // If true, the user must handle provisioning and executing astilectron.
+	Addr               string // Proper address to listen on.
 	VersionAstilectron string
 	VersionElectron    string
 }
@@ -179,10 +179,9 @@ func (a *Astilectron) Start() (err error) {
 		}
 	}
 
-	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
-	// will be done through TCP
-	if err = a.listenTCP(); err != nil {
-		return errors.Wrap(err, "listening failed")
+	listenErr := a.listen()
+	if listenErr != nil {
+		return listenErr
 	}
 
 	// Execute
@@ -203,35 +202,55 @@ func (a *Astilectron) provision() error {
 	return a.provisioner.Provision(ctx, a.options.AppName, runtime.GOOS, runtime.GOARCH, a.options.VersionAstilectron, a.options.VersionElectron, *a.paths)
 }
 
-// listenTCP creates a TCP server for astilectron to connect to
-// and listens to the first TCP connection coming its way (this should be Astilectron).
-func (a *Astilectron) listenTCP() (err error) {
+// function to create TCP/Unix socket connection
+func (a *Astilectron) listen() (err error) {
 	// Log
 	astilog.Debug("Listening...")
 
-	addr := "127.0.0.1:"
-	if a.options.TCPPort != nil {
-		addr += fmt.Sprint(*a.options.TCPPort)
+	listenType := "tcp"
+	/*
+	 * Switching between Unix-Socket and TCP-Socket
+	 * Windows will use TCP Socket
+	 * MAC and Linux will use Unix-Socket
+	 */
+	if len(a.options.Addr) == 0 {
+		if runtime.GOOS != "windows" {
+			a.options.Addr = filepath.Join(a.paths.DataDirectory(), "astilectron.sock")
+			/*
+			 * Not checking error for this, as this step
+			 * is to avoid any error for net.listen while
+			 * creation of unix socket.
+			 */
+			os.Remove(a.options.Addr)
+			listenType = "unix"
+		} else {
+			a.options.Addr = "127.0.0.1:0"
+		}
+	} else {
+		if runtime.GOOS != "windows" {
+			listenType = "unix"
+		}
 	}
+
 	// Listen
-	if a.listener, err = net.Listen("tcp", addr); err != nil {
-		return errors.Wrap(err, "tcp net.Listen failed")
+	if a.listener, err = net.Listen(listenType, a.options.Addr); err != nil {
+		return errors.Wrap(err, listenType+" net.Listen failed")
 	}
 
 	// Check a connection has been accepted quickly enough
 	var chanAccepted = make(chan bool)
-	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
+	go a.watchNoAccept(a.options.AcceptTimeout, chanAccepted)
 
 	// Accept connections
-	go a.acceptTCP(chanAccepted)
+	go a.accept(chanAccepted)
 	return
 }
 
-// watchNoAccept checks whether a TCP connection is accepted quickly enough
+// watchNoAccept checks whether a connection is accepted quickly enough
 func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan bool) {
 	//check timeout
 	if timeout == 0 {
-		timeout = DefaultAcceptTCPTimeout
+		timeout = DefaultAcceptTimeout
 	}
 	var t = time.NewTimer(timeout)
 	defer t.Stop()
@@ -240,7 +259,7 @@ func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan boo
 		case <-chanAccepted:
 			return
 		case <-t.C:
-			astilog.Errorf("No TCP connection has been accepted in the past %s", timeout)
+			astilog.Errorf("No connection has been accepted in the past %s", timeout)
 			a.dispatcher.dispatch(Event{Name: EventNameAppNoAccept, TargetID: targetIDApp})
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			return
@@ -248,14 +267,14 @@ func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan boo
 	}
 }
 
-// watchAcceptTCP accepts TCP connections
-func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
+// watchAccept accepts connections
+func (a *Astilectron) accept(chanAccepted chan bool) {
 	for i := 0; i <= 1; i++ {
 		// Accept
 		var conn net.Conn
 		var err error
 		if conn, err = a.listener.Accept(); err != nil {
-			astilog.Errorf("%s while TCP accepting", err)
+			astilog.Errorf("%s while accepting connection", err)
 			a.dispatcher.dispatch(Event{Name: EventNameAppErrorAccept, TargetID: targetIDApp})
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			return
@@ -264,7 +283,7 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		// We only accept the first connection which should be Astilectron, close the next one and stop
 		// the app
 		if i > 0 {
-			astilog.Errorf("Too many TCP connections")
+			astilog.Errorf("Too many connections")
 			a.dispatcher.dispatch(Event{Name: EventNameAppTooManyAccept, TargetID: targetIDApp})
 			a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
 			conn.Close()
@@ -295,7 +314,8 @@ func (a *Astilectron) execute() (err error) {
 	} else {
 		singleInstance = "false"
 	}
-	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
+	var cmd = exec.CommandContext(ctx, a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(),
+		a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
 	a.stderrWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stderr says: %s", i) })
 	a.stdoutWriter = astiexec.NewStdWriter(func(i []byte) { astilog.Debugf("Stdout says: %s", i) })
 	cmd.Stderr = a.stderrWriter
