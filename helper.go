@@ -124,7 +124,9 @@ func synchronousFunc(parentCtx context.Context, l listenable, fn func(), eventNa
 	ctx, cancel := context.WithCancel(parentCtx)
 	defer cancel()
 	l.On(eventNameDone, func(i Event) (deleteListener bool) {
-		e = i
+		if ctx.Err() == nil {
+			e = i
+		}
 		cancel()
 		return true
 	})
