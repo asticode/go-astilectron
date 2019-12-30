@@ -10,7 +10,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/asticode/go-astitools/context"
+	"github.com/asticode/go-astikit"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +23,6 @@ type mockedHandler struct {
 func (h *mockedHandler) readFile(rw http.ResponseWriter, path string) {
 	var b, err = ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -62,16 +61,17 @@ func TestDownload(t *testing.T) {
 	var mh = &mockedHandler{e: true}
 	var s = httptest.NewServer(mh)
 	var dst = mockedTempPath()
+	var d = astikit.NewHTTPDownloader(astikit.HTTPDownloaderOptions{})
 
 	// Test failed download
-	err := Download(context.Background(), &http.Client{}, s.URL, dst)
-	assert.Contains(t, err.Error(), "returned 500 status code")
+	err := Download(context.Background(), d, s.URL, dst)
+	assert.Error(t, err)
 	_, err = os.Stat(dst)
 	assert.True(t, os.IsNotExist(err))
 
 	// Test successful download
 	mh.e = false
-	err = Download(context.Background(), &http.Client{}, s.URL, dst)
+	err = Download(context.Background(), d, s.URL, dst)
 	assert.NoError(t, err)
 	defer os.Remove(dst)
 	b, err := ioutil.ReadFile(dst)
@@ -111,9 +111,9 @@ func TestDisembed(t *testing.T) {
 }
 
 func TestPtr(t *testing.T) {
-	assert.Equal(t, true, *PtrBool(true))
-	assert.Equal(t, 1, *PtrInt(1))
-	assert.Equal(t, "1", *PtrStr("1"))
+	assert.Equal(t, true, *astikit.BoolPtr(true))
+	assert.Equal(t, 1, *astikit.IntPtr(1))
+	assert.Equal(t, "1", *astikit.StrPtr("1"))
 }
 
 // mockedListenable is a mocked listenable
@@ -130,7 +130,6 @@ func (m *mockedListenable) On(eventName string, l Listener) {
 func TestSynchronousFunc(t *testing.T) {
 	// Init
 	var d = newDispatcher()
-	var c = asticontext.NewCanceller()
 	var l = &mockedListenable{d: d, id: "1"}
 	var done bool
 	var m sync.Mutex
@@ -142,13 +141,13 @@ func TestSynchronousFunc(t *testing.T) {
 	})
 
 	// Test canceller cancel
-	var _ = synchronousFunc(c, l, func() { c.Cancel() }, "done")
+	ctx, cancel := context.WithCancel(context.Background())
+	var _ = synchronousFunc(ctx, l, func() { cancel() }, "done")
 	assert.False(t, done)
 
 	// Test done event
-	c = asticontext.NewCanceller()
 	var ed = Event{Name: "done", TargetID: "1"}
-	var e = synchronousFunc(c, l, func() { d.dispatch(ed) }, "done")
+	var e = synchronousFunc(context.Background(), l, func() { d.dispatch(ed) }, "done")
 	m.Lock()
 	assert.True(t, done)
 	m.Unlock()
@@ -161,7 +160,6 @@ func TestSynchronousEvent(t *testing.T) {
 	var ed = Event{Name: "done", TargetID: "1"}
 	var mw = &mockedWriter{fn: func() { d.dispatch(ed) }}
 	var w = newWriter(mw)
-	var c = asticontext.NewCanceller()
 	var l = &mockedListenable{d: d, id: "1"}
 	var done bool
 	var m sync.Mutex
@@ -174,7 +172,7 @@ func TestSynchronousEvent(t *testing.T) {
 	var ei = Event{Name: "order", TargetID: "1"}
 
 	// Test successful synchronous event
-	var e, err = synchronousEvent(c, l, w, ei, "done")
+	var e, err = synchronousEvent(context.Background(), l, w, ei, "done")
 	assert.NoError(t, err)
 	m.Lock()
 	assert.True(t, done)

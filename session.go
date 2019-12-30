@@ -2,8 +2,6 @@ package astilectron
 
 import (
 	"context"
-
-	"github.com/asticode/go-astitools/context"
 )
 
 // Session event names
@@ -22,15 +20,15 @@ type Session struct {
 }
 
 // newSession creates a new session
-func newSession(parentCtx context.Context, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) *Session {
-	return &Session{object: newObject(parentCtx, c, d, i, w, i.new())}
+func newSession(ctx context.Context, d *dispatcher, i *identifier, w *writer) *Session {
+	return &Session{object: newObject(ctx, d, i, w, i.new())}
 }
 
 // ClearCache clears the Session's HTTP cache
 func (s *Session) ClearCache() (err error) {
-	if err = s.isActionable(); err != nil {
+	if err = s.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(s.c, s, s.w, Event{Name: EventNameSessionCmdClearCache, TargetID: s.id}, EventNameSessionEventClearedCache)
+	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdClearCache, TargetID: s.id}, EventNameSessionEventClearedCache)
 	return
 }

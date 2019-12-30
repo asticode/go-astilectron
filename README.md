@@ -84,9 +84,9 @@ The majority of methods are synchrone which means that when executing them `go-a
 ```go
 // Create a new window
 var w, _ = a.NewWindow("http://127.0.0.1:4000", &astilectron.WindowOptions{
-    Center: astilectron.PtrBool(true),
-    Height: astilectron.PtrInt(600),
-    Width:  astilectron.PtrInt(600),
+    Center: astikit.BoolPtr(true),
+    Height: astikit.IntPtr(600),
+    Width:  astikit.IntPtr(600),
 })
 w.Create()
 ```
@@ -228,41 +228,41 @@ if len(displays) > 1 {
 // You can do the same thing with a window
 var m = a.NewMenu([]*astilectron.MenuItemOptions{
     {
-        Label: astilectron.PtrStr("Separator"),
+        Label: astikit.StrPtr("Separator"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Label: astilectron.PtrStr("Normal 1")},
+            {Label: astikit.StrPtr("Normal 1")},
             {
-                Label: astilectron.PtrStr("Normal 2"),
+                Label: astikit.StrPtr("Normal 2"),
                 OnClick: func(e astilectron.Event) (deleteListener bool) {
                     astilog.Info("Normal 2 item has been clicked")
                     return
                 },
             },
             {Type: astilectron.MenuItemTypeSeparator},
-            {Label: astilectron.PtrStr("Normal 3")},
+            {Label: astikit.StrPtr("Normal 3")},
         },
     },
     {
-        Label: astilectron.PtrStr("Checkbox"),
+        Label: astikit.StrPtr("Checkbox"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Checked: astilectron.PtrBool(true), Label: astilectron.PtrStr("Checkbox 1"), Type: astilectron.MenuItemTypeCheckbox},
-            {Label: astilectron.PtrStr("Checkbox 2"), Type: astilectron.MenuItemTypeCheckbox},
-            {Label: astilectron.PtrStr("Checkbox 3"), Type: astilectron.MenuItemTypeCheckbox},
+            {Checked: astikit.BoolPtr(true), Label: astikit.StrPtr("Checkbox 1"), Type: astilectron.MenuItemTypeCheckbox},
+            {Label: astikit.StrPtr("Checkbox 2"), Type: astilectron.MenuItemTypeCheckbox},
+            {Label: astikit.StrPtr("Checkbox 3"), Type: astilectron.MenuItemTypeCheckbox},
         },
     },
     {
-        Label: astilectron.PtrStr("Radio"),
+        Label: astikit.StrPtr("Radio"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Checked: astilectron.PtrBool(true), Label: astilectron.PtrStr("Radio 1"), Type: astilectron.MenuItemTypeRadio},
-            {Label: astilectron.PtrStr("Radio 2"), Type: astilectron.MenuItemTypeRadio},
-            {Label: astilectron.PtrStr("Radio 3"), Type: astilectron.MenuItemTypeRadio},
+            {Checked: astikit.BoolPtr(true), Label: astikit.StrPtr("Radio 1"), Type: astilectron.MenuItemTypeRadio},
+            {Label: astikit.StrPtr("Radio 2"), Type: astilectron.MenuItemTypeRadio},
+            {Label: astikit.StrPtr("Radio 3"), Type: astilectron.MenuItemTypeRadio},
         },
     },
     {
-        Label: astilectron.PtrStr("Roles"),
+        Label: astikit.StrPtr("Roles"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Label: astilectron.PtrStr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
-            {Label: astilectron.PtrStr("Close"), Role: astilectron.MenuItemRoleClose},
+            {Label: astikit.StrPtr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
+            {Label: astikit.StrPtr("Close"), Role: astilectron.MenuItemRoleClose},
         },
     },
 })
@@ -286,10 +286,10 @@ mi.SetChecked(true)
 
 // Init a new menu item
 var ni = m.NewItem(&astilectron.MenuItemOptions{
-    Label: astilectron.PtrStr("Inserted"),
+    Label: astikit.StrPtr("Inserted"),
     SubMenu: []*astilectron.MenuItemOptions{
-        {Label: astilectron.PtrStr("Inserted 1")},
-        {Label: astilectron.PtrStr("Inserted 2")},
+        {Label: astikit.StrPtr("Inserted 1")},
+        {Label: astikit.StrPtr("Inserted 2")},
     },
 })
 
@@ -301,10 +301,10 @@ s, _ := m.SubMenu(0)
 
 // Init a new menu item
 ni = s.NewItem(&astilectron.MenuItemOptions{
-    Label: astilectron.PtrStr("Appended"),
+    Label: astikit.StrPtr("Appended"),
     SubMenu: []*astilectron.MenuItemOptions{
-        {Label: astilectron.PtrStr("Appended 1")},
-        {Label: astilectron.PtrStr("Appended 2")},
+        {Label: astikit.StrPtr("Appended 1")},
+        {Label: astikit.StrPtr("Appended 2")},
     },
 })
 
@@ -312,7 +312,7 @@ ni = s.NewItem(&astilectron.MenuItemOptions{
 s.Append(ni)
 
 // Pop up sub menu as a context menu
-s.Popup(&astilectron.MenuPopupOptions{PositionOptions: astilectron.PositionOptions{X: astilectron.PtrInt(50), Y: astilectron.PtrInt(50)}})
+s.Popup(&astilectron.MenuPopupOptions{PositionOptions: astilectron.PositionOptions{X: astikit.IntPtr(50), Y: astikit.IntPtr(50)}})
 
 // Close popup
 s.ClosePopup()
@@ -331,8 +331,8 @@ A few things to know:
 ```go
 // New tray
 var t = a.NewTray(&astilectron.TrayOptions{
-    Image:   astilectron.PtrStr("/path/to/image.png"),
-    Tooltip: astilectron.PtrStr("Tray's tooltip"),
+    Image:   astikit.StrPtr("/path/to/image.png"),
+    Tooltip: astikit.StrPtr("Tray's tooltip"),
 })
 
 // Create tray
@@ -341,19 +341,19 @@ t.Create()
 // New tray menu
 var m = t.NewMenu([]*astilectron.MenuItemOptions{
     {
-        Label: astilectron.PtrStr("Root 1"),
+        Label: astikit.StrPtr("Root 1"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Label: astilectron.PtrStr("Item 1")},
-            {Label: astilectron.PtrStr("Item 2")},
+            {Label: astikit.StrPtr("Item 1")},
+            {Label: astikit.StrPtr("Item 2")},
             {Type: astilectron.MenuItemTypeSeparator},
-            {Label: astilectron.PtrStr("Item 3")},
+            {Label: astikit.StrPtr("Item 3")},
         },
     },
     {
-        Label: astilectron.PtrStr("Root 2"),
+        Label: astikit.StrPtr("Root 2"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Label: astilectron.PtrStr("Item 1")},
-            {Label: astilectron.PtrStr("Item 2")},
+            {Label: astikit.StrPtr("Item 1")},
+            {Label: astikit.StrPtr("Item 2")},
         },
     },
 })
@@ -372,7 +372,7 @@ t.SetImage("/path/to/image-2.png")
 // Create the notification
 var n = a.NewNotification(&astilectron.NotificationOptions{
 	Body: "My Body",
-	HasReply: astilectron.PtrBool(true), // Only MacOSX
+	HasReply: astikit.BoolPtr(true), // Only MacOSX
 	Icon: "/path/to/icon",
 	ReplyPlaceholder: "type your reply here", // Only MacOSX
 	Title: "My title",
@@ -419,19 +419,19 @@ d.SetIcon("/path/to/icon")
 // New dock menu
 var m = d.NewMenu([]*astilectron.MenuItemOptions{
     {
-        Label: astilectron.PtrStr("Root 1"),
+        Label: astikit.StrPtr("Root 1"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Label: astilectron.PtrStr("Item 1")},
-            {Label: astilectron.PtrStr("Item 2")},
+            {Label: astikit.StrPtr("Item 1")},
+            {Label: astikit.StrPtr("Item 2")},
             {Type: astilectron.MenuItemTypeSeparator},
-            {Label: astilectron.PtrStr("Item 3")},
+            {Label: astikit.StrPtr("Item 3")},
         },
     },
         {
-        Label: astilectron.PtrStr("Root 2"),
+        Label: astikit.StrPtr("Root 2"),
         SubMenu: []*astilectron.MenuItemOptions{
-            {Label: astilectron.PtrStr("Item 1")},
-            {Label: astilectron.PtrStr("Item 2")},
+            {Label: astikit.StrPtr("Item 1")},
+            {Label: astikit.StrPtr("Item 2")},
         },
     },
 })

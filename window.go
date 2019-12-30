@@ -1,12 +1,13 @@
 package astilectron
 
 import (
-	"net/url"
+	"context"
+	stdUrl "net/url"
+	"path/filepath"
 	"sync"
 
+	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/context"
-	"github.com/asticode/go-astitools/url"
 	"github.com/pkg/errors"
 )
 
@@ -56,9 +57,9 @@ const (
 
 // Title bar styles
 var (
-	TitleBarStyleDefault     = PtrStr("default")
-	TitleBarStyleHidden      = PtrStr("hidden")
-	TitleBarStyleHiddenInset = PtrStr("hidden-inset")
+	TitleBarStyleDefault     = astikit.StrPtr("default")
+	TitleBarStyleHidden      = astikit.StrPtr("hidden")
+	TitleBarStyleHiddenInset = astikit.StrPtr("hidden-inset")
 )
 
 // Window represents a window
@@ -72,11 +73,11 @@ type Window struct {
 	o                  *WindowOptions
 	onMessageOnce      sync.Once
 	Session            *Session
-	url                *url.URL
+	url                *stdUrl.URL
 }
 
 // WindowOptions represents window options
-// We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use PtrBool, PtrInt or PtrStr
+// We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use astikit.BoolPtr, astikit.IntPtr or astikit.StrPtr
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/browser-window.md
 type WindowOptions struct {
@@ -159,7 +160,7 @@ type WindowProxyOptions struct {
 
 // WebPreferences represents web preferences in window options.
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does.
-// Use PtrBool, PtrInt or PtrStr to fill the struct
+// Use astikit.BoolPtr, astikit.IntPtr or astikit.StrPtr to fill the struct
 type WebPreferences struct {
 	AllowRunningInsecureContent *bool                  `json:"allowRunningInsecureContent,omitempty"`
 	BackgroundThrottling        *bool                  `json:"backgroundThrottling,omitempty"`
@@ -193,21 +194,21 @@ type WebPreferences struct {
 }
 
 // newWindow creates a new window
-func newWindow(o Options, p Paths, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
+func newWindow(ctx context.Context, o Options, p Paths, url string, wo *WindowOptions, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
 	// Init
 	w = &Window{
 		callbackIdentifier: newIdentifier(),
 		o:                  wo,
-		object:             newObject(nil, c, d, i, wrt, i.new()),
+		object:             newObject(ctx, d, i, wrt, i.new()),
 	}
-	w.Session = newSession(w.ctx, c, d, i, wrt)
+	w.Session = newSession(w.ctx, d, i, wrt)
 
 	// Check app details
 	if wo.Icon == nil && p.AppIconDefaultSrc() != "" {
-		wo.Icon = PtrStr(p.AppIconDefaultSrc())
+		wo.Icon = astikit.StrPtr(p.AppIconDefaultSrc())
 	}
 	if wo.Title == nil && o.AppName != "" {
-		wo.Title = PtrStr(o.AppName)
+		wo.Title = astikit.StrPtr(o.AppName)
 	}
 
 	// Make sure the window's context is cancelled once the closed event is received
@@ -220,59 +221,71 @@ func newWindow(o Options, p Paths, url string, wo *WindowOptions, c *asticontext
 	w.On(EventNameWindowEventHide, func(e Event) (deleteListener bool) {
 		w.m.Lock()
 		defer w.m.Unlock()
-		w.o.Show = PtrBool(false)
+		w.o.Show = astikit.BoolPtr(false)
 		return
 	})
 	w.On(EventNameWindowEventShow, func(e Event) (deleteListener bool) {
 		w.m.Lock()
 		defer w.m.Unlock()
-		w.o.Show = PtrBool(true)
+		w.o.Show = astikit.BoolPtr(true)
 		return
 	})
 
-	// Parse url
-	if w.url, err = astiurl.Parse(url); err != nil {
-		err = errors.Wrapf(err, "parsing url %s failed", url)
+	// Basic parse
+	if w.url, err = stdUrl.Parse(url); err != nil {
+		err = errors.Wrapf(err, "std parsing of url %s failed", url)
 		return
+	}
+
+	// File
+	if w.url.Scheme == "" {
+		// Get absolute path
+		if url, err = filepath.Abs(url); err != nil {
+			err = errors.Wrapf(err, "getting absolute path of %s failed", url)
+			return
+		}
+
+		// Set url
+		w.url = &stdUrl.URL{Path: filepath.ToSlash(url), Scheme: "file"}
 	}
 	return
 }
 
 // NewMenu creates a new window menu
 func (w *Window) NewMenu(i []*MenuItemOptions) *Menu {
-	return newMenu(w.ctx, w.id, i, w.c, w.d, w.i, w.w)
+	return newMenu(w.ctx, w.id, i, w.d, w.i, w.w)
 }
 
 // Blur blurs the window
 func (w *Window) Blur() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdBlur, TargetID: w.id}, EventNameWindowEventBlur)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdBlur, TargetID: w.id}, EventNameWindowEventBlur)
 	return
 }
 
 // Center centers the window
 func (w *Window) Center() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCenter, TargetID: w.id}, EventNameWindowEventMove)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdCenter, TargetID: w.id}, EventNameWindowEventMove)
 	return
 }
 
 // Close closes the window
 func (w *Window) Close() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdClose, TargetID: w.id}, EventNameWindowEventClosed)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdClose, TargetID: w.id}, EventNameWindowEventClosed)
 	return
 }
 
 // CloseDevTools closes the dev tools
 func (w *Window) CloseDevTools() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	return w.w.write(Event{Name: EventNameWindowCmdWebContentsCloseDevTools, TargetID: w.id})
@@ -282,43 +295,43 @@ func (w *Window) CloseDevTools() (err error) {
 // We wait for EventNameWindowEventDidFinishLoad since we need the web content to be fully loaded before being able to
 // send messages to it
 func (w *Window) Create() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdCreate, SessionID: w.Session.id, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdCreate, SessionID: w.Session.id, TargetID: w.id, URL: w.url.String(), WindowOptions: w.o}, EventNameWindowEventDidFinishLoad)
 	return
 }
 
 // Destroy destroys the window
 func (w *Window) Destroy() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdDestroy, TargetID: w.id}, EventNameWindowEventClosed)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdDestroy, TargetID: w.id}, EventNameWindowEventClosed)
 	return
 }
 
 // Focus focuses on the window
 func (w *Window) Focus() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdFocus, TargetID: w.id}, EventNameWindowEventFocus)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdFocus, TargetID: w.id}, EventNameWindowEventFocus)
 	return
 }
 
 // Hide hides the window
 func (w *Window) Hide() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
 	return
 }
 
 // IsShown returns whether the window is shown
 func (w *Window) IsShown() bool {
-	if err := w.isActionable(); err != nil {
+	if w.ctx.Err() != nil {
 		return false
 	}
 	w.m.Lock()
@@ -328,7 +341,7 @@ func (w *Window) IsShown() bool {
 
 // Log logs a message in the JS console of the window
 func (w *Window) Log(message string) (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	return w.w.write(Event{Message: newEventMessage(message), Name: EventNameWindowCmdLog, TargetID: w.id})
@@ -336,32 +349,32 @@ func (w *Window) Log(message string) (err error) {
 
 // Maximize maximizes the window
 func (w *Window) Maximize() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMaximize, TargetID: w.id}, EventNameWindowEventMaximize)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMaximize, TargetID: w.id}, EventNameWindowEventMaximize)
 	return
 }
 
 // Minimize minimizes the window
 func (w *Window) Minimize() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMinimize, TargetID: w.id}, EventNameWindowEventMinimize)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMinimize, TargetID: w.id}, EventNameWindowEventMinimize)
 	return
 }
 
 // Move moves the window
 func (w *Window) Move(x, y int) (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	w.m.Lock()
-	w.o.X = PtrInt(x)
-	w.o.Y = PtrInt(y)
+	w.o.X = astikit.IntPtr(x)
+	w.o.Y = astikit.IntPtr(y)
 	w.m.Unlock()
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: PtrInt(x), Y: PtrInt(y)}}, EventNameWindowEventMove)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: astikit.IntPtr(x), Y: astikit.IntPtr(y)}}, EventNameWindowEventMove)
 	return
 }
 
@@ -418,7 +431,7 @@ func (w *Window) OnMessage(l ListenerMessage) {
 
 // OpenDevTools opens the dev tools
 func (w *Window) OpenDevTools() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	return w.w.write(Event{Name: EventNameWindowCmdWebContentsOpenDevTools, TargetID: w.id})
@@ -426,20 +439,20 @@ func (w *Window) OpenDevTools() (err error) {
 
 // Resize resizes the window
 func (w *Window) Resize(width, height int) (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	w.m.Lock()
-	w.o.Height = PtrInt(height)
-	w.o.Width = PtrInt(width)
+	w.o.Height = astikit.IntPtr(height)
+	w.o.Width = astikit.IntPtr(width)
 	w.m.Unlock()
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: PtrInt(height), Width: PtrInt(width)}}, EventNameWindowEventResize)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResize)
 	return
 }
 
 // SetBounds set bounds of the window
 func (w *Window) SetBounds(r RectangleOptions) (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	w.m.Lock()
@@ -448,16 +461,16 @@ func (w *Window) SetBounds(r RectangleOptions) (err error) {
 	w.o.X = r.X
 	w.o.Y = r.Y
 	w.m.Unlock()
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdSetBounds, TargetID: w.id, Bounds: &r}, EventNameWindowEventResize)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetBounds, TargetID: w.id, Bounds: &r}, EventNameWindowEventResize)
 	return
 }
 
 // Restore restores the window
 func (w *Window) Restore() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdRestore, TargetID: w.id}, EventNameWindowEventRestore)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdRestore, TargetID: w.id}, EventNameWindowEventRestore)
 	return
 }
 
@@ -467,7 +480,7 @@ type CallbackMessage func(m *EventMessage)
 // SendMessage sends a message to the JS window and execute optional callbacks upon receiving a response from the JS
 // Use astilectron.onMessage method to capture those messages in JS
 func (w *Window) SendMessage(message interface{}, callbacks ...CallbackMessage) (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
 	var e = Event{Message: newEventMessage(message), Name: eventNameWindowCmdMessage, TargetID: w.id}
@@ -488,18 +501,18 @@ func (w *Window) SendMessage(message interface{}, callbacks ...CallbackMessage) 
 
 // Show shows the window
 func (w *Window) Show() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdShow, TargetID: w.id}, EventNameWindowEventShow)
 	return
 }
 
 // Unmaximize unmaximize the window
 func (w *Window) Unmaximize() (err error) {
-	if err = w.isActionable(); err != nil {
+	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
 	return
 }

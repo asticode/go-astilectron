@@ -2,13 +2,11 @@ package astilectron
 
 import (
 	"bytes"
+	"context"
 	"io"
+	"io/ioutil"
 	"sync"
 	"testing"
-
-	"io/ioutil"
-
-	"context"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

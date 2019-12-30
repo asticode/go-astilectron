@@ -5,20 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 
+	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astilog"
-	"github.com/asticode/go-astitools/os"
-	"github.com/asticode/go-astitools/regexp"
 	"github.com/pkg/errors"
 )
 
 // Var
 var (
-	defaultHTTPClient     = &http.Client{}
 	regexpDarwinInfoPList = regexp.MustCompile("<string>Electron")
 )
 
@@ -30,26 +27,32 @@ type Provisioner interface {
 // mover is a function that moves a package
 type mover func(ctx context.Context, p Paths) error
 
-// DefaultProvisioner represents the default provisioner
-var DefaultProvisioner = &defaultProvisioner{
-	moverAstilectron: func(ctx context.Context, p Paths) (err error) {
-		if err = Download(ctx, defaultHTTPClient, p.AstilectronDownloadSrc(), p.AstilectronDownloadDst()); err != nil {
-			return errors.Wrapf(err, "downloading %s into %s failed", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst())
-		}
-		return
-	},
-	moverElectron: func(ctx context.Context, p Paths) (err error) {
-		if err = Download(ctx, defaultHTTPClient, p.ElectronDownloadSrc(), p.ElectronDownloadDst()); err != nil {
-			return errors.Wrapf(err, "downloading %s into %s failed", p.ElectronDownloadSrc(), p.ElectronDownloadDst())
-		}
-		return
-	},
-}
-
 // defaultProvisioner represents the default provisioner
 type defaultProvisioner struct {
 	moverAstilectron mover
 	moverElectron    mover
+}
+
+func newDefaultProvisioner(l astikit.StdLogger) *defaultProvisioner {
+	d := astikit.NewHTTPDownloader(astikit.HTTPDownloaderOptions{
+		Sender: astikit.HTTPSenderOptions{
+			Logger: l,
+		},
+	})
+	return &defaultProvisioner{
+		moverAstilectron: func(ctx context.Context, p Paths) (err error) {
+			if err = Download(ctx, d, p.AstilectronDownloadSrc(), p.AstilectronDownloadDst()); err != nil {
+				return errors.Wrapf(err, "downloading %s into %s failed", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst())
+			}
+			return
+		},
+		moverElectron: func(ctx context.Context, p Paths) (err error) {
+			if err = Download(ctx, d, p.ElectronDownloadSrc(), p.ElectronDownloadDst()); err != nil {
+				return errors.Wrapf(err, "downloading %s into %s failed", p.ElectronDownloadSrc(), p.ElectronDownloadDst())
+			}
+			return
+		},
+	}
 }
 
 // provisionStatusElectronKey returns the electron's provision status key
@@ -236,7 +239,7 @@ func (p *defaultProvisioner) provisionElectronFinishDarwinCopy(paths Paths) (err
 	var src, dst = paths.AppIconDarwinSrc(), filepath.Join(paths.ElectronDirectory(), "Electron.app", "Contents", "Resources", "electron.icns")
 	if src != "" {
 		astilog.Debugf("Copying %s to %s", src, dst)
-		if err = astios.Copy(context.Background(), src, dst); err != nil {
+		if err = astikit.CopyFile(context.Background(), dst, src, astikit.LocalCopyFileFunc); err != nil {
 			return errors.Wrapf(err, "copying %s to %s failed", src, dst)
 		}
 	}
@@ -266,7 +269,7 @@ func (p *defaultProvisioner) provisionElectronFinishDarwinReplace(appName string
 		defer f.Close()
 
 		// Replace
-		astiregexp.ReplaceAll(regexpDarwinInfoPList, &b, []byte("<string>"+appName))
+		b = regexpDarwinInfoPList.ReplaceAll(b, []byte("<string>"+appName))
 
 		// Write
 		if _, err = f.Write(b); err != nil {

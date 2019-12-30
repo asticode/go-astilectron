@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 
+	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilog"
-	astiptr "github.com/asticode/go-astitools/ptr"
 	"github.com/pkg/errors"
 )
 
@@ -33,9 +33,9 @@ func main() {
 	// New window
 	var w *astilectron.Window
 	if w, err = a.NewWindow("example/index.html", &astilectron.WindowOptions{
-		Center:          astiptr.Bool(true),
-		Height:          astiptr.Int(700),
-		Width:           astiptr.Int(700),
+		Center: astikit.BoolPtr(true),
+		Height: astikit.IntPtr(700),
+		Width:  astikit.IntPtr(700),
 	}); err != nil {
 		astilog.Fatal(errors.Wrap(err, "main: new window failed"))
 	}

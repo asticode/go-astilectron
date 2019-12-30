@@ -83,12 +83,6 @@ func (c mockedConn) SetDeadline(t time.Time) error      { return nil }
 func (c mockedConn) SetReadDeadline(t time.Time) error  { return nil }
 func (c mockedConn) SetWriteDeadline(t time.Time) error { return nil }
 
-// mockedAddr implements the net.Addr interface
-type mockedAddr struct{}
-
-func (a mockedAddr) Network() string { return "" }
-func (a mockedAddr) String() string  { return "" }
-
 func TestAstilectron_AcceptTCP(t *testing.T) {
 	// Init
 	a, err := New(Options{})

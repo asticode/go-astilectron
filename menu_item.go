@@ -3,7 +3,7 @@ package astilectron
 import (
 	"context"
 
-	"github.com/asticode/go-astitools/context"
+	"github.com/asticode/go-astikit"
 )
 
 // Menu item event names
@@ -22,47 +22,47 @@ const (
 // Menu item roles
 var (
 	// All
-	MenuItemRoleClose              = PtrStr("close")
-	MenuItemRoleCopy               = PtrStr("copy")
-	MenuItemRoleCut                = PtrStr("cut")
-	MenuItemRoleDelete             = PtrStr("delete")
-	MenuItemRoleEditMenu           = PtrStr("editMenu")
-	MenuItemRoleForceReload        = PtrStr("forcereload")
-	MenuItemRoleMinimize           = PtrStr("minimize")
-	MenuItemRolePaste              = PtrStr("paste")
-	MenuItemRolePasteAndMatchStyle = PtrStr("pasteandmatchstyle")
-	MenuItemRoleQuit               = PtrStr("quit")
-	MenuItemRoleRedo               = PtrStr("redo")
-	MenuItemRoleReload             = PtrStr("reload")
-	MenuItemRoleResetZoom          = PtrStr("resetzoom")
-	MenuItemRoleSelectAll          = PtrStr("selectall")
-	MenuItemRoleToggleDevTools     = PtrStr("toggledevtools")
-	MenuItemRoleToggleFullScreen   = PtrStr("togglefullscreen")
-	MenuItemRoleUndo               = PtrStr("undo")
-	MenuItemRoleWindowMenu         = PtrStr("windowMenu")
-	MenuItemRoleZoomOut            = PtrStr("zoomout")
-	MenuItemRoleZoomIn             = PtrStr("zoomin")
+	MenuItemRoleClose              = astikit.StrPtr("close")
+	MenuItemRoleCopy               = astikit.StrPtr("copy")
+	MenuItemRoleCut                = astikit.StrPtr("cut")
+	MenuItemRoleDelete             = astikit.StrPtr("delete")
+	MenuItemRoleEditMenu           = astikit.StrPtr("editMenu")
+	MenuItemRoleForceReload        = astikit.StrPtr("forcereload")
+	MenuItemRoleMinimize           = astikit.StrPtr("minimize")
+	MenuItemRolePaste              = astikit.StrPtr("paste")
+	MenuItemRolePasteAndMatchStyle = astikit.StrPtr("pasteandmatchstyle")
+	MenuItemRoleQuit               = astikit.StrPtr("quit")
+	MenuItemRoleRedo               = astikit.StrPtr("redo")
+	MenuItemRoleReload             = astikit.StrPtr("reload")
+	MenuItemRoleResetZoom          = astikit.StrPtr("resetzoom")
+	MenuItemRoleSelectAll          = astikit.StrPtr("selectall")
+	MenuItemRoleToggleDevTools     = astikit.StrPtr("toggledevtools")
+	MenuItemRoleToggleFullScreen   = astikit.StrPtr("togglefullscreen")
+	MenuItemRoleUndo               = astikit.StrPtr("undo")
+	MenuItemRoleWindowMenu         = astikit.StrPtr("windowMenu")
+	MenuItemRoleZoomOut            = astikit.StrPtr("zoomout")
+	MenuItemRoleZoomIn             = astikit.StrPtr("zoomin")
 
 	// MacOSX
-	MenuItemRoleAbout         = PtrStr("about")
-	MenuItemRoleHide          = PtrStr("hide")
-	MenuItemRoleHideOthers    = PtrStr("hideothers")
-	MenuItemRoleUnhide        = PtrStr("unhide")
-	MenuItemRoleStartSpeaking = PtrStr("startspeaking")
-	MenuItemRoleStopSpeaking  = PtrStr("stopspeaking")
-	MenuItemRoleFront         = PtrStr("front")
-	MenuItemRoleZoom          = PtrStr("zoom")
-	MenuItemRoleWindow        = PtrStr("window")
-	MenuItemRoleHelp          = PtrStr("help")
-	MenuItemRoleServices      = PtrStr("services")
+	MenuItemRoleAbout         = astikit.StrPtr("about")
+	MenuItemRoleHide          = astikit.StrPtr("hide")
+	MenuItemRoleHideOthers    = astikit.StrPtr("hideothers")
+	MenuItemRoleUnhide        = astikit.StrPtr("unhide")
+	MenuItemRoleStartSpeaking = astikit.StrPtr("startspeaking")
+	MenuItemRoleStopSpeaking  = astikit.StrPtr("stopspeaking")
+	MenuItemRoleFront         = astikit.StrPtr("front")
+	MenuItemRoleZoom          = astikit.StrPtr("zoom")
+	MenuItemRoleWindow        = astikit.StrPtr("window")
+	MenuItemRoleHelp          = astikit.StrPtr("help")
+	MenuItemRoleServices      = astikit.StrPtr("services")
 )
 
 // Menu item types
 var (
-	MenuItemTypeNormal    = PtrStr("normal")
-	MenuItemTypeSeparator = PtrStr("separator")
-	MenuItemTypeCheckbox  = PtrStr("checkbox")
-	MenuItemTypeRadio     = PtrStr("radio")
+	MenuItemTypeNormal    = astikit.StrPtr("normal")
+	MenuItemTypeSeparator = astikit.StrPtr("separator")
+	MenuItemTypeCheckbox  = astikit.StrPtr("checkbox")
+	MenuItemTypeRadio     = astikit.StrPtr("radio")
 )
 
 // MenuItem represents a menu item
@@ -75,7 +75,7 @@ type MenuItem struct {
 }
 
 // MenuItemOptions represents menu item options
-// We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use PtrBool, PtrInt or PtrStr
+// We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use astikit.BoolPtr, astikit.IntPtr or astikit.StrPtr
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/menu-item.md
 type MenuItemOptions struct {
@@ -94,17 +94,17 @@ type MenuItemOptions struct {
 }
 
 // newMenu creates a new menu item
-func newMenuItem(parentCtx context.Context, rootID string, o *MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (m *MenuItem) {
+func newMenuItem(ctx context.Context, rootID string, o *MenuItemOptions, d *dispatcher, i *identifier, w *writer) (m *MenuItem) {
 	m = &MenuItem{
 		o:      o,
-		object: newObject(parentCtx, c, d, i, w, i.new()),
+		object: newObject(ctx, d, i, w, i.new()),
 		rootID: rootID,
 	}
 	if o.OnClick != nil {
 		m.On(EventNameMenuItemEventClicked, o.OnClick)
 	}
 	if len(o.SubMenu) > 0 {
-		m.s = &SubMenu{newSubMenu(parentCtx, rootID, o.SubMenu, c, d, i, w)}
+		m.s = &SubMenu{newSubMenu(ctx, rootID, o.SubMenu, d, i, w)}
 	}
 	return
 }
@@ -129,40 +129,40 @@ func (i *MenuItem) SubMenu() *SubMenu {
 
 // SetChecked sets the checked attribute
 func (i *MenuItem) SetChecked(checked bool) (err error) {
-	if err = i.isActionable(); err != nil {
+	if err = i.ctx.Err(); err != nil {
 		return
 	}
-	i.o.Checked = PtrBool(checked)
-	_, err = synchronousEvent(i.c, i, i.w, Event{Name: EventNameMenuItemCmdSetChecked, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Checked: i.o.Checked}}, EventNameMenuItemEventCheckedSet)
+	i.o.Checked = astikit.BoolPtr(checked)
+	_, err = synchronousEvent(i.ctx, i, i.w, Event{Name: EventNameMenuItemCmdSetChecked, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Checked: i.o.Checked}}, EventNameMenuItemEventCheckedSet)
 	return
 }
 
 // SetEnabled sets the enabled attribute
 func (i *MenuItem) SetEnabled(enabled bool) (err error) {
-	if err = i.isActionable(); err != nil {
+	if err = i.ctx.Err(); err != nil {
 		return
 	}
-	i.o.Enabled = PtrBool(enabled)
-	_, err = synchronousEvent(i.c, i, i.w, Event{Name: EventNameMenuItemCmdSetEnabled, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Enabled: i.o.Enabled}}, EventNameMenuItemEventEnabledSet)
+	i.o.Enabled = astikit.BoolPtr(enabled)
+	_, err = synchronousEvent(i.ctx, i, i.w, Event{Name: EventNameMenuItemCmdSetEnabled, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Enabled: i.o.Enabled}}, EventNameMenuItemEventEnabledSet)
 	return
 }
 
 // SetLabel sets the label attribute
 func (i *MenuItem) SetLabel(label string) (err error) {
-	if err = i.isActionable(); err != nil {
+	if err = i.ctx.Err(); err != nil {
 		return
 	}
-	i.o.Label = PtrStr(label)
-	_, err = synchronousEvent(i.c, i, i.w, Event{Name: EventNameMenuItemCmdSetLabel, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Label: i.o.Label}}, EventNameMenuItemEventLabelSet)
+	i.o.Label = astikit.StrPtr(label)
+	_, err = synchronousEvent(i.ctx, i, i.w, Event{Name: EventNameMenuItemCmdSetLabel, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Label: i.o.Label}}, EventNameMenuItemEventLabelSet)
 	return
 }
 
 // SetVisible sets the visible attribute
 func (i *MenuItem) SetVisible(visible bool) (err error) {
-	if err = i.isActionable(); err != nil {
+	if err = i.ctx.Err(); err != nil {
 		return
 	}
-	i.o.Visible = PtrBool(visible)
-	_, err = synchronousEvent(i.c, i, i.w, Event{Name: EventNameMenuItemCmdSetVisible, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Visible: i.o.Visible}}, EventNameMenuItemEventVisibleSet)
+	i.o.Visible = astikit.BoolPtr(visible)
+	_, err = synchronousEvent(i.ctx, i, i.w, Event{Name: EventNameMenuItemCmdSetVisible, TargetID: i.id, MenuItemOptions: &MenuItemOptions{Visible: i.o.Visible}}, EventNameMenuItemEventVisibleSet)
 	return
 }

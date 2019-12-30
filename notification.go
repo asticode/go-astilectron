@@ -1,6 +1,6 @@
 package astilectron
 
-import "github.com/asticode/go-astitools/context"
+import "context"
 
 // Notification event names
 const (
@@ -33,11 +33,11 @@ type NotificationOptions struct {
 	Title            string `json:"title,omitempty"`
 }
 
-func newNotification(o *NotificationOptions, isSupported bool, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) *Notification {
+func newNotification(ctx context.Context, o *NotificationOptions, isSupported bool, d *dispatcher, i *identifier, wrt *writer) *Notification {
 	return &Notification{
 		isSupported: isSupported,
 		o:           o,
-		object:      newObject(nil, c, d, i, wrt, i.new()),
+		object:      newObject(ctx, d, i, wrt, i.new()),
 	}
 }
 
@@ -46,10 +46,10 @@ func (n *Notification) Create() (err error) {
 	if !n.isSupported {
 		return
 	}
-	if err = n.isActionable(); err != nil {
+	if err = n.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(n.c, n, n.w, Event{Name: eventNameNotificationCmdCreate, TargetID: n.id, NotificationOptions: n.o}, EventNameNotificationEventCreated)
+	_, err = synchronousEvent(n.ctx, n, n.w, Event{Name: eventNameNotificationCmdCreate, TargetID: n.id, NotificationOptions: n.o}, EventNameNotificationEventCreated)
 	return
 }
 
@@ -58,9 +58,9 @@ func (n *Notification) Show() (err error) {
 	if !n.isSupported {
 		return
 	}
-	if err = n.isActionable(); err != nil {
+	if err = n.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(n.c, n, n.w, Event{Name: eventNameNotificationCmdShow, TargetID: n.id}, EventNameNotificationEventShown)
+	_, err = synchronousEvent(n.ctx, n, n.w, Event{Name: eventNameNotificationCmdShow, TargetID: n.id}, EventNameNotificationEventShown)
 	return
 }

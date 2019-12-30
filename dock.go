@@ -1,6 +1,10 @@
 package astilectron
 
-import "github.com/asticode/go-astitools/context"
+import (
+	"context"
+
+	"github.com/asticode/go-astikit"
+)
 
 // Dock event names
 const (
@@ -32,17 +36,17 @@ type Dock struct {
 	*object
 }
 
-func newDock(c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) *Dock {
-	return &Dock{object: newObject(nil, c, d, i, wrt, targetIDDock)}
+func newDock(ctx context.Context, d *dispatcher, i *identifier, wrt *writer) *Dock {
+	return &Dock{object: newObject(ctx, d, i, wrt, targetIDDock)}
 }
 
 // Bounce bounces the dock
 func (d *Dock) Bounce(bounceType string) (id int, err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
 	var e Event
-	if e, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdBounce, TargetID: d.id, BounceType: bounceType}, eventNameDockEventBouncing); err != nil {
+	if e, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdBounce, TargetID: d.id, BounceType: bounceType}, eventNameDockEventBouncing); err != nil {
 		return
 	}
 	if e.ID != nil {
@@ -53,59 +57,59 @@ func (d *Dock) Bounce(bounceType string) (id int, err error) {
 
 // BounceDownloads bounces the downloads part of the dock
 func (d *Dock) BounceDownloads(filePath string) (err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdBounceDownloads, TargetID: d.id, FilePath: filePath}, eventNameDockEventDownloadsBouncing)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdBounceDownloads, TargetID: d.id, FilePath: filePath}, eventNameDockEventDownloadsBouncing)
 	return
 }
 
 // CancelBounce cancels the dock bounce
 func (d *Dock) CancelBounce(id int) (err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdCancelBounce, TargetID: d.id, ID: PtrInt(id)}, eventNameDockEventBouncingCancelled)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdCancelBounce, TargetID: d.id, ID: astikit.IntPtr(id)}, eventNameDockEventBouncingCancelled)
 	return
 }
 
 // Hide hides the dock
 func (d *Dock) Hide() (err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdHide, TargetID: d.id}, eventNameDockEventHidden)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdHide, TargetID: d.id}, eventNameDockEventHidden)
 	return
 }
 
 // NewMenu creates a new dock menu
 func (d *Dock) NewMenu(i []*MenuItemOptions) *Menu {
-	return newMenu(d.ctx, d.id, i, d.c, d.d, d.i, d.w)
+	return newMenu(d.ctx, d.id, i, d.d, d.i, d.w)
 }
 
 // SetBadge sets the badge of the dock
 func (d *Dock) SetBadge(badge string) (err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdSetBadge, TargetID: d.id, Badge: badge}, eventNameDockEventBadgeSet)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdSetBadge, TargetID: d.id, Badge: badge}, eventNameDockEventBadgeSet)
 	return
 }
 
 // SetIcon sets the icon of the dock
 func (d *Dock) SetIcon(image string) (err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdSetIcon, TargetID: d.id, Image: image}, eventNameDockEventIconSet)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdSetIcon, TargetID: d.id, Image: image}, eventNameDockEventIconSet)
 	return
 }
 
 // Show shows the dock
 func (d *Dock) Show() (err error) {
-	if err = d.isActionable(); err != nil {
+	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.c, d, d.w, Event{Name: eventNameDockCmdShow, TargetID: d.id}, eventNameDockEventShown)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdShow, TargetID: d.id}, eventNameDockEventShown)
 	return
 }

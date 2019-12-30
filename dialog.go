@@ -10,7 +10,7 @@ const (
 )
 
 // MessageBoxOptions represents message box options
-// We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use PtrBool, PtrInt or PtrStr
+// We must use pointers since GO doesn't handle optional fields whereas NodeJS does. Use astikit.BoolPtr, astikit.IntPtr or astikit.StrPtr
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/dialog.md#dialogshowmessageboxbrowserwindow-options-callback
 type MessageBoxOptions struct {

@@ -2,8 +2,6 @@ package astilectron
 
 import (
 	"context"
-
-	"github.com/asticode/go-astitools/context"
 )
 
 // Menu event names
@@ -21,9 +19,9 @@ type Menu struct {
 }
 
 // newMenu creates a new menu
-func newMenu(parentCtx context.Context, rootID string, items []*MenuItemOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, w *writer) (m *Menu) {
+func newMenu(ctx context.Context, rootID string, items []*MenuItemOptions, d *dispatcher, i *identifier, w *writer) (m *Menu) {
 	// Init
-	m = &Menu{newSubMenu(parentCtx, rootID, items, c, d, i, w)}
+	m = &Menu{newSubMenu(ctx, rootID, items, d, i, w)}
 
 	// Make sure the menu's context is cancelled once the destroyed event is received
 	m.On(EventNameMenuEventDestroyed, func(e Event) (deleteListener bool) {
@@ -40,18 +38,18 @@ func (m *Menu) toEvent() *EventMenu {
 
 // Create creates the menu
 func (m *Menu) Create() (err error) {
-	if err = m.isActionable(); err != nil {
+	if err = m.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(m.c, m, m.w, Event{Name: EventNameMenuCmdCreate, TargetID: m.id, Menu: m.toEvent()}, EventNameMenuEventCreated)
+	_, err = synchronousEvent(m.ctx, m, m.w, Event{Name: EventNameMenuCmdCreate, TargetID: m.id, Menu: m.toEvent()}, EventNameMenuEventCreated)
 	return
 }
 
 // Destroy destroys the menu
 func (m *Menu) Destroy() (err error) {
-	if err = m.isActionable(); err != nil {
+	if err = m.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(m.c, m, m.w, Event{Name: EventNameMenuCmdDestroy, TargetID: m.id, Menu: m.toEvent()}, EventNameMenuEventDestroyed)
+	_, err = synchronousEvent(m.ctx, m, m.w, Event{Name: EventNameMenuCmdDestroy, TargetID: m.id, Menu: m.toEvent()}, EventNameMenuEventDestroyed)
 	return
 }

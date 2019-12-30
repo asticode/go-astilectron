@@ -34,7 +34,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/linux"
-	err = DefaultProvisioner.Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
 
@@ -42,7 +42,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	mh.e = true
 	os.Remove(p.AstilectronDownloadDst())
 	os.Remove(p.ElectronDownloadDst())
-	err = DefaultProvisioner.Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
 
@@ -54,7 +54,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/windows"
-	err = DefaultProvisioner.Provision(context.Background(), "", "windows", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "windows", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p, "windows", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
 
@@ -65,7 +65,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = DefaultProvisioner.Provision(context.Background(), "", "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
 
@@ -80,7 +80,7 @@ func TestDefaultProvisioner(t *testing.T) {
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = DefaultProvisioner.Provision(context.Background(), o.AppName, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), o.AppName, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
 	// Rename

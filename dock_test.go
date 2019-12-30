@@ -1,20 +1,19 @@
 package astilectron
 
 import (
+	"context"
 	"testing"
 
-	"github.com/asticode/go-astitools/context"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDock_Actions(t *testing.T) {
 	// Init
-	var c = asticontext.NewCanceller()
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
 	var w = newWriter(wrt)
-	var dck = newDock(c, d, i, w)
+	var dck = newDock(context.Background(), d, i, w)
 
 	// Actions
 	testObjectAction(t, func() error {
@@ -30,12 +29,11 @@ func TestDock_Actions(t *testing.T) {
 }
 
 func TestDock_NewMenu(t *testing.T) {
-	var c = asticontext.NewCanceller()
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
 	var w = newWriter(wrt)
-	var dck = newDock(c, d, i, w)
+	var dck = newDock(context.Background(), d, i, w)
 	m := dck.NewMenu([]*MenuItemOptions{})
 	assert.Equal(t, dck.id, m.rootID)
 }

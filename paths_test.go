@@ -1,11 +1,9 @@
 package astilectron
 
 import (
-	"testing"
-
 	"os"
-
 	"path/filepath"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
