@@ -52,7 +52,7 @@ To import `go-astilectron` run:
 
 ```go
 // Initialize astilectron
-var a, _ = astilectron.New(nil, astilectron.Options{
+var a, _ = astilectron.New(log.New(os.StdErr, "", 0), astilectron.Options{
     AppName: "<your app name>",
     AppIconDefaultPath: "<your .png icon>", // If path is relative, it must be relative to the data directory
     AppIconDarwinPath:  "<your .icns icon>", // Same here
