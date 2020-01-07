@@ -10,7 +10,7 @@ func TestSession_Actions(t *testing.T) {
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
-	var w = newWriter(wrt)
+	var w = newWriter(wrt, &logger{})
 	var s = newSession(context.Background(), d, i, w)
 
 	// Actions

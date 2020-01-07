@@ -2,6 +2,7 @@ package astilectron
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/asticode/go-astikit"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,14 +64,14 @@ func TestDownload(t *testing.T) {
 	var d = astikit.NewHTTPDownloader(astikit.HTTPDownloaderOptions{})
 
 	// Test failed download
-	err := Download(context.Background(), d, s.URL, dst)
+	err := Download(context.Background(), &logger{}, d, s.URL, dst)
 	assert.Error(t, err)
 	_, err = os.Stat(dst)
 	assert.True(t, os.IsNotExist(err))
 
 	// Test successful download
 	mh.e = false
-	err = Download(context.Background(), d, s.URL, dst)
+	err = Download(context.Background(), &logger{}, d, s.URL, dst)
 	assert.NoError(t, err)
 	defer os.Remove(dst)
 	b, err := ioutil.ReadFile(dst)
@@ -98,11 +98,11 @@ func TestDisembed(t *testing.T) {
 	var dst = mockedTempPath()
 
 	// Test failed disembed
-	err := Disembed(context.Background(), mockedDisembedder, "invalid", dst)
+	err := Disembed(context.Background(), &logger{}, mockedDisembedder, "invalid", dst)
 	assert.EqualError(t, err, "disembedding invalid failed: invalid")
 
 	// Test successful disembed
-	err = Disembed(context.Background(), mockedDisembedder, "test", dst)
+	err = Disembed(context.Background(), &logger{}, mockedDisembedder, "test", dst)
 	assert.NoError(t, err)
 	defer os.Remove(dst)
 	b, err := ioutil.ReadFile(dst)
@@ -159,7 +159,7 @@ func TestSynchronousEvent(t *testing.T) {
 	var d = newDispatcher()
 	var ed = Event{Name: "done", TargetID: "1"}
 	var mw = &mockedWriter{fn: func() { d.dispatch(ed) }}
-	var w = newWriter(mw)
+	var w = newWriter(mw, &logger{})
 	var l = &mockedListenable{d: d, id: "1"}
 	var done bool
 	var m sync.Mutex

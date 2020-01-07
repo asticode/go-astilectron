@@ -8,21 +8,23 @@ import (
 	"io"
 	"strings"
 
-	"github.com/asticode/go-astilog"
+	"github.com/asticode/go-astikit"
 )
 
 // reader represents an object capable of reading in the TCP server
 type reader struct {
 	ctx context.Context
 	d   *dispatcher
+	l   astikit.SeverityLogger
 	r   io.ReadCloser
 }
 
 // newReader creates a new reader
-func newReader(ctx context.Context, d *dispatcher, r io.ReadCloser) *reader {
+func newReader(ctx context.Context, l astikit.SeverityLogger, d *dispatcher, r io.ReadCloser) *reader {
 	return &reader{
 		ctx: ctx,
 		d:   d,
+		l:   l,
 		r:   r,
 	}
 }
@@ -52,18 +54,18 @@ func (r *reader) read() {
 		var err error
 		if b, err = reader.ReadBytes('\n'); err != nil {
 			if !r.isEOFErr(err) {
-				astilog.Errorf("%s while reading", err)
+				r.l.Errorf("%s while reading", err)
 				continue
 			}
 			return
 		}
 		b = bytes.TrimSpace(b)
-		astilog.Debugf("Astilectron says: %s", b)
+		r.l.Debugf("Astilectron says: %s", b)
 
 		// Unmarshal
 		var e Event
 		if err = json.Unmarshal(b, &e); err != nil {
-			astilog.Errorf("%s while unmarshaling %s", err, b)
+			r.l.Errorf("%s while unmarshaling %s", err, b)
 			continue
 		}
 

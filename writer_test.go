@@ -37,7 +37,7 @@ func (w *mockedWriter) Write(p []byte) (int, error) {
 func TestWriter(t *testing.T) {
 	// Init
 	var mw = &mockedWriter{}
-	var w = newWriter(mw)
+	var w = newWriter(mw, &logger{})
 
 	// Test write
 	err := w.write(Event{Name: "test", TargetID: "target_id"})

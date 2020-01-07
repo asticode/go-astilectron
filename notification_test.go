@@ -12,7 +12,7 @@ func TestNotification_Actions(t *testing.T) {
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
-	var w = newWriter(wrt)
+	var w = newWriter(wrt, &logger{})
 	var n = newNotification(context.Background(), &NotificationOptions{
 		Body:             "body",
 		HasReply:         astikit.BoolPtr(true),

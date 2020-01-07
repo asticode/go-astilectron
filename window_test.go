@@ -10,7 +10,7 @@ import (
 
 func TestNewWindow(t *testing.T) {
 	// Init
-	a, err := New(Options{AppName: "app name", AppIconDefaultPath: "/path/to/default/icon"})
+	a, err := New(nil, Options{AppName: "app name", AppIconDefaultPath: "/path/to/default/icon"})
 	assert.NoError(t, err)
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
@@ -32,11 +32,11 @@ func TestNewWindow(t *testing.T) {
 
 func TestWindow_Actions(t *testing.T) {
 	// Init
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	defer a.Close()
 	wrt := &mockedWriter{}
-	a.writer = newWriter(wrt)
+	a.writer = newWriter(wrt, &logger{})
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, false, w.IsShown())
@@ -72,11 +72,11 @@ func TestWindow_Actions(t *testing.T) {
 }
 
 func TestWindow_OnLogin(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	defer a.Close()
 	wrt := &mockedWriter{wg: &sync.WaitGroup{}}
-	a.writer = newWriter(wrt)
+	a.writer = newWriter(wrt, &logger{})
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
 	w.OnLogin(func(i Event) (username, password string, err error) {
@@ -89,11 +89,11 @@ func TestWindow_OnLogin(t *testing.T) {
 }
 
 func TestWindow_OnMessage(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	defer a.Close()
 	wrt := &mockedWriter{wg: &sync.WaitGroup{}}
-	a.writer = newWriter(wrt)
+	a.writer = newWriter(wrt, &logger{})
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
 	w.OnMessage(func(m *EventMessage) interface{} {
@@ -106,11 +106,11 @@ func TestWindow_OnMessage(t *testing.T) {
 }
 
 func TestWindow_SendMessage(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	defer a.Close()
 	wrt := &mockedWriter{}
-	a.writer = newWriter(wrt)
+	a.writer = newWriter(wrt, &logger{})
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
 	wrt.fn = func() {
@@ -130,7 +130,7 @@ func TestWindow_SendMessage(t *testing.T) {
 }
 
 func TestWindow_NewMenu(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	w, err := a.NewWindow("http://test.com", &WindowOptions{})
 	assert.NoError(t, err)

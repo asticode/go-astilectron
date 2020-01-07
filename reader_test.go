@@ -3,12 +3,12 @@ package astilectron
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"io/ioutil"
 	"sync"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +25,7 @@ func (r *mockedReader) Close() error {
 }
 
 func TestReader_IsEOFErr(t *testing.T) {
-	var r = newReader(context.Background(), &dispatcher{}, ioutil.NopCloser(&bytes.Buffer{}))
+	var r = newReader(context.Background(), &logger{}, &dispatcher{}, ioutil.NopCloser(&bytes.Buffer{}))
 	assert.True(t, r.isEOFErr(io.EOF))
 	assert.True(t, r.isEOFErr(errors.New("read tcp 127.0.0.1:56093->127.0.0.1:56092: wsarecv: An existing connection was forcibly closed by the remote host.")))
 	assert.False(t, r.isEOFErr(errors.New("random error")))
@@ -53,7 +53,7 @@ func TestReader(t *testing.T) {
 		return
 	})
 	wg.Add(2)
-	var r = newReader(context.Background(), d, mr)
+	var r = newReader(context.Background(), &logger{}, d, mr)
 
 	// Test read
 	go r.read()

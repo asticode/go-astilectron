@@ -13,7 +13,7 @@ func TestTray_Actions(t *testing.T) {
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
-	var w = newWriter(wrt)
+	var w = newWriter(wrt, &logger{})
 	var tr = newTray(context.Background(), &TrayOptions{
 		Image:   astikit.StrPtr("/path/to/image"),
 		Tooltip: astikit.StrPtr("tooltip"),
@@ -27,7 +27,7 @@ func TestTray_Actions(t *testing.T) {
 }
 
 func TestTray_NewMenu(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	tr := a.NewTray(&TrayOptions{})
 	m := tr.NewMenu([]*MenuItemOptions{})

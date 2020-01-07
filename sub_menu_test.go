@@ -16,7 +16,7 @@ func TestSubMenu_ToEvent(t *testing.T) {
 
 	// Window sub menu
 	var i = newIdentifier()
-	w, err := newWindow(context.Background(), Options{}, Paths{}, "http://test.com", &WindowOptions{}, newDispatcher(), i, nil)
+	w, err := newWindow(context.Background(), nil, Options{}, Paths{}, "http://test.com", &WindowOptions{}, newDispatcher(), i, nil)
 	assert.NoError(t, err)
 	s = newSubMenu(context.Background(), w.id, []*MenuItemOptions{{Label: astikit.StrPtr("1")}, {Label: astikit.StrPtr("2")}}, newDispatcher(), i, nil)
 	e = s.toEvent()
@@ -87,7 +87,7 @@ func TestSubMenu_Actions(t *testing.T) {
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
-	var w = newWriter(wrt)
+	var w = newWriter(wrt, &logger{})
 	var s = newSubMenu(context.Background(), targetIDApp, []*MenuItemOptions{{Label: astikit.StrPtr("0")}}, d, i, w)
 
 	// Actions

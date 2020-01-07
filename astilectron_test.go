@@ -1,23 +1,32 @@
 package astilectron
 
 import (
+	"errors"
 	"net"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
+
+type logger struct{}
+
+func (l *logger) Debug(v ...interface{})                 {}
+func (l *logger) Debugf(format string, v ...interface{}) {}
+func (l *logger) Error(v ...interface{})                 {}
+func (l *logger) Errorf(format string, v ...interface{}) {}
+func (l *logger) Info(v ...interface{})                  {}
+func (l *logger) Infof(format string, v ...interface{})  {}
 
 func TestAstilectron_Provision(t *testing.T) {
 	// Init
 	var o = Options{BaseDirectoryPath: mockedTempPath()}
 	defer os.RemoveAll(o.BaseDirectoryPath)
-	a, err := New(o)
+	a, err := New(nil, o)
 	assert.NoError(t, err)
-	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux"))
+	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux", nil))
 
 	// Test provision is successful
 	err = a.provision()
@@ -26,7 +35,7 @@ func TestAstilectron_Provision(t *testing.T) {
 
 func TestAstilectron_WatchNoAccept(t *testing.T) {
 	// Init
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	var isStopped bool
 	var wg = &sync.WaitGroup{}
@@ -85,7 +94,7 @@ func (c mockedConn) SetWriteDeadline(t time.Time) error { return nil }
 
 func TestAstilectron_AcceptTCP(t *testing.T) {
 	// Init
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	defer a.Close()
 	var l = &mockedListener{c: make(chan bool), e: make(chan bool)}
@@ -144,7 +153,7 @@ func TestIsValidOS(t *testing.T) {
 }
 
 func TestAstilectron_Wait(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	a.HandleSignals()
 	go func() {
@@ -157,7 +166,7 @@ func TestAstilectron_Wait(t *testing.T) {
 }
 
 func TestAstilectron_NewMenu(t *testing.T) {
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	m := a.NewMenu([]*MenuItemOptions{})
 	assert.Equal(t, targetIDApp, m.rootID)
@@ -165,11 +174,11 @@ func TestAstilectron_NewMenu(t *testing.T) {
 
 func TestAstilectron_Actions(t *testing.T) {
 	// Init
-	a, err := New(Options{})
+	a, err := New(nil, Options{})
 	assert.NoError(t, err)
 	defer a.Close()
 	wrt := &mockedWriter{}
-	a.writer = newWriter(wrt)
+	a.writer = newWriter(wrt, &logger{})
 
 	// Actions
 	err = a.Quit()

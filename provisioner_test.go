@@ -112,7 +112,7 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	p, err := newPaths("linux", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
-	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux")
+	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux", nil)
 
 	// Test provision
 	err = pvb.Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)

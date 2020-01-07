@@ -3,59 +3,58 @@ package astilectron
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/asticode/go-astikit"
-	"github.com/asticode/go-astilog"
-	"github.com/pkg/errors"
 )
 
 // Download is a cancellable function that downloads a src into a dst using a specific *http.Client and cleans up on
 // failed downloads
-func Download(ctx context.Context, d *astikit.HTTPDownloader, src, dst string) (err error) {
+func Download(ctx context.Context, l astikit.SeverityLogger, d *astikit.HTTPDownloader, src, dst string) (err error) {
 	// Log
-	astilog.Debugf("Downloading %s into %s", src, dst)
+	l.Debugf("Downloading %s into %s", src, dst)
 
 	// Destination already exists
 	if _, err = os.Stat(dst); err == nil {
-		astilog.Debugf("%s already exists, skipping download...", dst)
+		l.Debugf("%s already exists, skipping download...", dst)
 		return
 	} else if !os.IsNotExist(err) {
-		return errors.Wrapf(err, "stating %s failed", dst)
+		return fmt.Errorf("stating %s failed: %w", dst, err)
 	}
 	err = nil
 
 	// Clean up on error
 	defer func(err *error) {
 		if *err != nil || ctx.Err() != nil {
-			astilog.Debugf("Removing %s...", dst)
+			l.Debugf("Removing %s...", dst)
 			os.Remove(dst)
 		}
 	}(&err)
 
 	// Make sure the dst directory  exists
 	if err = os.MkdirAll(filepath.Dir(dst), 0775); err != nil {
-		return errors.Wrapf(err, "mkdirall %s failed", filepath.Dir(dst))
+		return fmt.Errorf("mkdirall %s failed: %w", filepath.Dir(dst), err)
 	}
 
 	// Download
 	if err = d.DownloadInFile(ctx, dst, astikit.HTTPDownloaderSrc{URL: src}); err != nil {
-		return errors.Wrap(err, "DownloadInFile failed")
+		return fmt.Errorf("DownloadInFile failed: %w", err)
 	}
 	return
 }
 
 // Disembed is a cancellable disembed of an src to a dst using a custom Disembedder
-func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
+func Disembed(ctx context.Context, l astikit.SeverityLogger, d Disembedder, src, dst string) (err error) {
 	// Log
-	astilog.Debugf("Disembedding %s into %s...", src, dst)
+	l.Debugf("Disembedding %s into %s...", src, dst)
 
 	// No need to disembed
 	if _, err = os.Stat(dst); err != nil && !os.IsNotExist(err) {
-		return errors.Wrapf(err, "stating %s failed", dst)
+		return fmt.Errorf("stating %s failed: %w", dst, err)
 	} else if err == nil {
-		astilog.Debugf("%s already exists, skipping disembed...", dst)
+		l.Debugf("%s already exists, skipping disembed...", dst)
 		return
 	}
 	err = nil
@@ -63,56 +62,56 @@ func Disembed(ctx context.Context, d Disembedder, src, dst string) (err error) {
 	// Clean up on error
 	defer func(err *error) {
 		if *err != nil || ctx.Err() != nil {
-			astilog.Debugf("Removing %s...", dst)
+			l.Debugf("Removing %s...", dst)
 			os.Remove(dst)
 		}
 	}(&err)
 
 	// Make sure directory exists
 	var dirPath = filepath.Dir(dst)
-	astilog.Debugf("Creating %s", dirPath)
+	l.Debugf("Creating %s", dirPath)
 	if err = os.MkdirAll(dirPath, 0755); err != nil {
-		return errors.Wrapf(err, "mkdirall %s failed", dirPath)
+		return fmt.Errorf("mkdirall %s failed: %w", dirPath, err)
 	}
 
 	// Create dst
 	var f *os.File
-	astilog.Debugf("Creating %s", dst)
+	l.Debugf("Creating %s", dst)
 	if f, err = os.Create(dst); err != nil {
-		return errors.Wrapf(err, "creating %s failed", dst)
+		return fmt.Errorf("creating %s failed: %w", dst, err)
 	}
 	defer f.Close()
 
 	// Disembed
 	var b []byte
-	astilog.Debugf("Disembedding %s", src)
+	l.Debugf("Disembedding %s", src)
 	if b, err = d(src); err != nil {
-		return errors.Wrapf(err, "disembedding %s failed", src)
+		return fmt.Errorf("disembedding %s failed: %w", src, err)
 	}
 
 	// Copy
-	astilog.Debugf("Copying disembedded data to %s", dst)
+	l.Debugf("Copying disembedded data to %s", dst)
 	if _, err = astikit.Copy(ctx, f, bytes.NewReader(b)); err != nil {
-		return errors.Wrapf(err, "copying disembedded data into %s failed", dst)
+		return fmt.Errorf("copying disembedded data into %s failed: %w", dst, err)
 	}
 	return
 }
 
 // Unzip unzips a src into a dst.
 // Possible src formats are /path/to/zip.zip or /path/to/zip.zip/internal/path.
-func Unzip(ctx context.Context, src, dst string) (err error) {
+func Unzip(ctx context.Context, l astikit.SeverityLogger, src, dst string) (err error) {
 	// Clean up on error
 	defer func(err *error) {
 		if *err != nil || ctx.Err() != nil {
-			astilog.Debugf("Removing %s...", dst)
+			l.Debugf("Removing %s...", dst)
 			os.RemoveAll(dst)
 		}
 	}(&err)
 
 	// Unzipping
-	astilog.Debugf("Unzipping %s into %s", src, dst)
+	l.Debugf("Unzipping %s into %s", src, dst)
 	if err = astikit.Unzip(ctx, dst, src); err != nil {
-		err = errors.Wrapf(err, "unzipping %s into %s failed", src, dst)
+		err = fmt.Errorf("unzipping %s into %s failed: %w", src, dst, err)
 		return
 	}
 	return
@@ -142,7 +141,7 @@ func synchronousFunc(parentCtx context.Context, l listenable, fn func(), eventNa
 func synchronousEvent(ctx context.Context, l listenable, w *writer, i Event, eventNameDone string) (o Event, err error) {
 	o = synchronousFunc(ctx, l, func() {
 		if err = w.write(i); err != nil {
-			err = errors.Wrapf(err, "writing %+v event failed", i)
+			err = fmt.Errorf("writing %+v event failed: %w", i, err)
 			return
 		}
 	}, eventNameDone)

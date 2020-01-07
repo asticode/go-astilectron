@@ -21,7 +21,7 @@ func TestMenuItem_Actions(t *testing.T) {
 	var d = newDispatcher()
 	var i = newIdentifier()
 	var wrt = &mockedWriter{}
-	var w = newWriter(wrt)
+	var w = newWriter(wrt, &logger{})
 	var mi = newMenuItem(context.Background(), targetIDApp, &MenuItemOptions{Label: astikit.StrPtr("label")}, d, i, w)
 
 	// Actions

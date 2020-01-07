@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Paths represents the set of paths needed by Astilectron
@@ -35,13 +33,13 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	// Init base directory path
 	p = &Paths{}
 	if err = p.initBaseDirectory(o.BaseDirectoryPath); err != nil {
-		err = errors.Wrap(err, "initializing base directory failed")
+		err = fmt.Errorf("initializing base directory failed: %w", err)
 		return
 	}
 
 	// Init data directory path
 	if err = p.initDataDirectory(o.DataDirectoryPath, o.AppName); err != nil {
-		err = errors.Wrap(err, "initializing data directory failed")
+		err = fmt.Errorf("initializing data directory failed: %w", err)
 		return
 	}
 
@@ -78,7 +76,7 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 		// Retrieve executable path
 		var ep string
 		if ep, err = os.Executable(); err != nil {
-			err = errors.Wrap(err, "retrieving executable path failed")
+			err = fmt.Errorf("retrieving executable path failed: %w", err)
 			return
 		}
 		p.baseDirectory = filepath.Dir(ep)
@@ -86,7 +84,7 @@ func (p *Paths) initBaseDirectory(baseDirectoryPath string) (err error) {
 
 	// We need the absolute path
 	if p.baseDirectory, err = filepath.Abs(p.baseDirectory); err != nil {
-		err = errors.Wrap(err, "computing absolute path failed")
+		err = fmt.Errorf("computing absolute path failed: %w", err)
 		return
 	}
 	return
@@ -97,7 +95,7 @@ func (p *Paths) initDataDirectory(dataDirectoryPath, appName string) (err error)
 	if len(dataDirectoryPath) > 0 {
 		// We need the absolute path
 		if p.dataDirectory, err = filepath.Abs(dataDirectoryPath); err != nil {
-			err = errors.Wrapf(err, "computing absolute path of %s failed", dataDirectoryPath)
+			err = fmt.Errorf("computing absolute path of %s failed: %w", dataDirectoryPath, err)
 			return
 		}
 		return
