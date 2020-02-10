@@ -190,6 +190,7 @@ type WebPreferences struct {
 	Webaudio                    *bool                  `json:"webaudio,omitempty"`
 	Webgl                       *bool                  `json:"webgl,omitempty"`
 	WebSecurity                 *bool                  `json:"webSecurity,omitempty"`
+	WebviewTag                  *bool                  `json:"webviewTag,omitempty"`
 	ZoomFactor                  *float64               `json:"zoomFactor,omitempty"`
 }
 
