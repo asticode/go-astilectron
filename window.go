@@ -177,21 +177,22 @@ type WebPreferences struct {
 	Images                      *bool                  `json:"images,omitempty"`
 	Javascript                  *bool                  `json:"javascript,omitempty"`
 	MinimumFontSize             *int                   `json:"minimumFontSize,omitempty"`
-	NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
-	NodeIntegrationInWorker     *bool                  `json:"nodeIntegrationInWorker,omitempty"`
-	Offscreen                   *bool                  `json:"offscreen,omitempty"`
-	Partition                   *string                `json:"partition,omitempty"`
-	Plugins                     *bool                  `json:"plugins,omitempty"`
-	Preload                     *string                `json:"preload,omitempty"`
-	Sandbox                     *bool                  `json:"sandbox,omitempty"`
-	ScrollBounce                *bool                  `json:"scrollBounce,omitempty"`
-	Session                     map[string]interface{} `json:"session,omitempty"`
-	TextAreasAreResizable       *bool                  `json:"textAreasAreResizable,omitempty"`
-	Webaudio                    *bool                  `json:"webaudio,omitempty"`
-	Webgl                       *bool                  `json:"webgl,omitempty"`
-	WebSecurity                 *bool                  `json:"webSecurity,omitempty"`
-	WebviewTag                  *bool                  `json:"webviewTag,omitempty"`
-	ZoomFactor                  *float64               `json:"zoomFactor,omitempty"`
+	// This attribute needs to be true at all time
+	// NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
+	NodeIntegrationInWorker *bool                  `json:"nodeIntegrationInWorker,omitempty"`
+	Offscreen               *bool                  `json:"offscreen,omitempty"`
+	Partition               *string                `json:"partition,omitempty"`
+	Plugins                 *bool                  `json:"plugins,omitempty"`
+	Preload                 *string                `json:"preload,omitempty"`
+	Sandbox                 *bool                  `json:"sandbox,omitempty"`
+	ScrollBounce            *bool                  `json:"scrollBounce,omitempty"`
+	Session                 map[string]interface{} `json:"session,omitempty"`
+	TextAreasAreResizable   *bool                  `json:"textAreasAreResizable,omitempty"`
+	Webaudio                *bool                  `json:"webaudio,omitempty"`
+	Webgl                   *bool                  `json:"webgl,omitempty"`
+	WebSecurity             *bool                  `json:"webSecurity,omitempty"`
+	WebviewTag              *bool                  `json:"webviewTag,omitempty"`
+	ZoomFactor              *float64               `json:"zoomFactor,omitempty"`
 }
 
 // newWindow creates a new window
