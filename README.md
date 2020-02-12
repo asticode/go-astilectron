@@ -442,49 +442,13 @@ m.Create()
 
 ## Dialogs
 
-### Error box
+Add the following line at the top of your javascript file :
 
 ```javascript
-// This will wait for the astilectron namespace to be ready
-document.addEventListener('astilectron-ready', function() {
-    // This will open the dialog
-    astilectron.showErrorBox("My Title", "My content")
-})
+const { dialog } = require('electron').remote
 ```
 
-### Message box
-
-```javascript
-// This will wait for the astilectron namespace to be ready
-document.addEventListener('astilectron-ready', function() {
-    // This will open the dialog
-    astilectron.showMessageBox({message: "My message", title: "My Title"})
-})
-```
-
-### Open dialog
-
-```javascript
-// This will wait for the astilectron namespace to be ready
-document.addEventListener('astilectron-ready', function() {
-    // This will open the dialog
-    astilectron.showOpenDialog({properties: ['openFile', 'multiSelections'], title: "My Title"}, function(paths) {
-        console.log("chosen paths are ", paths)
-    })
-})
-```
-
-### Save dialog
-
-```javascript
-// This will wait for the astilectron namespace to be ready
-document.addEventListener('astilectron-ready', function() {
-    // This will open the dialog
-    astilectron.showSaveDialog({title: "My title"}, function(filename) {
-        console.log("chosen filename is ", filename)
-    })
-})
-```
+Use the available [methods](https://github.com/electron/electron/blob/v7.1.10/docs/api/dialog.md).
 
 ## Basic auth
 
