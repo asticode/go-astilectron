@@ -112,14 +112,9 @@ func TestAstilectron_AcceptTCP(t *testing.T) {
 	c := make(chan bool)
 	var isAccepted bool
 	go func() {
-		for {
-			select {
-			case <-c:
-				isAccepted = true
-				wg.Done()
-				return
-			}
-		}
+		<-c
+		isAccepted = true
+		wg.Done()
 	}()
 	go a.acceptTCP(c)
 
