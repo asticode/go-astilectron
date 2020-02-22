@@ -83,7 +83,7 @@ func TestDownload(t *testing.T) {
 func mockedDisembedder(src string) ([]byte, error) {
 	switch src {
 	case "astilectron":
-		return ioutil.ReadFile("testdata/provisioner/astilectron/astilectron.zip")
+		return ioutil.ReadFile("testdata/provisioner/astilectron/disembedder.zip")
 	case "electron/linux":
 		return ioutil.ReadFile("testdata/provisioner/electron/linux/electron.zip")
 	case "test":

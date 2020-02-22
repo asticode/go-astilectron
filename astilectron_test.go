@@ -22,7 +22,10 @@ func (l *logger) Infof(format string, v ...interface{})  {}
 
 func TestAstilectron_Provision(t *testing.T) {
 	// Init
-	var o = Options{BaseDirectoryPath: mockedTempPath()}
+	var o = Options{
+		BaseDirectoryPath:  mockedTempPath(),
+		VersionAstilectron: "0.35.1",
+	}
 	defer os.RemoveAll(o.BaseDirectoryPath)
 	a, err := New(nil, o)
 	assert.NoError(t, err)
