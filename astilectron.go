@@ -324,21 +324,22 @@ func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 
 // watchCmd watches the cmd execution
 func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
-	// Wait
-	err := cmd.Wait()
-	if err != nil {
-		a.l.Errorf("'%v' exited with code: %v", cmd.Path, cmd.ProcessState.ExitCode())
-	}
+	a.worker.NewTask().Do(func() {
+		// Wait
+		if err := cmd.Wait(); err != nil {
+			a.l.Errorf("'%v' exited with code: %v", cmd.Path, cmd.ProcessState.ExitCode())
+		}
 
-	// Check the context to determine whether it was a crash
-	if err != nil || a.worker.Context().Err() != nil {
-		a.l.Debug("App has crashed")
-		a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: targetIDApp})
-	} else {
-		a.l.Debug("App has closed")
-		a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: targetIDApp})
-	}
-	a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
+		// Check the context to determine whether it was a crash
+		if a.worker.Context().Err() == nil {
+			a.l.Debug("App has crashed")
+			a.dispatcher.dispatch(Event{Name: EventNameAppCrash, TargetID: targetIDApp})
+		} else {
+			a.l.Debug("App has closed")
+			a.dispatcher.dispatch(Event{Name: EventNameAppClose, TargetID: targetIDApp})
+		}
+		a.dispatcher.dispatch(Event{Name: EventNameAppCmdStop, TargetID: targetIDApp})
+	})
 }
 
 // Close closes Astilectron properly
