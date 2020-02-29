@@ -305,9 +305,12 @@ func (a *Astilectron) execute() (err error) {
 
 // executeCmd executes the command
 func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
-	var e = synchronousFunc(a.worker.Context(), a, func() {
-		err = a.executer(a.l, a, cmd)
-	}, EventNameAppEventReady)
+	// Execute
+	var e Event
+	if e, err = synchronousFunc(a.worker.Context(), a, func() error { return a.executer(a.l, a, cmd) }, EventNameAppEventReady); err != nil {
+		err = fmt.Errorf("executer failed: %w", err)
+		return
+	}
 
 	// Update display pool
 	if e.Displays != nil {

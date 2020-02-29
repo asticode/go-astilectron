@@ -117,9 +117,9 @@ func Unzip(ctx context.Context, l astikit.SeverityLogger, src, dst string) (err 
 	return
 }
 
-// synchronousFunc executes a function, blocks until it has received a specific event or the canceller has been
+// synchronousFunc executes a function, blocks until it has received a specific event or the context has been
 // cancelled and returns the corresponding event
-func synchronousFunc(parentCtx context.Context, l listenable, fn func(), eventNameDone string) (e Event) {
+func synchronousFunc(parentCtx context.Context, l listenable, fn func() error, eventNameDone string) (e Event, err error) {
 	ctx, cancel := context.WithCancel(parentCtx)
 	defer cancel()
 	l.On(eventNameDone, func(i Event) (deleteListener bool) {
@@ -130,20 +130,22 @@ func synchronousFunc(parentCtx context.Context, l listenable, fn func(), eventNa
 		return true
 	})
 	if fn != nil {
-		fn()
+		if err = fn(); err != nil {
+			return
+		}
 	}
 	<-ctx.Done()
 	return
 }
 
-// synchronousEvent sends an event, blocks until it has received a specific event or the canceller has been cancelled
+// synchronousEvent sends an event, blocks until it has received a specific event or the context has been cancelled
 // and returns the corresponding event
-func synchronousEvent(ctx context.Context, l listenable, w *writer, i Event, eventNameDone string) (o Event, err error) {
-	o = synchronousFunc(ctx, l, func() {
+func synchronousEvent(ctx context.Context, l listenable, w *writer, i Event, eventNameDone string) (Event, error) {
+	return synchronousFunc(ctx, l, func() (err error) {
 		if err = w.write(i); err != nil {
 			err = fmt.Errorf("writing %+v event failed: %w", i, err)
 			return
 		}
+		return
 	}, eventNameDone)
-	return
 }

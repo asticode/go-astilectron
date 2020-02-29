@@ -13,7 +13,10 @@ func main() {
 	l := log.New(log.Writer(), log.Prefix(), log.Flags())
 
 	// Create astilectron
-	a, err := astilectron.New(l, astilectron.Options{AppName: "Test"})
+	a, err := astilectron.New(l, astilectron.Options{
+		AppName:           "Test",
+		BaseDirectoryPath: "example",
+	})
 	if err != nil {
 		l.Fatal(fmt.Errorf("main: creating astilectron failed: %w", err))
 	}

@@ -142,16 +142,27 @@ func TestSynchronousFunc(t *testing.T) {
 
 	// Test canceller cancel
 	ctx, cancel := context.WithCancel(context.Background())
-	var _ = synchronousFunc(ctx, l, func() { cancel() }, "done")
+	synchronousFunc(ctx, l, func() error {
+		cancel()
+		return nil
+	}, "done")
 	assert.False(t, done)
 
 	// Test done event
 	var ed = Event{Name: "done", TargetID: "1"}
-	var e = synchronousFunc(context.Background(), l, func() { d.dispatch(ed) }, "done")
+	e, err := synchronousFunc(context.Background(), l, func() error {
+		d.dispatch(ed)
+		return nil
+	}, "done")
+	assert.NoError(t, err)
 	m.Lock()
 	assert.True(t, done)
 	m.Unlock()
 	assert.Equal(t, ed, e)
+
+	// Test error
+	_, err = synchronousFunc(context.Background(), l, func() error { return errors.New("invalid") }, "done")
+	assert.Error(t, err)
 }
 
 func TestSynchronousEvent(t *testing.T) {

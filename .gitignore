@@ -2,4 +2,5 @@
 Thumbs.db
 .idea/
 cover*
+example/vendor
 testdata/tmp/*
