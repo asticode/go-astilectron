@@ -15,4 +15,5 @@ func TestSession_Actions(t *testing.T) {
 
 	// Actions
 	testObjectAction(t, func() error { return s.ClearCache() }, s.object, wrt, "{\"name\":\"session.cmd.clear.cache\",\"targetID\":\"1\"}\n", EventNameSessionEventClearedCache)
+	testObjectAction(t, func() error { return s.FlushStorage() }, s.object, wrt, "{\"name\":\"session.cmd.flush.storage\",\"targetID\":\"1\"}\n", EventNameSessionEventFlushedStorage)
 }
