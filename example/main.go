@@ -32,7 +32,7 @@ func main() {
 
 	// New window
 	var w *astilectron.Window
-	if w, err = a.NewWindow("example/index.html", &astilectron.WindowOptions{
+	if w, err = a.NewWindow("index.html", &astilectron.WindowOptions{
 		Center: astikit.BoolPtr(true),
 		Height: astikit.IntPtr(700),
 		Width:  astikit.IntPtr(700),
