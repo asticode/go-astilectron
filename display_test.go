@@ -11,6 +11,7 @@ import (
 func TestDisplay(t *testing.T) {
 	var o = &DisplayOptions{
 		Bounds:       &RectangleOptions{PositionOptions: PositionOptions{X: astikit.IntPtr(1), Y: astikit.IntPtr(2)}, SizeOptions: SizeOptions{Height: astikit.IntPtr(3), Width: astikit.IntPtr(4)}},
+		ID:           astikit.Int64Ptr(1234),
 		Rotation:     astikit.IntPtr(5),
 		ScaleFactor:  astikit.Float64Ptr(6),
 		Size:         &SizeOptions{Height: astikit.IntPtr(7), Width: astikit.IntPtr(8)},
@@ -20,6 +21,7 @@ func TestDisplay(t *testing.T) {
 	}
 	var d = newDisplay(o, true)
 	assert.Equal(t, Rectangle{Position: Position{X: 1, Y: 2}, Size: Size{Height: 3, Width: 4}}, d.Bounds())
+	assert.Equal(t, 1234, d.ID())
 	assert.True(t, d.IsPrimary())
 	assert.Equal(t, 5, d.Rotation())
 	assert.Equal(t, float64(6), d.ScaleFactor())

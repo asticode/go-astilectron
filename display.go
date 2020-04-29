@@ -38,6 +38,11 @@ func (d Display) Bounds() Rectangle {
 	}
 }
 
+// ID returns the display's ID
+func (d Display) ID() int64 {
+	return *d.o.ID
+}
+
 // IsPrimary checks whether the display is the primary display
 func (d Display) IsPrimary() bool {
 	return d.primary
