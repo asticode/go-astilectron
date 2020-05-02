@@ -367,8 +367,8 @@ func (a *Astilectron) Close() {
 }
 
 // HandleSignals handles signals
-func (a *Astilectron) HandleSignals() {
-	a.worker.HandleSignals()
+func (a *Astilectron) HandleSignals(hs ...astikit.SignalHandler) {
+	a.worker.HandleSignals(hs...)
 }
 
 // Stop orders Astilectron to stop
