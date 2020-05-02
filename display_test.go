@@ -21,7 +21,7 @@ func TestDisplay(t *testing.T) {
 	}
 	var d = newDisplay(o, true)
 	assert.Equal(t, Rectangle{Position: Position{X: 1, Y: 2}, Size: Size{Height: 3, Width: 4}}, d.Bounds())
-	assert.Equal(t, 1234, d.ID())
+	assert.Equal(t, int64(1234), d.ID())
 	assert.True(t, d.IsPrimary())
 	assert.Equal(t, 5, d.Rotation())
 	assert.Equal(t, float64(6), d.ScaleFactor())
