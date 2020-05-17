@@ -35,6 +35,7 @@ const (
 	EventNameWindowCmdUnmaximize               = "window.cmd.unmaximize"
 	EventNameWindowCmdWebContentsCloseDevTools = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools  = "window.cmd.web.contents.open.dev.tools"
+	EventNameWindowCmdWebContentsExecuteJavaScript = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowEventBlur                   = "window.event.blur"
 	EventNameWindowEventClosed                 = "window.event.closed"
 	EventNameWindowEventDidFinishLoad          = "window.event.did.finish.load"
@@ -521,11 +522,10 @@ func (w *Window) Unmaximize() (err error) {
 	return
 }
 
-// Executes javascript code
 func (w *Window) ExecuteJavaScript(code string) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventUnmaximize)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWebContentsExecuteJavaScript)
 	return
 }
