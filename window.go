@@ -14,6 +14,7 @@ import (
 const (
 	EventNameWebContentsEventLogin             = "web.contents.event.login"
 	EventNameWebContentsEventLoginCallback     = "web.contents.event.login.callback"
+	EventNameWebContentsExecuteJavaScript      = "web.contents.execute.javascript"
 	EventNameWindowCmdBlur                     = "window.cmd.blur"
 	EventNameWindowCmdCenter                   = "window.cmd.center"
 	EventNameWindowCmdClose                    = "window.cmd.close"
@@ -517,5 +518,14 @@ func (w *Window) Unmaximize() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	return
+}
+
+// Executes javascript code
+func (w *Window) ExecuteJavaScript(code string) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventUnmaximize)
 	return
 }
