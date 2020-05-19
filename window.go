@@ -35,7 +35,7 @@ const (
 	EventNameWindowCmdUnmaximize               = "window.cmd.unmaximize"
 	EventNameWindowCmdWebContentsCloseDevTools = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools  = "window.cmd.web.contents.open.dev.tools"
-	EventNameWindowCmdWebContentsExecuteJavaScript = "window.cmd.web.contents.execute.javascript"
+	EventNameWindowCmdWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventBlur                   = "window.event.blur"
 	EventNameWindowEventClosed                 = "window.event.closed"
 	EventNameWindowEventDidFinishLoad          = "window.event.did.finish.load"
