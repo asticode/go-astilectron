@@ -526,6 +526,6 @@ func (w *Window) ExecuteJavaScript(code string) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWebContentsExecuteJavaScript)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecutedJavaScript, TargetID: w.id, Code: code}, EventNameWebContentsExecuteJavaScript)
 	return
 }
