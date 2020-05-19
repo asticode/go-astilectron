@@ -25,6 +25,7 @@ type Event struct {
 	BounceType          string               `json:"bounceType,omitempty"`
 	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
 	CallbackID          string               `json:"callbackId,omitempty"`
+	Code                string               `json:"code,omitempty"`
 	Displays            *EventDisplays       `json:"displays,omitempty"`
 	FilePath            string               `json:"filePath,omitempty"`
 	ID                  *int                 `json:"id,omitempty"`
@@ -49,7 +50,6 @@ type Event struct {
 	Username            string               `json:"username,omitempty"`
 	WindowID            string               `json:"windowId,omitempty"`
 	WindowOptions       *WindowOptions       `json:"windowOptions,omitempty"`
-	Code                string               `json:"code,omitempty"`
 }
 
 // EventAuthInfo represents an event auth info
