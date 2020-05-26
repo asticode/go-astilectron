@@ -34,7 +34,7 @@ const (
 	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
 	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
-	EventNameWindowCmdWebContentsExecutedJavaScript   = "window.cmd.web.contents.execute.javascript"
+	EventNameWindowCmdWebContentsExecuteJavaScript   = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
@@ -527,6 +527,6 @@ func (w *Window) ExecuteJavaScript(code string) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecutedJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventWebContentsExecutedJavaScript)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventWebContentsExecutedJavaScript)
 	return
 }
