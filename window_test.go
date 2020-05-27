@@ -69,6 +69,7 @@ func TestWindow_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return w.Show() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdShow+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventShow)
 	assert.Equal(t, true, w.IsShown())
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize)
+	testObjectAction(t, func() error { return w.ExecuteJavaScript("console.log('test');") }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdWebContentsExecuteJavaScript+"\",\"targetID\":\""+w.id+"\",\"code\":\"console.log('test');\"}\n", EventNameWindowEventWebContentsExecutedJavaScript)
 }
 
 func TestWindow_OnLogin(t *testing.T) {
