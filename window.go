@@ -34,8 +34,7 @@ const (
 	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
 	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
-	EventNameWindowCmdWebContentsExecuteJavaScript   = "window.cmd.web.contents.execute.javascript"
-	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
+	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
 	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
@@ -53,9 +52,9 @@ const (
 	EventNameWindowEventUnmaximize                    = "window.event.unmaximize"
 	EventNameWindowEventUnresponsive                  = "window.event.unresponsive"
 	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
+	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 )
-
 
 // Title bar styles
 var (
@@ -317,6 +316,15 @@ func (w *Window) Destroy() (err error) {
 	return
 }
 
+// ExecuteJavaScript executes some js
+func (w *Window) ExecuteJavaScript(code string) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventWebContentsExecutedJavaScript)
+	return
+}
+
 // Focus focuses on the window
 func (w *Window) Focus() (err error) {
 	if err = w.ctx.Err(); err != nil {
@@ -520,13 +528,5 @@ func (w *Window) Unmaximize() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
-	return
-}
-
-func (w *Window) ExecuteJavaScript(code string) (err error) {
-	if err = w.ctx.Err(); err != nil {
-		return
-	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsExecuteJavaScript, TargetID: w.id, Code: code}, EventNameWindowEventWebContentsExecutedJavaScript)
 	return
 }
