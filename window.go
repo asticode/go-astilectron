@@ -174,6 +174,7 @@ type WebPreferences struct {
 	DefaultMonospaceFontSize    *int                   `json:"defaultMonospaceFontSize,omitempty"`
 	DevTools                    *bool                  `json:"devTools,omitempty"`
 	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
+	EnableRemoteModule          *bool                  `json:"enableRemoteModule,omitempty"`
 	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
 	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
 	Images                      *bool                  `json:"images,omitempty"`
