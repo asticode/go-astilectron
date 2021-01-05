@@ -11,8 +11,11 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"os"
 	"os/exec"
+	"os/signal"
 	"runtime"
+	"syscall"
 	"time"
 
     "golang.org/x/net/websocket"
@@ -300,10 +303,17 @@ func (a *Astilectron) listenWSS() (err error) {
 		},
 	}
 
-	if err = server.ListenAndServeTLS("", ""); err != nil {
-		return fmt.Errorf("WebSocket server.ListenAndServeTLS failed: %w", err)
-	}
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	go func() {
+		if err = server.ListenAndServeTLS("", ""); err != nil {
+			fmt.Errorf("WebSocket server.ListenAndServeTLS failed: %w", err)
+		}
+	}()
+
+	<-done
+	server.Shutdown(a.worker.Context())
 	return
 }
 
