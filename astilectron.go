@@ -1,12 +1,21 @@
 package astilectron
 
 import (
+	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"fmt"
+	"math/big"
 	"net"
+	"net/http"
 	"os/exec"
 	"runtime"
 	"time"
 
+    "golang.org/x/net/websocket"
 	"github.com/asticode/go-astikit"
 )
 
@@ -37,6 +46,12 @@ const (
 	EventNameAppEventSecondInstance = "app.event.second.instance"
 	EventNameAppNoAccept            = "app.no.accept"
 	EventNameAppTooManyAccept       = "app.too.many.accept"
+)
+
+// Socket types
+const (
+	SocketWSS = "WebSocket"
+	SocketTCP = "TCPSocket"
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
@@ -71,6 +86,7 @@ type Options struct {
 	SingleInstance     bool
 	SkipSetup          bool // If true, the user must handle provisioning and executing astilectron.
 	TCPPort            *int // The port to listen on.
+	SocketType         string
 	VersionAstilectron string
 	VersionElectron    string
 }
@@ -93,6 +109,9 @@ func New(l astikit.StdLogger, o Options) (a *Astilectron, err error) {
 	}
 	if o.VersionElectron == "" {
 		o.VersionElectron = DefaultVersionElectron
+	}
+	if o.SocketType == "" {
+		o.SocketType = SocketTCP
 	}
 
 	// Init
@@ -173,9 +192,15 @@ func (a *Astilectron) Start() (err error) {
 	}
 
 	// Unfortunately communicating with Electron through stdin/stdout doesn't work on Windows so all communications
-	// will be done through TCP
-	if err = a.listenTCP(); err != nil {
-		return fmt.Errorf("listening failed: %w", err)
+	// will be done through TCP or WwbSocket
+	if a.options.SocketType == SocketWSS {
+		if err = a.listenWSS(); err != nil {
+			return fmt.Errorf("listening failed: %w", err)
+		}
+	} else {
+		if err = a.listenTCP(); err != nil {
+			return fmt.Errorf("listening failed: %w", err)
+		}
 	}
 
 	// Execute
@@ -217,6 +242,108 @@ func (a *Astilectron) listenTCP() (err error) {
 	// Accept connections
 	go a.acceptTCP(chanAccepted)
 	return
+}
+
+// listenWSS creates a WebSocket server over TLS for astilectron to connect to
+// and listens to the first WebSocket connection coming its way (this should be Astilectron).
+func (a *Astilectron) listenWSS() (err error) {
+	// Log
+	a.l.Debug("Generate certificate...")
+
+	cert, err := a.getTlsCertificate()
+	if  err != nil {
+		return fmt.Errorf("astilectron.getTlsCertificate failed: %w", err)
+	}
+
+	a.l.Debug("Listening...")
+
+	addr := "127.0.0.1:"
+	if a.options.TCPPort != nil {
+		addr += fmt.Sprint(*a.options.TCPPort)
+	}
+
+	// Check a connection has been accepted quickly enough
+	var chanAccepted = make(chan bool)
+	go a.watchNoAccept(a.options.AcceptTCPTimeout, chanAccepted)
+
+	// wss handler
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		ws := websocket.Server{
+			// Use custom Handshake. Default with websocket.Handler is to reject nil origin.
+			// This not useful when testing using the typescript client outside the browser (e.g. in node.js)
+			// or any other client with origin not set.
+			Handshake: func(config *websocket.Config, req *http.Request) (err error) {
+				config.Origin, err = websocket.Origin(config, req)
+				return err
+			},
+			Handler: func(ws *websocket.Conn) {
+				// Accept connections
+				a.acceptWSS(chanAccepted, ws)
+			},
+		}
+		ws.ServeHTTP(writer, request)
+	})
+
+	// Listen
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	server := &http.Server{
+		Addr: addr,
+		TLSConfig: tlsConfig,
+		Handler: mux,
+		BaseContext: func(listener net.Listener) (context context.Context) {
+			a.listener = listener
+			return a.worker.Context()
+		},
+	}
+
+	if err = server.ListenAndServeTLS("", ""); err != nil {
+		return fmt.Errorf("WebSocket server.ListenAndServeTLS failed: %w", err)
+	}
+
+	return
+}
+
+// getTlsCertificate generates the in-memory TLS certificate for the server
+func (a *Astilectron) getTlsCertificate() (tls.Certificate, error) {
+	now := time.Now()
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(now.Unix()),
+		Subject: pkix.Name{
+			CommonName:         "localhost",
+			Country:            []string{"USA"},
+			Organization:       []string{"localhost"},
+			OrganizationalUnit: []string{"astilectron"},
+		},
+		NotBefore:             now,
+		NotAfter:              now.AddDate(10, 0, 0),
+		SubjectKeyId:          []byte{113, 117, 105, 99, 107, 115, 101, 114, 118, 101},
+		BasicConstraintsValid: true,
+		IsCA:        true,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		KeyUsage: x509.KeyUsageKeyEncipherment |
+			x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+	}
+
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	cert, err := x509.CreateCertificate(rand.Reader, template, template,
+		priv.Public(), priv)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	var outCert tls.Certificate
+	outCert.Certificate = append(outCert.Certificate, cert)
+	outCert.PrivateKey = priv
+
+	return outCert, nil
 }
 
 // watchNoAccept checks whether a TCP connection is accepted quickly enough
@@ -271,6 +398,17 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 		a.reader = newReader(a.worker.Context(), a.l, a.dispatcher, conn)
 		go a.reader.read()
 	}
+}
+
+// watchAcceptTCP accepts WSS connections
+func (a *Astilectron) acceptWSS(chanAccepted chan bool, conn *websocket.Conn) {
+	// Let the timer know a connection has been accepted
+	chanAccepted <- true
+
+	// Create reader and writer
+	a.writer = newWriter(conn, a.l)
+	a.reader = newReader(a.worker.Context(), a.l, a.dispatcher, conn)
+	a.reader.read()
 }
 
 // execute executes Astilectron in Electron
