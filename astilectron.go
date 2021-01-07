@@ -293,12 +293,14 @@ func (a *Astilectron) listenWSS() (err error) {
 		Certificates: []tls.Certificate{cert},
 	}
 
+	if a.listener, err = net.Listen("tcp", addr); err != nil {
+		return fmt.Errorf("tcp net.Listen failed: %w", err)
+	}
+
 	server := &http.Server{
-		Addr: addr,
 		TLSConfig: tlsConfig,
 		Handler: mux,
 		BaseContext: func(listener net.Listener) (context context.Context) {
-			a.listener = listener
 			return a.worker.Context()
 		},
 	}
@@ -307,13 +309,16 @@ func (a *Astilectron) listenWSS() (err error) {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		if err = server.ListenAndServeTLS("", ""); err != nil {
+		if err = server.ServeTLS(a.listener, "", ""); err != nil {
 			fmt.Errorf("WebSocket server.ListenAndServeTLS failed: %w", err)
 		}
 	}()
 
-	<-done
-	server.Shutdown(a.worker.Context())
+	go func(done chan os.Signal) {
+		<-done
+		server.Shutdown(a.worker.Context())
+	}(done)
+
 	return
 }
 
@@ -433,7 +438,11 @@ func (a *Astilectron) execute() (err error) {
 	} else {
 		singleInstance = "false"
 	}
-	var cmd = exec.CommandContext(a.worker.Context(), a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), a.listener.Addr().String(), singleInstance}, a.options.ElectronSwitches...)...)
+	addr := a.listener.Addr().String();
+	if a.options.SocketType == SocketWSS {
+		addr = "wss://" + addr
+	}
+	var cmd = exec.CommandContext(a.worker.Context(), a.paths.AppExecutable(), append([]string{a.paths.AstilectronApplication(), addr, singleInstance}, a.options.ElectronSwitches...)...)
 	a.stderrWriter = astikit.NewWriterAdapter(astikit.WriterAdapterOptions{
 		Callback: func(i []byte) { a.l.Debugf("Stderr says: %s", i) },
 		Split:    []byte("\n"),
