@@ -17,6 +17,10 @@ type Paths struct {
 	astilectronDownloadSrc string
 	astilectronDownloadDst string
 	astilectronUnzipSrc    string
+	wsDirectory            string
+	wsDownloadSrc          string
+	wsDownloadDst          string
+	wsUnzipSrc             string
 	baseDirectory          string
 	dataDirectory          string
 	electronDirectory      string
@@ -60,6 +64,10 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.astilectronDownloadSrc = AstilectronDownloadSrc(o.VersionAstilectron)
 	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", o.VersionAstilectron))
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", o.VersionAstilectron))
+	p.wsDirectory = filepath.Join(p.astilectronDirectory, "node_modules", "ws")
+	p.wsDownloadSrc = WSDownloadSrc(o.VersionWS)
+	p.wsDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("ws-%s.zip", o.VersionWS))
+	p.wsUnzipSrc = filepath.Join(p.wsDownloadDst, fmt.Sprintf("ws-%s", o.VersionWS))
 	p.electronDirectory = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s", os, arch))
 	p.electronDownloadSrc = ElectronDownloadSrc(os, arch, o.VersionElectron)
 	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, o.VersionElectron))
@@ -117,6 +125,10 @@ func AstilectronDownloadSrc(versionAstilectron string) string {
 	return fmt.Sprintf("https://github.com/asticode/astilectron/archive/v%s.zip", versionAstilectron)
 }
 
+// WSDownloadSrc returns the download URL of the (currently platform-independent) astilectron zip file
+func WSDownloadSrc(versionWS string) string {
+	return fmt.Sprintf("https://github.com/websockets/ws/archive/%s.zip", versionWS)
+}
 // ElectronDownloadSrc returns the download URL of the platform-dependant electron zipfile
 func ElectronDownloadSrc(os, arch, versionElectron string) string {
 	// Get OS name
@@ -202,6 +214,26 @@ func (p Paths) AstilectronDownloadSrc() string {
 // AstilectronUnzipSrc returns the astilectron unzip source path
 func (p Paths) AstilectronUnzipSrc() string {
 	return p.astilectronUnzipSrc
+}
+
+// WSDirectory returns the ws directory path
+func (p Paths) WSDirectory() string {
+	return p.wsDirectory
+}
+
+// WSDownloadDst returns the ws download destination path
+func (p Paths) WSDownloadDst() string {
+	return p.wsDownloadDst
+}
+
+// WSDownloadSrc returns the ws download source path
+func (p Paths) WSDownloadSrc() string {
+	return p.wsDownloadSrc
+}
+
+// WSUnzipSrc returns the ws unzip source path
+func (p Paths) WSUnzipSrc() string {
+	return p.wsUnzipSrc
 }
 
 // DataDirectory returns the data directory path

@@ -26,6 +26,7 @@ import (
 const (
 	DefaultAcceptTCPTimeout   = 30 * time.Second
 	DefaultVersionAstilectron = "0.42.0"
+	DefaultVersionWS          = "7.4.2"
 	DefaultVersionElectron    = "7.1.10"
 )
 
@@ -91,6 +92,7 @@ type Options struct {
 	TCPPort            *int // The port to listen on.
 	SocketType         string
 	VersionAstilectron string
+	VersionWS          string
 	VersionElectron    string
 }
 
@@ -109,6 +111,9 @@ func New(l astikit.StdLogger, o Options) (a *Astilectron, err error) {
 
 	if o.VersionAstilectron == "" {
 		o.VersionAstilectron = DefaultVersionAstilectron
+	}
+	if o.VersionWS == "" {
+		o.VersionWS = DefaultVersionWS
 	}
 	if o.VersionElectron == "" {
 		o.VersionElectron = DefaultVersionElectron
@@ -220,7 +225,7 @@ func (a *Astilectron) Start() (err error) {
 // provision provisions Astilectron
 func (a *Astilectron) provision() error {
 	a.l.Debug("Provisioning...")
-	return a.provisioner.Provision(a.worker.Context(), a.options.AppName, runtime.GOOS, runtime.GOARCH, a.options.VersionAstilectron, a.options.VersionElectron, *a.paths)
+	return a.provisioner.Provision(a.worker.Context(), a.options.AppName, runtime.GOOS, runtime.GOARCH, a.options.VersionAstilectron, a.options.VersionWS, a.options.VersionElectron, *a.paths)
 }
 
 // listenTCP creates a TCP server for astilectron to connect to
