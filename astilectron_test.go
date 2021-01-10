@@ -143,6 +143,32 @@ func TestAstilectron_AcceptTCP(t *testing.T) {
 	assert.True(t, isStopped)
 }
 
+func TestAstilectron_AcceptWSS(t *testing.T) {
+	// Init
+	a, err := New(nil, Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+	conn := &mockedConn{}
+	c := make(chan bool)
+	go a.acceptWSS(c, conn)
+
+	<- c
+	// Test context and io.ReadCloser/io.WriteCloser for  Reader/Writer
+	assert.Equal(t, a.reader.ctx, a.worker.Context())
+	assert.Equal(t, a.reader.r, conn)
+	assert.Equal(t, a.writer.w, conn)
+}
+
+func TestAstilectron_GetTlsCertificate(t *testing.T) {
+	// Init
+	a, err := New(nil, Options{})
+	assert.NoError(t, err)
+	defer a.Close()
+
+	_, err = a.getTlsCertificate()
+	assert.NoError(t, err)
+}
+
 func TestIsValidOS(t *testing.T) {
 	assert.True(t, IsValidOS("darwin"))
 	assert.True(t, IsValidOS("linux"))
