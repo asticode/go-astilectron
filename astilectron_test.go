@@ -29,7 +29,7 @@ func TestAstilectron_Provision(t *testing.T) {
 	defer os.RemoveAll(o.BaseDirectoryPath)
 	a, err := New(nil, o)
 	assert.NoError(t, err)
-	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux", nil))
+	a.SetProvisioner(NewDisembedderProvisioner(mockedDisembedder, "astilectron", "ws", "electron/linux", nil))
 
 	// Test provision is successful
 	err = a.provision()

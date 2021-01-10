@@ -38,6 +38,8 @@ func (h *mockedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/provisioner/astilectron":
 		h.readFile(rw, "testdata/provisioner/astilectron/astilectron.zip")
+	case "/provisioner/ws":
+		h.readFile(rw, "testdata/provisioner/ws/ws.zip")
 	case "/provisioner/electron/darwin":
 		h.readFile(rw, "testdata/provisioner/electron/darwin/electron.zip")
 	case "/provisioner/electron/linux":
@@ -84,6 +86,8 @@ func mockedDisembedder(src string) ([]byte, error) {
 	switch src {
 	case "astilectron":
 		return ioutil.ReadFile("testdata/provisioner/astilectron/disembedder.zip")
+	case "ws":
+		return ioutil.ReadFile("testdata/provisioner/ws/disembedder.zip")
 	case "electron/linux":
 		return ioutil.ReadFile("testdata/provisioner/electron/linux/electron.zip")
 	case "test":
