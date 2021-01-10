@@ -421,7 +421,7 @@ func (a *Astilectron) acceptTCP(chanAccepted chan bool) {
 }
 
 // watchAcceptTCP accepts WSS connections
-func (a *Astilectron) acceptWSS(chanAccepted chan bool, conn *websocket.Conn) {
+func (a *Astilectron) acceptWSS(chanAccepted chan bool, conn net.Conn) {
 	// Let the timer know a connection has been accepted
 	chanAccepted <- true
 
