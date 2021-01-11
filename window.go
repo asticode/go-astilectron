@@ -54,6 +54,7 @@ const (
 	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
+	EventNameWindowCmdUpdateCustomOptions             = "window.cmd.update.custom.options"
 )
 
 // Title bar styles
@@ -529,5 +530,20 @@ func (w *Window) Unmaximize() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	return
+}
+
+// UpdateCustomOptions unmaximize the window
+func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	w.m.Lock()
+	w.o.Custom = &o
+	w.m.Unlock()
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{
+		WindowOptions: w.o,
+		Name:          EventNameWindowCmdUpdateCustomOptions,
+		TargetID:      w.id}, EventNameWindowCmdUpdateCustomOptions)
 	return
 }
