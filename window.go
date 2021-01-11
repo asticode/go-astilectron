@@ -541,9 +541,5 @@ func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
 	w.m.Lock()
 	w.o.Custom = &o
 	w.m.Unlock()
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{
-		WindowOptions: w.o,
-		Name:          EventNameWindowCmdUpdateCustomOptions,
-		TargetID:      w.id}, EventNameWindowCmdUpdateCustomOptions)
-	return
+	return w.w.write(Event{WindowOptions: w.o, Name: EventNameWindowCmdUpdateCustomOptions, TargetID: w.id})
 }
