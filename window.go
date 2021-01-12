@@ -533,7 +533,7 @@ func (w *Window) Unmaximize() (err error) {
 	return
 }
 
-// UpdateCustomOptions unmaximize the window
+// UpdateCustomOptions updates the window custom options
 func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
