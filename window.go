@@ -32,6 +32,7 @@ const (
 	EventNameWindowCmdRestore                         = "window.cmd.restore"
 	EventNameWindowCmdShow                            = "window.cmd.show"
 	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
+	EventNameWindowCmdUpdateCustomOptions             = "window.cmd.update.custom.options"
 	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
@@ -54,7 +55,7 @@ const (
 	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
-	EventNameWindowCmdUpdateCustomOptions             = "window.cmd.update.custom.options"
+	EventNameWindowEventUpdateCustomOptions           = "window.event.update.custom.options"
 )
 
 // Title bar styles
@@ -541,5 +542,6 @@ func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
 	w.m.Lock()
 	w.o.Custom = &o
 	w.m.Unlock()
-	return w.w.write(Event{WindowOptions: w.o, Name: EventNameWindowCmdUpdateCustomOptions, TargetID: w.id})
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{WindowOptions: w.o, Name: EventNameWindowCmdUpdateCustomOptions, TargetID: w.id}, EventNameWindowEventUpdateCustomOptions)
+	return
 }
