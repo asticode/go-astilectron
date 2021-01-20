@@ -19,6 +19,10 @@ func (l *logger) Error(v ...interface{})                 {}
 func (l *logger) Errorf(format string, v ...interface{}) {}
 func (l *logger) Info(v ...interface{})                  {}
 func (l *logger) Infof(format string, v ...interface{})  {}
+func (l *logger) Warn(v ...interface{})                  {}
+func (l *logger) Warnf(format string, v ...interface{})  {}
+func (l *logger) Fatal(v ...interface{})                 {}
+func (l *logger) Fatalf(format string, v ...interface{}) {}
 
 func TestAstilectron_Provision(t *testing.T) {
 	// Init

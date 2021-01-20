@@ -68,6 +68,7 @@ func TestWindow_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return w.Restore() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdRestore+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventRestore)
 	testObjectAction(t, func() error { return w.Show() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdShow+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventShow)
 	assert.Equal(t, true, w.IsShown())
+	testObjectAction(t, func() error { return w.UpdateCustomOptions(WindowCustomOptions{HideOnClose: astikit.BoolPtr(true)}) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUpdateCustomOptions+"\",\"targetID\":\""+w.id+"\",\"windowOptions\":{\"height\":2,\"show\":true,\"width\":1,\"x\":4,\"y\":6,\"custom\":{\"hideOnClose\":true}}}\n", EventNameWindowEventUpdatedCustomOptions)
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize)
 	testObjectAction(t, func() error { return w.ExecuteJavaScript("console.log('test');") }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdWebContentsExecuteJavaScript+"\",\"targetID\":\""+w.id+"\",\"code\":\"console.log('test');\"}\n", EventNameWindowEventWebContentsExecutedJavaScript)
 }
