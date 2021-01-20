@@ -19,7 +19,7 @@ var (
 
 // Provisioner represents an object capable of provisioning Astilectron
 type Provisioner interface {
-	Provision(ctx context.Context, appName, os, arch, versionAstilectron, versionElectron string, p Paths) error
+	Provision(ctx context.Context, appName, os, arch, versionAstilectron, versionWS, versionElectron string, p Paths) error
 }
 
 // mover is a function that moves a package
@@ -29,6 +29,7 @@ type mover func(ctx context.Context, p Paths) error
 type defaultProvisioner struct {
 	l                astikit.SeverityLogger
 	moverAstilectron mover
+	moverWS          mover
 	moverElectron    mover
 }
 
@@ -42,6 +43,12 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 	dp.moverAstilectron = func(ctx context.Context, p Paths) (err error) {
 		if err = Download(ctx, dp.l, d, p.AstilectronDownloadSrc(), p.AstilectronDownloadDst()); err != nil {
 			return fmt.Errorf("downloading %s into %s failed: %w", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst(), err)
+		}
+		return
+	}
+	dp.moverWS = func(ctx context.Context, p Paths) (err error) {
+		if err = Download(ctx, dp.l, d, p.WSDownloadSrc(), p.WSDownloadDst()); err != nil {
+			return fmt.Errorf("downloading %s into %s failed: %w", p.WSDownloadSrc(), p.WSDownloadDst(), err)
 		}
 		return
 	}
@@ -60,8 +67,8 @@ func provisionStatusElectronKey(os, arch string) string {
 }
 
 // Provision implements the provisioner interface
-// TODO Package app using electron instead of downloading Electron + Astilectron separately
-func (p *defaultProvisioner) Provision(ctx context.Context, appName, os, arch, versionAstilectron, versionElectron string, paths Paths) (err error) {
+// TODO Package app using electron instead of downloading Electron + Astilectron + ws separately
+func (p *defaultProvisioner) Provision(ctx context.Context, appName, os, arch, versionAstilectron, versionWS, versionElectron string, paths Paths) (err error) {
 	// Retrieve provision status
 	var s ProvisionStatus
 	if s, err = p.ProvisionStatus(paths); err != nil {
@@ -77,6 +84,13 @@ func (p *defaultProvisioner) Provision(ctx context.Context, appName, os, arch, v
 	}
 	s.Astilectron = &ProvisionStatusPackage{Version: versionAstilectron}
 
+	// Provision ws
+	if err = p.provisionWS(ctx, paths, s, versionWS); err != nil {
+		err = fmt.Errorf("provisioning ws failed: %w", err)
+		return
+	}
+	s.WS = &ProvisionStatusPackage{Version: versionWS}
+
 	// Provision electron
 	if err = p.provisionElectron(ctx, paths, s, appName, os, arch, versionElectron); err != nil {
 		err = fmt.Errorf("provisioning electron failed: %w", err)
@@ -90,6 +104,7 @@ func (p *defaultProvisioner) Provision(ctx context.Context, appName, os, arch, v
 type ProvisionStatus struct {
 	Astilectron *ProvisionStatusPackage            `json:"astilectron,omitempty"`
 	Electron    map[string]*ProvisionStatusPackage `json:"electron,omitempty"`
+	WS          *ProvisionStatusPackage            `json:"ws,omitempty"`
 }
 
 // ProvisionStatusPackage represents the provision status of a package
@@ -147,6 +162,11 @@ func (p *defaultProvisioner) updateProvisionStatus(paths Paths, s *ProvisionStat
 // provisionAstilectron provisions astilectron
 func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths, s ProvisionStatus, versionAstilectron string) error {
 	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", versionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
+}
+
+// provisionWS provisions websockets/ws
+func (p *defaultProvisioner) provisionWS(ctx context.Context, paths Paths, s ProvisionStatus, versionWS string) error {
+	return p.provisionPackage(ctx, paths, s.WS, p.moverWS, "ws", versionWS, paths.WSUnzipSrc(), paths.WSDirectory(), nil)
 }
 
 // provisionElectron provisions electron
@@ -325,11 +345,17 @@ func (p *defaultProvisioner) provisionElectronFinishDarwinRename(appName string,
 type Disembedder func(src string) ([]byte, error)
 
 // NewDisembedderProvisioner creates a provisioner that can provision based on embedded data
-func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron string, l astikit.StdLogger) Provisioner {
+func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathWS, pathElectron string, l astikit.StdLogger) Provisioner {
 	dp := &defaultProvisioner{l: astikit.AdaptStdLogger(l)}
 	dp.moverAstilectron = func(ctx context.Context, p Paths) (err error) {
 		if err = Disembed(ctx, dp.l, d, pathAstilectron, p.AstilectronDownloadDst()); err != nil {
 			return fmt.Errorf("disembedding %s into %s failed: %w", pathAstilectron, p.AstilectronDownloadDst(), err)
+		}
+		return
+	}
+	dp.moverWS = func(ctx context.Context, p Paths) (err error) {
+		if err = Disembed(ctx, dp.l, d, pathWS, p.WSDownloadDst()); err != nil {
+			return fmt.Errorf("disembedding %s into %s failed: %w", pathWS, p.WSDownloadDst(), err)
 		}
 		return
 	}

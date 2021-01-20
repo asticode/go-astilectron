@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testProvisionerSuccessful(t *testing.T, p Paths, osName, arch, versionAstilectron, versionElectron string) {
+func testProvisionerSuccessful(t *testing.T, p Paths, osName, arch, versionAstilectron, versionWS, versionElectron string) {
 	_, err := os.Stat(p.AstilectronApplication())
 	assert.NoError(t, err)
 	_, err = os.Stat(p.AppExecutable())
 	assert.NoError(t, err)
 	b, err := ioutil.ReadFile(p.ProvisionStatus())
 	assert.NoError(t, err)
-	assert.Equal(t, "{\"astilectron\":{\"version\":\""+versionAstilectron+"\"},\"electron\":{\""+provisionStatusElectronKey(osName, arch)+"\":{\"version\":\""+versionElectron+"\"}}}\n", string(b))
+	assert.Equal(t, "{\"astilectron\":{\"version\":\""+versionAstilectron+"\"},\"electron\":{\""+provisionStatusElectronKey(osName, arch)+"\":{\"version\":\""+versionElectron+"\"}},\"ws\":{\"version\":\""+versionWS+"\"}}\n", string(b))
 }
 
 func TestDefaultProvisioner(t *testing.T) {
@@ -33,18 +33,21 @@ func TestDefaultProvisioner(t *testing.T) {
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
+	p.wsUnzipSrc = filepath.Join(p.wsDownloadDst, "ws")
+	p.wsDownloadSrc = s.URL + "/provisioner/ws"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/linux"
-	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron)
 
 	// Test nothing happens if provision status is up to date
 	mh.e = true
 	os.Remove(p.AstilectronDownloadDst())
+	os.Remove(p.WSDownloadDst())
 	os.Remove(p.ElectronDownloadDst())
-	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron)
 
 	// Test windows
 	mh.e = false
@@ -53,10 +56,12 @@ func TestDefaultProvisioner(t *testing.T) {
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
+	p.wsUnzipSrc = filepath.Join(p.wsDownloadDst, "ws")
+	p.wsDownloadSrc = s.URL + "/provisioner/ws"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/windows"
-	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "windows", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "windows", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p, "windows", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+	testProvisionerSuccessful(t, *p, "windows", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron)
 
 	// Test darwin without custom app name + icon
 	os.RemoveAll(o.BaseDirectoryPath)
@@ -64,10 +69,12 @@ func TestDefaultProvisioner(t *testing.T) {
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
+	p.wsUnzipSrc = filepath.Join(p.wsDownloadDst, "ws")
+	p.wsDownloadSrc = s.URL + "/provisioner/ws"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), "", "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+	testProvisionerSuccessful(t, *p, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron)
 
 	// Test darwin with custom app name + icon
 	os.RemoveAll(o.BaseDirectoryPath)
@@ -79,10 +86,12 @@ func TestDefaultProvisioner(t *testing.T) {
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron")
 	p.astilectronDownloadSrc = s.URL + "/provisioner/astilectron"
+	p.wsUnzipSrc = filepath.Join(p.wsDownloadDst, "ws")
+	p.wsDownloadSrc = s.URL + "/provisioner/ws"
 	p.electronDownloadSrc = s.URL + "/provisioner/electron/darwin"
-	err = newDefaultProvisioner(nil).Provision(context.Background(), o.AppName, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = newDefaultProvisioner(nil).Provision(context.Background(), o.AppName, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+	testProvisionerSuccessful(t, *p, "darwin", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron)
 	// Rename
 	_, err = os.Stat(filepath.Join(p.ElectronDirectory(), o.AppName+".app"))
 	assert.NoError(t, err)
@@ -112,10 +121,11 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	p, err := newPaths("linux", "amd64", o)
 	assert.NoError(t, err)
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, "astilectron-0.35.1")
-	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "electron/linux", nil)
+	p.wsUnzipSrc = filepath.Join(p.wsDownloadDst, "ws")
+	pvb := NewDisembedderProvisioner(mockedDisembedder, "astilectron", "ws", "electron/linux", nil)
 
 	// Test provision
-	err = pvb.Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
+	err = pvb.Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
-	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionWS, DefaultVersionElectron)
 }
