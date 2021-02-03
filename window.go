@@ -36,6 +36,8 @@ const (
 	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
+	EventNameWindowCmdWebContentsSetProxy             = "window.cmd.web.contents.set.proxy"
+	EventNameWindowCmdLoadUrl                         = "window.cmd.load.url"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
 	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
@@ -54,8 +56,10 @@ const (
 	EventNameWindowEventUnresponsive                  = "window.event.unresponsive"
 	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
+	EventNameWindowEventWebContentsSetProxy           = "window.event.web.contents.set.proxy"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
+	EventNameWindowLoadUrl                            = "window.event.load.url"
 )
 
 // Title bar styles
@@ -531,6 +535,24 @@ func (w *Window) Unmaximize() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdUnmaximize, TargetID: w.id}, EventNameWindowEventUnmaximize)
+	return
+}
+
+// Loads the url
+func (w *Window) LoadUrl(url string) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdLoadUrl, TargetID: w.id, URL: url}, EventNameWindowLoadUrl)
+	return
+}
+
+// Sets the proxy
+func (w *Window) SetProxy(proxy string) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsSetProxy, TargetID: w.id, Proxy: proxy}, EventNameWindowEventWebContentsSetProxy)
 	return
 }
 
