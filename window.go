@@ -37,7 +37,7 @@ const (
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowCmdWebContentsSetProxy             = "window.cmd.web.contents.set.proxy"
-	EventNameWindowCmdLoadUrl                         = "window.cmd.load.url"
+	EventNameWindowCmdLoadURL                         = "window.cmd.load.url"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
 	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
@@ -59,7 +59,7 @@ const (
 	EventNameWindowEventWebContentsSetProxy           = "window.event.web.contents.set.proxy"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
-	EventNameWindowLoadUrl                            = "window.event.load.url"
+	EventNameWindowLoadURL                            = "window.event.load.url"
 )
 
 // Title bar styles
@@ -539,16 +539,16 @@ func (w *Window) Unmaximize() (err error) {
 }
 
 // Loads the url
-func (w *Window) LoadUrl(url string) (err error) {
+func (w *Window) LoadURL(url string) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdLoadUrl, TargetID: w.id, URL: url}, EventNameWindowLoadUrl)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdLoadURL, TargetID: w.id, URL: url}, EventNameWindowLoadURL)
 	return
 }
 
 // Sets the proxy
-func (w *Window) SetProxy(proxy string) (err error) {
+func (w *Window) SetProxy(proxy *WindowProxyOptions) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
