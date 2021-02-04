@@ -59,7 +59,7 @@ const (
 	EventNameWindowEventWebContentsSetProxy           = "window.event.web.contents.set.proxy"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
-	EventNameWindowLoadURL                            = "window.event.load.url"
+	EventNameWindowLoadedURL                          = "window.event.loaded.url"
 )
 
 // Title bar styles
@@ -543,7 +543,7 @@ func (w *Window) LoadURL(url string) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdLoadURL, TargetID: w.id, URL: url}, EventNameWindowLoadURL)
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdLoadURL, TargetID: w.id, URL: url}, EventNameWindowLoadedURL)
 	return
 }
 
