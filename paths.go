@@ -60,11 +60,15 @@ func newPaths(os, arch string, o Options) (p *Paths, err error) {
 	p.astilectronDownloadSrc = AstilectronDownloadSrc(o.VersionAstilectron)
 	p.astilectronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("astilectron-v%s.zip", o.VersionAstilectron))
 	p.astilectronUnzipSrc = filepath.Join(p.astilectronDownloadDst, fmt.Sprintf("astilectron-%s", o.VersionAstilectron))
-	p.electronDirectory = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s", os, arch))
-	p.electronDownloadSrc = ElectronDownloadSrc(os, arch, o.VersionElectron)
-	p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, o.VersionElectron))
-	p.electronUnzipSrc = p.electronDownloadDst
-	p.initAppExecutable(os, o.AppName)
+	if o.CustomElectronPath == "" {
+		p.electronDirectory = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s", os, arch))
+		p.electronDownloadSrc = ElectronDownloadSrc(os, arch, o.VersionElectron)
+		p.electronDownloadDst = filepath.Join(p.vendorDirectory, fmt.Sprintf("electron-%s-%s-v%s.zip", os, arch, o.VersionElectron))
+		p.electronUnzipSrc = p.electronDownloadDst
+		p.initAppExecutable(os, o.AppName)
+	} else {
+		p.appExecutable = o.CustomElectronPath
+	}
 	return
 }
 

@@ -65,6 +65,7 @@ type Options struct {
 	AppName            string
 	AppIconDarwinPath  string // Darwin systems requires a specific .icns file
 	AppIconDefaultPath string
+	CustomElectronPath string
 	BaseDirectoryPath  string
 	DataDirectoryPath  string
 	ElectronSwitches   []string
