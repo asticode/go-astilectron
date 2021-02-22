@@ -151,6 +151,9 @@ func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Pat
 
 // provisionElectron provisions electron
 func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName, os, arch, versionElectron string) error {
+	if paths.ElectronUnzipSrc() == "" {
+		return nil
+	}
 	return p.provisionPackage(ctx, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", versionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
 		switch os {
 		case "darwin":
