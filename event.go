@@ -52,6 +52,9 @@ type Event struct {
 	WindowID            string               `json:"windowId,omitempty"`
 	WindowOptions       *WindowOptions       `json:"windowOptions,omitempty"`
 	Proxy               *WindowProxyOptions  `json:"proxy,omitempty"`
+	Scheme              string               `json:"scheme,omitempty"`
+	MimeType            string               `json:"mimeType,omitempty"`
+	Data                string               `json:"data,omitempty"`
 }
 
 // EventAuthInfo represents an event auth info
