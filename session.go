@@ -11,6 +11,7 @@ const (
 	EventNameSessionEventWillDownload   = "session.event.will.download"
 	EventNameSessionCmdFlushStorage     = "session.cmd.flush.storage"
 	EventNameSessionEventFlushedStorage = "session.event.flushed.storage"
+	EventNameSessionCmdLoadExtension    = "session.cmd.load.extension"
 )
 
 // Session represents a session
@@ -41,5 +42,14 @@ func (s *Session) FlushStorage() (err error) {
 		return
 	}
 	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdFlushStorage, TargetID: s.id}, EventNameSessionEventFlushedStorage)
+	return
+}
+
+// Loads a chrome extension
+func (s *Session) LoadExtension() (err error) {
+	if err = s.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdLoadExtension, TargetID: s.id})
 	return
 }
