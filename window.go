@@ -40,6 +40,7 @@ const (
 	EventNameWindowCmdWebContentsExecuteJavaScript           = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowCmdWebContentsSetProxy                    = "window.cmd.web.contents.set.proxy"
 	EventNameWindowCmdWebContentsInterceptStringProtocol     = "window.cmd.web.contents.intercept.string.protocol"
+	EventNameWindowCmdGetUrl                                 = "window.cmd.get.url"
 	EventNameWindowCmdLoadURL                                = "window.cmd.load.url"
 	EventNameWindowEventBlur                                 = "window.event.blur"
 	EventNameWindowEventClosed                               = "window.event.closed"
@@ -64,6 +65,7 @@ const (
 	EventNameWindowEventWillNavigate                         = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions                 = "window.event.updated.custom.options"
 	EventNameWindowLoadedURL                                 = "window.event.loaded.url"
+	EventNameWindowGetUrl                                    = "window.event.get.url"
 )
 
 // Title bar styles
@@ -595,5 +597,14 @@ func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
 	w.o.Custom = &o
 	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{WindowOptions: w.o, Name: EventNameWindowCmdUpdateCustomOptions, TargetID: w.id}, EventNameWindowEventUpdatedCustomOptions)
+	return
+}
+
+// Loads the url
+func (w *Window) GetUrl() (e Event, err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	e, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdGetUrl, TargetID: w.id}, EventNameWindowGetUrl)
 	return
 }
