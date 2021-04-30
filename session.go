@@ -47,9 +47,7 @@ func (s *Session) FlushStorage() (err error) {
 }
 
 // Loads a chrome extension
-func (s *Session) LoadExtension(path string) (err error) {
-	Path string `json:"path"`
-	
+func (s *Session) LoadExtension(path string) (err error) {	
 	if err = s.ctx.Err(); err != nil {
 		return
 	}
