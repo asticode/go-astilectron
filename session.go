@@ -6,11 +6,13 @@ import (
 
 // Session event names
 const (
-	EventNameSessionCmdClearCache       = "session.cmd.clear.cache"
-	EventNameSessionEventClearedCache   = "session.event.cleared.cache"
-	EventNameSessionEventWillDownload   = "session.event.will.download"
-	EventNameSessionCmdFlushStorage     = "session.cmd.flush.storage"
-	EventNameSessionEventFlushedStorage = "session.event.flushed.storage"
+	EventNameSessionCmdClearCache      	 = "session.cmd.clear.cache"
+	EventNameSessionEventClearedCache  	 = "session.event.cleared.cache"
+	EventNameSessionCmdFlushStorage    	 = "session.cmd.flush.storage"
+	EventNameSessionEventFlushedStorage	 = "session.event.flushed.storage"
+	EventNameSessionCmdLoadExtension   	 = "session.cmd.load.extension"
+	EventNameSessionEventLoadedExtension 	 = "session.event.loaded.extension"
+	EventNameSessionEventWillDownload  	 = "session.event.will.download"
 )
 
 // Session represents a session
@@ -41,5 +43,14 @@ func (s *Session) FlushStorage() (err error) {
 		return
 	}
 	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdFlushStorage, TargetID: s.id}, EventNameSessionEventFlushedStorage)
+	return
+}
+
+// Loads a chrome extension
+func (s *Session) LoadExtension(path string) (err error) {	
+	if err = s.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdLoadExtension, Path: path, TargetID: s.id}, EventNameSessionEventLoadedExtension)
 	return
 }
