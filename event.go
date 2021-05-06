@@ -39,7 +39,7 @@ type Event struct {
 	Message             *EventMessage        `json:"message,omitempty"`
 	NotificationOptions *NotificationOptions `json:"notificationOptions,omitempty"`
 	Password            string               `json:"password,omitempty"`
-	Path                string               `json:"path"`
+	Path                string               `json:"path,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
 	Request             *EventRequest        `json:"request,omitempty"`
 	SecondInstance      *EventSecondInstance `json:"secondInstance,omitempty"`
