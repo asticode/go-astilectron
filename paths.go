@@ -114,7 +114,7 @@ func (p *Paths) initDataDirectory(dataDirectoryPath, appName string) (err error)
 
 // AstilectronDownloadSrc returns the download URL of the (currently platform-independent) astilectron zip file
 func AstilectronDownloadSrc(versionAstilectron string) string {
-	return fmt.Sprintf("https://github.com/true-zero/astilectron/archive/v%s.zip", versionAstilectron)
+	return "https://codeload.github.com/true-zero/astilectron/zip/" + versionAstilectron
 }
 
 // ElectronDownloadSrc returns the download URL of the platform-dependant electron zipfile
