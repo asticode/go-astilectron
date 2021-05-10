@@ -166,22 +166,23 @@ type WindowProxyOptions struct {
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does.
 // Use astikit.BoolPtr, astikit.IntPtr or astikit.StrPtr to fill the struct
 type WebPreferences struct {
-	AllowRunningInsecureContent *bool                  `json:"allowRunningInsecureContent,omitempty"`
-	BackgroundThrottling        *bool                  `json:"backgroundThrottling,omitempty"`
-	BlinkFeatures               *string                `json:"blinkFeatures,omitempty"`
-	ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
-	DefaultEncoding             *string                `json:"defaultEncoding,omitempty"`
-	DefaultFontFamily           map[string]interface{} `json:"defaultFontFamily,omitempty"`
-	DefaultFontSize             *int                   `json:"defaultFontSize,omitempty"`
-	DefaultMonospaceFontSize    *int                   `json:"defaultMonospaceFontSize,omitempty"`
-	DevTools                    *bool                  `json:"devTools,omitempty"`
-	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
-	EnableRemoteModule          *bool                  `json:"enableRemoteModule,omitempty"`
-	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
-	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
-	Images                      *bool                  `json:"images,omitempty"`
-	Javascript                  *bool                  `json:"javascript,omitempty"`
-	MinimumFontSize             *int                   `json:"minimumFontSize,omitempty"`
+	AllowRunningInsecureContent *bool   `json:"allowRunningInsecureContent,omitempty"`
+	BackgroundThrottling        *bool   `json:"backgroundThrottling,omitempty"`
+	BlinkFeatures               *string `json:"blinkFeatures,omitempty"`
+	// This attribute needs to be false at all time
+	// ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
+	DefaultEncoding            *string                `json:"defaultEncoding,omitempty"`
+	DefaultFontFamily          map[string]interface{} `json:"defaultFontFamily,omitempty"`
+	DefaultFontSize            *int                   `json:"defaultFontSize,omitempty"`
+	DefaultMonospaceFontSize   *int                   `json:"defaultMonospaceFontSize,omitempty"`
+	DevTools                   *bool                  `json:"devTools,omitempty"`
+	DisableBlinkFeatures       *string                `json:"disableBlinkFeatures,omitempty"`
+	EnableRemoteModule         *bool                  `json:"enableRemoteModule,omitempty"`
+	ExperimentalCanvasFeatures *bool                  `json:"experimentalCanvasFeatures,omitempty"`
+	ExperimentalFeatures       *bool                  `json:"experimentalFeatures,omitempty"`
+	Images                     *bool                  `json:"images,omitempty"`
+	Javascript                 *bool                  `json:"javascript,omitempty"`
+	MinimumFontSize            *int                   `json:"minimumFontSize,omitempty"`
 	// This attribute needs to be true at all time
 	// NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
 	NodeIntegrationInWorker *bool                  `json:"nodeIntegrationInWorker,omitempty"`
