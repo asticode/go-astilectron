@@ -40,7 +40,6 @@ const (
 	EventNameWindowCmdWebContentsExecuteJavaScript           = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowCmdWebContentsSetProxy                    = "window.cmd.web.contents.set.proxy"
 	EventNameWindowCmdWebContentsInterceptStringProtocol     = "window.cmd.web.contents.intercept.string.protocol"
-	EventNameWindowCmdWebContentsUnregisterProtocol          = "window.cmd.web.contents.unregister.protocol"
 	EventNameWindowCmdGetUrl                                 = "window.cmd.get.url"
 	EventNameWindowCmdLoadURL                                = "window.cmd.load.url"
 	EventNameWindowEventBlur                                 = "window.event.blur"
@@ -63,7 +62,6 @@ const (
 	EventNameWindowEventWebContentsExecutedJavaScript        = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWebContentsSetProxy                  = "window.event.web.contents.set.proxy"
 	EventNameWindowEventWebContentsInterceptStringProtocol   = "window.event.web.contents.intercept.string.protocol"
-	EventNameWindowEventWebContentsUnregisterProtocol        = "window.event.web.contents.unregister.protocol"
 	EventNameWindowEventWillNavigate                         = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions                 = "window.event.updated.custom.options"
 	EventNameWindowLoadedURL                                 = "window.event.loaded.url"
@@ -447,11 +445,6 @@ func (w *Window) OnInterceptStringProtocol(scheme string, fn func(i Event) (stri
 			return
 		}
 
-		// If we are deleting the listener, unregister the protocol
-		if deleteListener {
-			err = w.UnregisterProtocol(scheme)
-		}
-
 		return
 	})
 
@@ -588,15 +581,6 @@ func (w *Window) SetProxy(proxy *WindowProxyOptions) (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsSetProxy, TargetID: w.id, Proxy: proxy}, EventNameWindowEventWebContentsSetProxy)
-	return
-}
-
-// Sets the proxy
-func (w *Window) UnregisterProtocol(scheme string) (err error) {
-	if err = w.ctx.Err(); err != nil {
-		return
-	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsUnregisterProtocol, TargetID: w.id, Scheme: scheme}, EventNameWindowEventWebContentsUnregisterProtocol)
 	return
 }
 
