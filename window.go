@@ -433,11 +433,11 @@ func (w *Window) OnLogin(fn func(i Event) (username, password string, err error)
 	})
 }
 
-func (w *Window) OnInterceptStringProtocol(scheme string, fn func(i Event) (mimeType, data string, err error)) (err error) {
+func (w *Window) OnInterceptStringProtocol(scheme string, fn func(i Event) (string, string, bool, error)) (err error) {
 	// Setup the event to handle the callback
 	w.On(EventNameWebContentsEventInterceptStringProtocol, func(i Event) (deleteListener bool) {
-		// Get mime type and data
-		mimeType, data, err := fn(i)
+		// Get mime type, data and whether the listener should be deleted.
+		mimeType, data, deleteListener, err := fn(i)
 
 		if err != nil {
 			w.l.Error(fmt.Errorf("getting mime type and data failed: %w", err))
