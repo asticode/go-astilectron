@@ -56,24 +56,23 @@ func (s *Session) LoadExtension(path string) (err error) {
 	return
 }
 
-func (w *Window) OnBeforeRequest(fn func(i Event) (string, string, bool)) (err error) {
+func (s *Session) OnBeforeRequest(fn func(i Event) (string, string, bool)) (err error) {
 	// Setup the event to handle the callback
-	w.On(EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback, func(i Event) (deleteListener bool) {
+	s.On(EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback, func(i Event) (deleteListener bool) {
 		// Get mime type, data and whether the listener should be deleted.
 		mimeType, data, deleteListener := fn(i)
 
 		// Send message back
-		if err = w.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: w.id, MimeType: mimeType, Data: data}); err != nil {
-			w.l.Error(fmt.Errorf("writing on before request callback message failed: %w", err))
+		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: w.id, MimeType: mimeType, Data: data}); err != nil {
 			return
 		}
 
 		return
 	})
 
-	if err = w.ctx.Err(); err != nil {
+	if err = s.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWebContentsEventSessionWebRequestOnBeforeRequest, TargetID: w.id}, EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback)
+	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameWebContentsEventSessionWebRequestOnBeforeRequest, TargetID: s.id}, EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback)
 	return
 }
