@@ -46,7 +46,7 @@ type Event struct {
 	Proxy               *WindowProxyOptions  `json:"proxy,omitempty"`
 	RedirectURL         string               `json:"redirectURL,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
-	Request             *EventRequest        `json:"request,omitempty"`
+	Request             *EventRequest        `json:"r,omitempty"`
 	Scheme              string               `json:"scheme,omitempty"`
 	SecondInstance      *EventSecondInstance `json:"secondInstance,omitempty"`
 	SessionID           string               `json:"sessionId,omitempty"`
