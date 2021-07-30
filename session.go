@@ -62,7 +62,7 @@ func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err er
 		cancel, redirectUrl, deleteListener := fn(i)
 
 		// Send message back
-		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: s.id, Cancel: &cancel, RedirectURL: redirectUrl}); err != nil {
+		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback, TargetID: s.id, Cancel: &cancel, RedirectURL: redirectUrl}); err != nil {
 			return
 		}
 
