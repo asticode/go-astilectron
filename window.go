@@ -12,50 +12,60 @@ import (
 
 // Window event names
 const (
-	EventNameWebContentsEventLogin                    = "web.contents.event.login"
-	EventNameWebContentsEventLoginCallback            = "web.contents.event.login.callback"
-	EventNameWindowCmdBlur                            = "window.cmd.blur"
-	EventNameWindowCmdCenter                          = "window.cmd.center"
-	EventNameWindowCmdClose                           = "window.cmd.close"
-	EventNameWindowCmdCreate                          = "window.cmd.create"
-	EventNameWindowCmdDestroy                         = "window.cmd.destroy"
-	EventNameWindowCmdFocus                           = "window.cmd.focus"
-	EventNameWindowCmdHide                            = "window.cmd.hide"
-	EventNameWindowCmdLog                             = "window.cmd.log"
-	EventNameWindowCmdMaximize                        = "window.cmd.maximize"
-	eventNameWindowCmdMessage                         = "window.cmd.message"
-	eventNameWindowCmdMessageCallback                 = "window.cmd.message.callback"
-	EventNameWindowCmdMinimize                        = "window.cmd.minimize"
-	EventNameWindowCmdMove                            = "window.cmd.move"
-	EventNameWindowCmdResize                          = "window.cmd.resize"
-	EventNameWindowCmdSetBounds                       = "window.cmd.set.bounds"
-	EventNameWindowCmdRestore                         = "window.cmd.restore"
-	EventNameWindowCmdShow                            = "window.cmd.show"
-	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
-	EventNameWindowCmdUpdateCustomOptions             = "window.cmd.update.custom.options"
-	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
-	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
-	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
-	EventNameWindowEventBlur                          = "window.event.blur"
-	EventNameWindowEventClosed                        = "window.event.closed"
-	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
-	EventNameWindowEventFocus                         = "window.event.focus"
-	EventNameWindowEventHide                          = "window.event.hide"
-	EventNameWindowEventMaximize                      = "window.event.maximize"
-	eventNameWindowEventMessage                       = "window.event.message"
-	eventNameWindowEventMessageCallback               = "window.event.message.callback"
-	EventNameWindowEventMinimize                      = "window.event.minimize"
-	EventNameWindowEventMove                          = "window.event.move"
-	EventNameWindowEventReadyToShow                   = "window.event.ready.to.show"
-	EventNameWindowEventResize                        = "window.event.resize"
-	EventNameWindowEventRestore                       = "window.event.restore"
-	EventNameWindowEventShow                          = "window.event.show"
-	EventNameWindowEventUnmaximize                    = "window.event.unmaximize"
-	EventNameWindowEventUnresponsive                  = "window.event.unresponsive"
-	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
-	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
-	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
-	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
+	EventNameWebContentsEventLogin                           = "web.contents.event.login"
+	EventNameWebContentsEventLoginCallback                   = "web.contents.event.login.callback"
+	EventNameWebContentsEventInterceptStringProtocol         = "web.contents.event.intercept.string.protocol"
+	EventNameWebContentsEventInterceptStringProtocolCallback = "web.contents.event.intercept.string.protocol.callback"
+	EventNameWindowCmdBlur                                   = "window.cmd.blur"
+	EventNameWindowCmdCenter                                 = "window.cmd.center"
+	EventNameWindowCmdClose                                  = "window.cmd.close"
+	EventNameWindowCmdCreate                                 = "window.cmd.create"
+	EventNameWindowCmdDestroy                                = "window.cmd.destroy"
+	EventNameWindowCmdFocus                                  = "window.cmd.focus"
+	EventNameWindowCmdHide                                   = "window.cmd.hide"
+	EventNameWindowCmdLog                                    = "window.cmd.log"
+	EventNameWindowCmdMaximize                               = "window.cmd.maximize"
+	eventNameWindowCmdMessage                                = "window.cmd.message"
+	eventNameWindowCmdMessageCallback                        = "window.cmd.message.callback"
+	EventNameWindowCmdMinimize                               = "window.cmd.minimize"
+	EventNameWindowCmdMove                                   = "window.cmd.move"
+	EventNameWindowCmdResize                                 = "window.cmd.resize"
+	EventNameWindowCmdSetBounds                              = "window.cmd.set.bounds"
+	EventNameWindowCmdRestore                                = "window.cmd.restore"
+	EventNameWindowCmdShow                                   = "window.cmd.show"
+	EventNameWindowCmdUnmaximize                             = "window.cmd.unmaximize"
+	EventNameWindowCmdUpdateCustomOptions                    = "window.cmd.update.custom.options"
+	EventNameWindowCmdWebContentsCloseDevTools               = "window.cmd.web.contents.close.dev.tools"
+	EventNameWindowCmdWebContentsOpenDevTools                = "window.cmd.web.contents.open.dev.tools"
+	EventNameWindowCmdWebContentsExecuteJavaScript           = "window.cmd.web.contents.execute.javascript"
+	EventNameWindowCmdWebContentsSetProxy                    = "window.cmd.web.contents.set.proxy"
+	EventNameWindowCmdWebContentsInterceptStringProtocol     = "window.cmd.web.contents.intercept.string.protocol"
+	EventNameWindowCmdGetUrl                                 = "window.cmd.get.url"
+	EventNameWindowCmdLoadURL                                = "window.cmd.load.url"
+	EventNameWindowEventBlur                                 = "window.event.blur"
+	EventNameWindowEventClosed                               = "window.event.closed"
+	EventNameWindowEventDidFinishLoad                        = "window.event.did.finish.load"
+	EventNameWindowEventFocus                                = "window.event.focus"
+	EventNameWindowEventHide                                 = "window.event.hide"
+	EventNameWindowEventMaximize                             = "window.event.maximize"
+	eventNameWindowEventMessage                              = "window.event.message"
+	eventNameWindowEventMessageCallback                      = "window.event.message.callback"
+	EventNameWindowEventMinimize                             = "window.event.minimize"
+	EventNameWindowEventMove                                 = "window.event.move"
+	EventNameWindowEventReadyToShow                          = "window.event.ready.to.show"
+	EventNameWindowEventResize                               = "window.event.resize"
+	EventNameWindowEventRestore                              = "window.event.restore"
+	EventNameWindowEventShow                                 = "window.event.show"
+	EventNameWindowEventUnmaximize                           = "window.event.unmaximize"
+	EventNameWindowEventUnresponsive                         = "window.event.unresponsive"
+	EventNameWindowEventDidGetRedirectRequest                = "window.event.did.get.redirect.request"
+	EventNameWindowEventWebContentsExecutedJavaScript        = "window.event.web.contents.executed.javascript"
+	EventNameWindowEventWebContentsSetProxy                  = "window.event.web.contents.set.proxy"
+	EventNameWindowEventWebContentsInterceptStringProtocol   = "window.event.web.contents.intercept.string.protocol"
+	EventNameWindowEventWillNavigate                         = "window.event.will.navigate"
+	EventNameWindowEventUpdatedCustomOptions                 = "window.event.updated.custom.options"
+	EventNameWindowLoadedURL                                 = "window.event.loaded.url"
+	EventNameWindowGetUrl                                    = "window.event.get.url"
 )
 
 // Title bar styles
@@ -166,23 +176,22 @@ type WindowProxyOptions struct {
 // We must use pointers since GO doesn't handle optional fields whereas NodeJS does.
 // Use astikit.BoolPtr, astikit.IntPtr or astikit.StrPtr to fill the struct
 type WebPreferences struct {
-	AllowRunningInsecureContent *bool   `json:"allowRunningInsecureContent,omitempty"`
-	BackgroundThrottling        *bool   `json:"backgroundThrottling,omitempty"`
-	BlinkFeatures               *string `json:"blinkFeatures,omitempty"`
-	// This attribute needs to be false at all time
-	// ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
-	DefaultEncoding            *string                `json:"defaultEncoding,omitempty"`
-	DefaultFontFamily          map[string]interface{} `json:"defaultFontFamily,omitempty"`
-	DefaultFontSize            *int                   `json:"defaultFontSize,omitempty"`
-	DefaultMonospaceFontSize   *int                   `json:"defaultMonospaceFontSize,omitempty"`
-	DevTools                   *bool                  `json:"devTools,omitempty"`
-	DisableBlinkFeatures       *string                `json:"disableBlinkFeatures,omitempty"`
-	EnableRemoteModule         *bool                  `json:"enableRemoteModule,omitempty"`
-	ExperimentalCanvasFeatures *bool                  `json:"experimentalCanvasFeatures,omitempty"`
-	ExperimentalFeatures       *bool                  `json:"experimentalFeatures,omitempty"`
-	Images                     *bool                  `json:"images,omitempty"`
-	Javascript                 *bool                  `json:"javascript,omitempty"`
-	MinimumFontSize            *int                   `json:"minimumFontSize,omitempty"`
+	AllowRunningInsecureContent *bool                  `json:"allowRunningInsecureContent,omitempty"`
+	BackgroundThrottling        *bool                  `json:"backgroundThrottling,omitempty"`
+	BlinkFeatures               *string                `json:"blinkFeatures,omitempty"`
+	ContextIsolation            *bool                  `json:"contextIsolation,omitempty"`
+	DefaultEncoding             *string                `json:"defaultEncoding,omitempty"`
+	DefaultFontFamily           map[string]interface{} `json:"defaultFontFamily,omitempty"`
+	DefaultFontSize             *int                   `json:"defaultFontSize,omitempty"`
+	DefaultMonospaceFontSize    *int                   `json:"defaultMonospaceFontSize,omitempty"`
+	DevTools                    *bool                  `json:"devTools,omitempty"`
+	DisableBlinkFeatures        *string                `json:"disableBlinkFeatures,omitempty"`
+	EnableRemoteModule          *bool                  `json:"enableRemoteModule,omitempty"`
+	ExperimentalCanvasFeatures  *bool                  `json:"experimentalCanvasFeatures,omitempty"`
+	ExperimentalFeatures        *bool                  `json:"experimentalFeatures,omitempty"`
+	Images                      *bool                  `json:"images,omitempty"`
+	Javascript                  *bool                  `json:"javascript,omitempty"`
+	MinimumFontSize             *int                   `json:"minimumFontSize,omitempty"`
 	// This attribute needs to be true at all time
 	// NodeIntegration             *bool                  `json:"nodeIntegration,omitempty"`
 	NodeIntegrationInWorker *bool                  `json:"nodeIntegrationInWorker,omitempty"`
@@ -424,6 +433,28 @@ func (w *Window) OnLogin(fn func(i Event) (username, password string, err error)
 	})
 }
 
+func (w *Window) OnInterceptStringProtocol(scheme string, fn func(i Event) (string, string, bool)) (err error) {
+	// Setup the event to handle the callback
+	w.On(EventNameWebContentsEventInterceptStringProtocol, func(i Event) (deleteListener bool) {
+		// Get mime type, data and whether the listener should be deleted.
+		mimeType, data, deleteListener := fn(i)
+
+		// Send message back
+		if err = w.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: w.id, MimeType: mimeType, Data: data}); err != nil {
+			w.l.Error(fmt.Errorf("writing intercept string protocol callback message failed: %w", err))
+			return
+		}
+
+		return
+	})
+
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsInterceptStringProtocol, TargetID: w.id, Scheme: scheme}, EventNameWindowEventWebContentsInterceptStringProtocol)
+	return
+}
+
 // ListenerMessage represents a message listener executed when receiving a message from the JS
 type ListenerMessage func(m *EventMessage) (v interface{})
 
@@ -535,6 +566,24 @@ func (w *Window) Unmaximize() (err error) {
 	return
 }
 
+// Loads the url
+func (w *Window) LoadURL(url string) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdLoadURL, TargetID: w.id, URL: url}, EventNameWindowLoadedURL)
+	return
+}
+
+// Sets the proxy
+func (w *Window) SetProxy(proxy *WindowProxyOptions) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsSetProxy, TargetID: w.id, Proxy: proxy}, EventNameWindowEventWebContentsSetProxy)
+	return
+}
+
 // UpdateCustomOptions updates the window custom options
 func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
 	if err = w.ctx.Err(); err != nil {
@@ -544,5 +593,14 @@ func (w *Window) UpdateCustomOptions(o WindowCustomOptions) (err error) {
 	w.o.Custom = &o
 	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{WindowOptions: w.o, Name: EventNameWindowCmdUpdateCustomOptions, TargetID: w.id}, EventNameWindowEventUpdatedCustomOptions)
+	return
+}
+
+// Gets the url
+func (w *Window) GetUrl() (e Event, err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	e, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdGetUrl, TargetID: w.id}, EventNameWindowGetUrl)
 	return
 }
