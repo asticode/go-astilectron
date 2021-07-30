@@ -2,7 +2,6 @@ package astilectron
 
 import (
 	"context"
-	"fmt"
 )
 
 // Session event names
@@ -63,7 +62,7 @@ func (s *Session) OnBeforeRequest(fn func(i Event) (string, string, bool)) (err 
 		mimeType, data, deleteListener := fn(i)
 
 		// Send message back
-		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: w.id, MimeType: mimeType, Data: data}); err != nil {
+		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: s.id, MimeType: mimeType, Data: data}); err != nil {
 			return
 		}
 
