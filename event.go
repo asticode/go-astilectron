@@ -24,6 +24,7 @@ type Event struct {
 	Badge               string               `json:"badge,omitempty"`
 	BounceType          string               `json:"bounceType,omitempty"`
 	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
+	Cancel              *bool                 `json:"cancel,omitempty"`
 	CallbackID          string               `json:"callbackId,omitempty"`
 	Code                string               `json:"code,omitempty"`
 	Data                string               `json:"data,omitempty"`
@@ -43,6 +44,7 @@ type Event struct {
 	Password            string               `json:"password,omitempty"`
 	Path                string               `json:"path,omitempty"`
 	Proxy               *WindowProxyOptions  `json:"proxy,omitempty"`
+	RedirectURL         string               `json:"redirectURL,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
 	Request             *EventRequest        `json:"request,omitempty"`
 	Scheme              string               `json:"scheme,omitempty"`

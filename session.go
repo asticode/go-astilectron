@@ -55,14 +55,14 @@ func (s *Session) LoadExtension(path string) (err error) {
 	return
 }
 
-func (s *Session) OnBeforeRequest(fn func(i Event) (string, string, bool)) (err error) {
+func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err error) {
 	// Setup the event to handle the callback
-	s.On(EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback, func(i Event) (deleteListener bool) {
+	s.On(EventNameWebContentsEventSessionWebRequestOnBeforeRequest, func(i Event) (deleteListener bool) {
 		// Get mime type, data and whether the listener should be deleted.
-		mimeType, data, deleteListener := fn(i)
+		cancel, redirectUrl, deleteListener := fn(i)
 
 		// Send message back
-		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: s.id, MimeType: mimeType, Data: data}); err != nil {
+		if err = s.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: s.id, Cancel: &cancel, RedirectURL: redirectUrl}); err != nil {
 			return
 		}
 
