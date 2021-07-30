@@ -26,7 +26,7 @@ type Event struct {
 	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
 	CallbackID          string               `json:"callbackId,omitempty"`
 	Code                string               `json:"code,omitempty"`
-	Data				string				 `json:"data,omitempty"`
+	Data                string               `json:"data,omitempty"`
 	Displays            *EventDisplays       `json:"displays,omitempty"`
 	FilePath            string               `json:"filePath,omitempty"`
 	ID                  *int                 `json:"id,omitempty"`
@@ -38,14 +38,14 @@ type Event struct {
 	MenuItemPosition    *int                 `json:"menuItemPosition,omitempty"`
 	MenuPopupOptions    *MenuPopupOptions    `json:"menuPopupOptions,omitempty"`
 	Message             *EventMessage        `json:"message,omitempty"`
-	MimeType			string               `json:"mimeType,omitempty"`
+	MimeType            string               `json:"mimeType,omitempty"`
 	NotificationOptions *NotificationOptions `json:"notificationOptions,omitempty"`
 	Password            string               `json:"password,omitempty"`
 	Path                string               `json:"path,omitempty"`
-	Proxy			 	*WindowProxyOptions  `json:"proxy,omitempty"`
+	Proxy               *WindowProxyOptions  `json:"proxy,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
 	Request             *EventRequest        `json:"request,omitempty"`
-	Scheme 				string 				 `json:"scheme,omitempty"`
+	Scheme              string               `json:"scheme,omitempty"`
 	SecondInstance      *EventSecondInstance `json:"secondInstance,omitempty"`
 	SessionID           string               `json:"sessionId,omitempty"`
 	Supported           *Supported           `json:"supported,omitempty"`
