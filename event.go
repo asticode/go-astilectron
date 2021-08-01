@@ -24,9 +24,10 @@ type Event struct {
 	Badge               string               `json:"badge,omitempty"`
 	BounceType          string               `json:"bounceType,omitempty"`
 	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
-	Cancel              *bool                 `json:"cancel,omitempty"`
+	Cancel              *bool                `json:"cancel,omitempty"`
 	CallbackID          string               `json:"callbackId,omitempty"`
 	Code                string               `json:"code,omitempty"`
+	Cookies             []SessionCookie      `json:"cookies,omitempty"`
 	Data                string               `json:"data,omitempty"`
 	Displays            *EventDisplays       `json:"displays,omitempty"`
 	FilePath            string               `json:"filePath,omitempty"`

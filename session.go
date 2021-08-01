@@ -13,6 +13,10 @@ const (
 	EventNameSessionCmdLoadExtension     = "session.cmd.load.extension"
 	EventNameSessionEventLoadedExtension = "session.event.loaded.extension"
 	EventNameSessionEventWillDownload    = "session.event.will.download"
+	EventNameSessionCmdSetCookies        = "session.cmd.cookies.set"
+	EventNameSessionEventSetCookies      = "session.event.cookies.set"
+	EventNameSessionCmdGetCookies        = "session.cmd.cookies.get"
+	EventNameSessionEventGetCookies      = "session.event.cookies.get"
 )
 
 // Session represents a session
@@ -73,5 +77,34 @@ func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err er
 		return
 	}
 	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameWebContentsEventSessionWebRequestOnBeforeRequest, TargetID: s.id}, EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback)
+	return
+}
+
+type SessionCookie struct {
+	Url            string `json:"url"`
+	Name           string `json:"name,omitempty"`
+	Value          string `json:"value,omitempty"`
+	Domain         string `json:"domain,omitempty"`
+	Path           string `json:"path,omitempty"`
+	Secure         string `json:"secure,omitempty"`
+	HttpOnly       *bool  `json:"httpOnly,omitempty"`
+	Session        *bool  `json:"session,omitempty"`
+	ExpirationDate *int64 `json:"expirationDate,omitempty"`
+	SameSite       string `json:"sameSite,omitempty"`
+}
+
+func (s *Session) SetCookies(cookies []SessionCookie) (err error) {
+	if err = s.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdSetCookies, TargetID: s.id, Cookies: cookies}, EventNameSessionEventSetCookies)
+	return
+}
+
+func (s *Session) GetCookies() (e Event, err error) {
+	if err = s.ctx.Err(); err != nil {
+		return
+	}
+	e, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameSessionCmdGetCookies, TargetID: s.id}, EventNameSessionEventGetCookies)
 	return
 }
