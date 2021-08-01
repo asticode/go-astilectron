@@ -2,6 +2,7 @@ package astilectron
 
 import (
 	"context"
+	"fmt"
 )
 
 // Session event names
@@ -60,8 +61,12 @@ func (s *Session) LoadExtension(path string) (err error) {
 }
 
 func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err error) {
+
+	fmt.Println("onbeforerequest listener attached")
+
 	// Setup the event to handle the callback
 	s.On(EventNameWebContentsEventSessionWebRequestOnBeforeRequest, func(i Event) (deleteListener bool) {
+		fmt.Println("onbeforerequest: ", i)
 		// Get mime type, data and whether the listener should be deleted.
 		cancel, redirectUrl, deleteListener := fn(i)
 
