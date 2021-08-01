@@ -118,11 +118,22 @@ type EventMenuItem struct {
 	SubMenu *EventSubMenu    `json:"submenu,omitempty"`
 }
 
+type UploadData struct {
+	Type  string `json:"type,omitempty"`
+	Bytes *Bytes `json:"bytes,omitempty"`
+}
+
+type Bytes struct {
+	Type string `json:"type,omitempty"`
+	Data []byte `json:"data,omitempty"`
+}
+
 // EventRequest represents an event request
 type EventRequest struct {
-	Method   string `json:"method,omitempty"`
-	Referrer string `json:"referrer,omitempty"`
-	URL      string `json:"url,omitempty"`
+	Method     string       `json:"method,omitempty"`
+	Referrer   string       `json:"referrer,omitempty"`
+	URL        string       `json:"url,omitempty"`
+	UploadData []UploadData `json:"uploadData,omitempty"`
 }
 
 // EventSecondInstance represents data related to a second instance of the app being started
