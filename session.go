@@ -81,16 +81,16 @@ func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err er
 }
 
 type SessionCookie struct {
-	Url            string `json:"url"`
-	Name           string `json:"name,omitempty"`
-	Value          string `json:"value,omitempty"`
-	Domain         string `json:"domain,omitempty"`
-	Path           string `json:"path,omitempty"`
-	Secure         *bool  `json:"secure,omitempty"`
-	HttpOnly       *bool  `json:"httpOnly,omitempty"`
-	Session        *bool  `json:"session,omitempty"`
-	ExpirationDate *int64 `json:"expirationDate,omitempty"`
-	SameSite       string `json:"sameSite,omitempty"`
+	Url            string   `json:"url"`
+	Name           string   `json:"name,omitempty"`
+	Value          string   `json:"value,omitempty"`
+	Domain         string   `json:"domain,omitempty"`
+	Path           string   `json:"path,omitempty"`
+	Secure         *bool    `json:"secure,omitempty"`
+	HttpOnly       *bool    `json:"httpOnly,omitempty"`
+	Session        *bool    `json:"session,omitempty"`
+	ExpirationDate *float64 `json:"expirationDate,omitempty"`
+	SameSite       string   `json:"sameSite,omitempty"`
 }
 
 func (s *Session) SetCookies(cookies []SessionCookie) (err error) {
