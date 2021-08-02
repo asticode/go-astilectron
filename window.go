@@ -18,6 +18,7 @@ const (
 	EventNameWebContentsEventInterceptStringProtocolCallback          = "web.contents.event.intercept.string.protocol.callback"
 	EventNameWebContentsEventSessionWebRequestOnBeforeRequest         = "web.contents.event.session.web.request.on.before.request"
 	EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback = "web.contents.event.session.web.request.on.before.request.callback"
+	EventNameWindowEventWebContentsOnBeforeRequest                    = "window.event.web.contents.on.before.request"
 	EventNameWindowCmdBlur                                            = "window.cmd.blur"
 	EventNameWindowCmdCenter                                          = "window.cmd.center"
 	EventNameWindowCmdClose                                           = "window.cmd.close"

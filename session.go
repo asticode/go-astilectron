@@ -76,7 +76,7 @@ func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err er
 	if err = s.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameWebContentsEventSessionWebRequestOnBeforeRequest, TargetID: s.id}, EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback)
+	_, err = synchronousEvent(s.ctx, s, s.w, Event{Name: EventNameWebContentsEventSessionWebRequestOnBeforeRequest, TargetID: s.id}, EventNameWindowEventWebContentsOnBeforeRequest)
 	return
 }
 
