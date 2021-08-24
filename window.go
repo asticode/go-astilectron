@@ -14,8 +14,6 @@ import (
 const (
 	EventNameWebContentsEventLogin                                    = "web.contents.event.login"
 	EventNameWebContentsEventLoginCallback                            = "web.contents.event.login.callback"
-	EventNameWebContentsEventInterceptStringProtocol                  = "web.contents.event.intercept.string.protocol"
-	EventNameWebContentsEventInterceptStringProtocolCallback          = "web.contents.event.intercept.string.protocol.callback"
 	EventNameWebContentsEventSessionWebRequestOnBeforeRequest         = "web.contents.event.session.web.request.on.before.request"
 	EventNameWebContentsEventSessionWebRequestOnBeforeRequestCallback = "web.contents.event.session.web.request.on.before.request.callback"
 	EventNameWindowEventWebContentsOnBeforeRequest                    = "window.event.web.contents.on.before.request"
@@ -42,7 +40,6 @@ const (
 	EventNameWindowCmdWebContentsOpenDevTools                         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript                    = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowCmdWebContentsSetProxy                             = "window.cmd.web.contents.set.proxy"
-	EventNameWindowCmdWebContentsInterceptStringProtocol              = "window.cmd.web.contents.intercept.string.protocol"
 	EventNameWindowCmdGetUrl                                          = "window.cmd.get.url"
 	EventNameWindowCmdLoadURL                                         = "window.cmd.load.url"
 	EventNameWindowEventBlur                                          = "window.event.blur"
@@ -64,7 +61,6 @@ const (
 	EventNameWindowEventDidGetRedirectRequest                         = "window.event.did.get.redirect.request"
 	EventNameWindowEventWebContentsExecutedJavaScript                 = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWebContentsSetProxy                           = "window.event.web.contents.set.proxy"
-	EventNameWindowEventWebContentsInterceptStringProtocol            = "window.event.web.contents.intercept.string.protocol"
 	EventNameWindowEventWillNavigate                                  = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions                          = "window.event.updated.custom.options"
 	EventNameWindowLoadedURL                                          = "window.event.loaded.url"
@@ -434,28 +430,6 @@ func (w *Window) OnLogin(fn func(i Event) (username, password string, err error)
 		}
 		return
 	})
-}
-
-func (w *Window) OnInterceptStringProtocol(scheme string, fn func(i Event) (string, string, bool)) (err error) {
-	// Setup the event to handle the callback
-	w.On(EventNameWebContentsEventInterceptStringProtocol, func(i Event) (deleteListener bool) {
-		// Get mime type, data and whether the listener should be deleted.
-		mimeType, data, deleteListener := fn(i)
-
-		// Send message back
-		if err = w.w.write(Event{CallbackID: i.CallbackID, Name: EventNameWebContentsEventInterceptStringProtocolCallback, TargetID: w.id, MimeType: mimeType, Data: data}); err != nil {
-			w.l.Error(fmt.Errorf("writing intercept string protocol callback message failed: %w", err))
-			return
-		}
-
-		return
-	})
-
-	if err = w.ctx.Err(); err != nil {
-		return
-	}
-	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdWebContentsInterceptStringProtocol, TargetID: w.id, Scheme: scheme}, EventNameWindowEventWebContentsInterceptStringProtocol)
-	return
 }
 
 // ListenerMessage represents a message listener executed when receiving a message from the JS

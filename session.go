@@ -25,6 +25,7 @@ const (
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/session.md
 type Session struct {
 	*object
+	*Protocol
 }
 
 // newSession creates a new session
@@ -62,7 +63,6 @@ func (s *Session) LoadExtension(path string) (err error) {
 func (s *Session) OnBeforeRequest(fn func(i Event) (bool, string, bool)) (err error) {
 	// Setup the event to handle the callback
 	s.On(EventNameWebContentsEventSessionWebRequestOnBeforeRequest, func(i Event) (deleteListener bool) {
-		// Get mime type, data and whether the listener should be deleted.
 		cancel, redirectUrl, deleteListener := fn(i)
 
 		// Send message back

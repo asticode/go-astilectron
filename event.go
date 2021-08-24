@@ -20,14 +20,15 @@ type Event struct {
 	// This is a list of all possible payloads.
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
-	AuthInfo            *EventAuthInfo       `json:"authInfo,omitempty"`
-	Badge               string               `json:"badge,omitempty"`
-	BounceType          string               `json:"bounceType,omitempty"`
-	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
-	Cancel              *bool                `json:"cancel,omitempty"`
-	CallbackID          string               `json:"callbackId,omitempty"`
-	Code                string               `json:"code,omitempty"`
-	Cookies             []SessionCookie      `json:"cookies,omitempty"`
+	AuthInfo   *EventAuthInfo    `json:"authInfo,omitempty"`
+	Badge      string            `json:"badge,omitempty"`
+	BounceType string            `json:"bounceType,omitempty"`
+	Bounds     *RectangleOptions `json:"bounds,omitempty"`
+	Cancel     *bool             `json:"cancel,omitempty"`
+	CallbackID string            `json:"callbackId,omitempty"`
+	Code       string            `json:"code,omitempty"`
+	Cookies    []SessionCookie   `json:"cookies,omitempty"`
+	// https://www.electronjs.org/docs/api/structures/protocol-response
 	Data                string               `json:"data,omitempty"`
 	Displays            *EventDisplays       `json:"displays,omitempty"`
 	FilePath            string               `json:"filePath,omitempty"`
