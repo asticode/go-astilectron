@@ -30,6 +30,7 @@ const (
 	EventNameWindowCmdResize                          = "window.cmd.resize"
 	EventNameWindowCmdSetBounds                       = "window.cmd.set.bounds"
 	EventNameWindowCmdRestore                         = "window.cmd.restore"
+	EventNameWindowCmdSetContentProtection            = "window.cmd.set.content.protection"
 	EventNameWindowCmdShow                            = "window.cmd.show"
 	EventNameWindowCmdUnmaximize                      = "window.cmd.unmaximize"
 	EventNameWindowCmdUpdateCustomOptions             = "window.cmd.update.custom.options"
@@ -38,6 +39,7 @@ const (
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
+	EventNameWindowEventContentProtectionSet          = "window.event.content.protection.set"
 	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
 	EventNameWindowEventFocus                         = "window.event.focus"
 	EventNameWindowEventHide                          = "window.event.hide"
@@ -480,6 +482,15 @@ func (w *Window) SetBounds(r RectangleOptions) (err error) {
 	w.o.Y = r.Y
 	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetBounds, TargetID: w.id, Bounds: &r}, EventNameWindowEventResize)
+	return
+}
+
+// Enable content protection on the window
+func (w *Window) SetContentProtection(enable bool) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetContentProtection, TargetID: w.id, Enable: astikit.BoolPtr(enable)}, EventNameWindowEventContentProtectionSet)
 	return
 }
 
