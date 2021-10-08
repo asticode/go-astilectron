@@ -19,7 +19,6 @@ Here's a list of awesome projects using `go-astilectron` (if you're using `go-as
 
 - [go-astivid](https://github.com/asticode/go-astivid) Video tools written in GO
 - [GroupMatcher](https://github.com/veecue/GroupMatcher) Program to allocate persons to groups while trying to fulfill all the given wishes as good as possible
-- [ipeye-onvif](https://github.com/deepch/ipeye-onvif) ONVIF Search Tool
 - [Stellite GUI Miner](https://github.com/stellitecoin/GUI-miner) An easy to use GUI cryptocurrency miner for Stellite
 
 # Bootstrap
