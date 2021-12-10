@@ -28,6 +28,7 @@ const (
 	EventNameWindowCmdMinimize                        = "window.cmd.minimize"
 	EventNameWindowCmdMove                            = "window.cmd.move"
 	EventNameWindowCmdResize                          = "window.cmd.resize"
+	EventNameWindowCmdResizeContent                   = "window.cmd.resize.content"
 	EventNameWindowCmdSetBounds                       = "window.cmd.set.bounds"
 	EventNameWindowCmdRestore                         = "window.cmd.restore"
 	EventNameWindowCmdSetContentProtection            = "window.cmd.set.content.protection"
@@ -50,6 +51,7 @@ const (
 	EventNameWindowEventMove                          = "window.event.move"
 	EventNameWindowEventReadyToShow                   = "window.event.ready.to.show"
 	EventNameWindowEventResize                        = "window.event.resize"
+	EventNameWindowEventResizeContent                 = "window.event.resize.content"
 	EventNameWindowEventRestore                       = "window.event.restore"
 	EventNameWindowEventShow                          = "window.event.show"
 	EventNameWindowEventUnmaximize                    = "window.event.unmaximize"
@@ -467,6 +469,19 @@ func (w *Window) Resize(width, height int) (err error) {
 	w.o.Width = astikit.IntPtr(width)
 	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResize)
+	return
+}
+
+// ResizeContent resizes the content viewport
+func (w *Window) ResizeContent(width, height int) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	w.m.Lock()
+	w.o.Height = astikit.IntPtr(height)
+	w.o.Width = astikit.IntPtr(width)
+	w.m.Unlock()
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResizeContent, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResizeContent)
 	return
 }
 
