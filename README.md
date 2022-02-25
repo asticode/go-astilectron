@@ -330,6 +330,7 @@ A few things to know:
 
 * when assigning a role to a menu item, `go-astilectron` won't be able to capture its click event
 * on MacOS there's no such thing as a window menu, only app menus therefore my advice is to stick to one global app menu instead of creating separate window menus
+* on MacOS MenuItem without SubMenu is not displayed
 
 ## Tray
 
