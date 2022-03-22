@@ -146,16 +146,18 @@ func (p *defaultProvisioner) updateProvisionStatus(paths Paths, s *ProvisionStat
 
 // provisionAstilectron provisions astilectron
 func (p *defaultProvisioner) provisionAstilectron(ctx context.Context, paths Paths, s ProvisionStatus, versionAstilectron string) error {
-	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", versionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), nil)
+	return p.provisionPackage(ctx, paths, s.Astilectron, p.moverAstilectron, "Astilectron", versionAstilectron, paths.AstilectronUnzipSrc(), paths.AstilectronDirectory(), func() error {
+		return os.Remove(paths.astilectronDownloadDst)
+	})
 }
 
 // provisionElectron provisions electron
-func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName, os, arch, versionElectron string) error {
+func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths, s ProvisionStatus, appName, sysOS, arch, versionElectron string) error {
 	if paths.ElectronUnzipSrc() == "" {
 		return nil
 	}
-	return p.provisionPackage(ctx, paths, s.Electron[provisionStatusElectronKey(os, arch)], p.moverElectron, "Electron", versionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
-		switch os {
+	return p.provisionPackage(ctx, paths, s.Electron[provisionStatusElectronKey(sysOS, arch)], p.moverElectron, "Electron", versionElectron, paths.ElectronUnzipSrc(), paths.ElectronDirectory(), func() (err error) {
+		switch sysOS {
 		case "darwin":
 			if err = p.provisionElectronFinishDarwin(appName, paths); err != nil {
 				return fmt.Errorf("finishing provisioning electron for darwin systems failed: %w", err)
@@ -163,7 +165,7 @@ func (p *defaultProvisioner) provisionElectron(ctx context.Context, paths Paths,
 		default:
 			p.l.Debug("System doesn't require finshing provisioning electron, moving on...")
 		}
-		return
+		return os.Remove(paths.electronDownloadDst)
 	})
 }
 
