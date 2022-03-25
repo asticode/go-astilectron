@@ -32,6 +32,13 @@ func TestZipShouldRemove(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
+	defer func() {
+		t.Log("Remove the test directory after the test was done.")
+		if err := os.RemoveAll(dataDir); err != nil {
+			t.Fatalf(err.Error())
+		}
+	}()
+
 	{
 		t.Log("common process")
 		a, err := astilectron.New(l, astilectron.Options{
@@ -49,8 +56,8 @@ func TestZipShouldRemove(t *testing.T) {
 			t.Fatalf("main: starting astilectron failed: %s", err.Error())
 		}
 
-		// Close the app immediately since we care about the file only to avoid access being denied. (delete)
-		a.Close()
+		// Stop the app immediately since we care about the file only to avoid access being denied. (delete)
+		a.Stop()
 		time.Sleep(10 * time.Second)
 		t.Log("astilectron Close")
 	}
@@ -73,10 +80,5 @@ func TestZipShouldRemove(t *testing.T) {
 		if _, err := os.Stat(electronDownloadDst); !os.IsNotExist(err) {
 			t.Fatalf(err.Error())
 		}
-	}
-
-	t.Log("Remove the test directory after the test was done.")
-	if err := os.RemoveAll(dataDir); err != nil {
-		t.Fatalf(err.Error())
 	}
 }
