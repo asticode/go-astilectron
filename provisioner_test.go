@@ -2,7 +2,7 @@ package astilectron
 
 import (
 	"context"
-	testingHelper "github.com/asticode/go-astilectron/pkg/testing"
+	"github.com/asticode/go-astikit"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http/httptest"
@@ -131,7 +131,7 @@ func TestZipShouldRemove(t *testing.T) {
 	}
 	defer os.RemoveAll(o.DataDirectoryPath)
 
-	a, err := New(&testingHelper.StdLogger{T: t}, o)
+	a, err := New(astikit.AdaptTestLogger(t), o)
 	if err != nil {
 		t.Fatalf("main: creating astilectron failed: %s", err.Error())
 	}
