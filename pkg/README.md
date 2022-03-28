@@ -1,0 +1,1 @@
+The architecture of the directory same as the [go.src](https://github.com/golang/go/tree/ad646b3/src)

@@ -347,6 +347,14 @@ func (a *Astilectron) watchCmd(cmd *exec.Cmd) {
 	})
 }
 
+func (a *Astilectron) GetVersionAstilectron() string {
+	return a.options.VersionAstilectron
+}
+
+func (a *Astilectron) GetVersionElectron() string {
+	return a.options.VersionElectron
+}
+
 // Close closes Astilectron properly
 func (a *Astilectron) Close() {
 	a.l.Debug("Closing...")

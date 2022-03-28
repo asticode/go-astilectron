@@ -2,17 +2,13 @@ package astilectron
 
 import (
 	"context"
-	"fmt"
+	testingHelper "github.com/asticode/go-astilectron/pkg/testing"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"log"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func testProvisionerSuccessful(t *testing.T, p Paths, osName, arch, versionAstilectron, versionElectron string) {
@@ -125,73 +121,47 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 }
 
 func TestZipShouldRemove(t *testing.T) {
-	l := log.New(log.Writer(), log.Prefix(), log.Flags())
+	var o = Options{
+		DataDirectoryPath: mockedTempPath(),
+	}
 
-	appName := "Test"
-	dataDir, _ := filepath.Abs("./testdata/tmp")
-	vendorDir := filepath.Join(dataDir, "vendor") // https://github.com/CarsonSlovoka/go-astilectron/blob/e7796e5/paths.go#L56
-	astilectronDownloadDst := filepath.Join(vendorDir, fmt.Sprintf("astilectron-v%s.zip", DefaultVersionAstilectron))
-	astilectronDir := filepath.Join(vendorDir, fmt.Sprintf("astilectron"))
-	electronDownloadDst := filepath.Join(vendorDir, fmt.Sprintf("electron-%s-%s-v%s.zip", runtime.GOOS, runtime.GOARCH, DefaultVersionElectron))
-	electronDir := filepath.Join(vendorDir, fmt.Sprintf("electron-%s-%s", runtime.GOOS, runtime.GOARCH))
+	// Make sure the test directory doesn't exist.
+	if err := os.RemoveAll(o.DataDirectoryPath); err != nil && !os.IsNotExist(err) {
+		t.FailNow()
+	}
+	defer os.RemoveAll(o.DataDirectoryPath)
 
-	t.Log("Make sure the test directory doesn't exist.")
-	if err := os.RemoveAll(dataDir); err != nil && !os.IsNotExist(err) {
+	a, err := New(&testingHelper.StdLogger{T: t}, o)
+	if err != nil {
+		t.Fatalf("main: creating astilectron failed: %s", err.Error())
+	}
+
+	p := a.Paths()
+	astilectronDir := p.astilectronDownloadDst[0 : len(p.astilectronDownloadDst)-len(a.GetVersionAstilectron())-6] // 6: -v.zip // astilectron-v%s.zip => astilectron
+	electronDir := p.electronDownloadDst[0 : len(p.electronDownloadDst)-len(a.GetVersionElectron())-6]             // electron-%s-%s-v%s.zip => electron-%s-%s
+	if err != nil {
 		t.FailNow()
 	}
 
-	t.Logf("Create a directory for test only:\n%s\n", dataDir)
-	if err := os.MkdirAll(dataDir, os.FileMode(0666)); err != nil {
-		t.Fatalf(err.Error())
+	if err = a.provision(); err != nil {
+		t.FailNow()
 	}
 
-	defer func() {
-		t.Log("Remove the test directory after the test was done.")
-		if err := os.RemoveAll(dataDir); err != nil {
-			t.Fatalf(err.Error())
-		}
-	}()
-
-	{
-		t.Log("common process")
-		a, err := New(l, Options{
-			AppName:           appName,
-			DataDirectoryPath: dataDir,
-		})
-		if err != nil {
-			t.Fatalf("main: creating astilectron failed: %s", err.Error())
-		}
-		defer a.Close()
-
-		a.HandleSignals()
-
-		if err = a.Start(); err != nil {
-			t.Fatalf("main: starting astilectron failed: %s", err.Error())
-		}
-
-		// Stop the app immediately since we care about the file only to avoid access being denied. (delete)
-		a.Stop()
-		time.Sleep(10 * time.Second)
-		t.Log("astilectron Close")
+	// Check UnZip successful
+	if _, err := os.Stat(astilectronDir); os.IsNotExist(err) {
+		t.Fatalf("%v", err)
 	}
 
-	{
-		t.Log("Check UnZip successful")
-		if _, err := os.Stat(astilectronDir); os.IsNotExist(err) {
-			t.Fatalf(err.Error())
-		}
+	if _, err := os.Stat(electronDir); os.IsNotExist(err) {
+		t.Fatalf("%v", err)
+	}
 
-		if _, err := os.Stat(electronDir); os.IsNotExist(err) {
-			t.Fatalf(err.Error())
-		}
+	// Check Zip doesn't exist
+	if _, err := os.Stat(p.AstilectronDownloadDst()); !os.IsNotExist(err) {
+		t.Fatalf("%v", err)
+	}
 
-		t.Log("Check Zip doesn't exist")
-		if _, err := os.Stat(astilectronDownloadDst); !os.IsNotExist(err) {
-			t.Fatalf(err.Error())
-		}
-
-		if _, err := os.Stat(electronDownloadDst); !os.IsNotExist(err) {
-			t.Fatalf(err.Error())
-		}
+	if _, err := os.Stat(p.ElectronDownloadDst()); !os.IsNotExist(err) {
+		t.Fatalf("%v", err)
 	}
 }
