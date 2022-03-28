@@ -45,9 +45,9 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 		}
 		return func() (err error) {
 			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
-				err = fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
+				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
 			}
-			return
+			return nil
 		}, err
 	}
 	dp.moverElectron = func(ctx context.Context, p Paths) (closeFunc func() error, err error) {
@@ -56,9 +56,9 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 		}
 		return func() (err error) {
 			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
-				err = fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
+				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
 			}
-			return
+			return nil
 		}, err
 	}
 	return
@@ -200,6 +200,9 @@ func (p *defaultProvisioner) provisionPackage(ctx context.Context, paths Paths, 
 
 	// Make sure to close
 	defer func() {
+		if closeFunc == nil {
+			return
+		}
 		if err := closeFunc(); err != nil {
 			// Only log the error
 			p.l.Error(fmt.Errorf("closing failed: %w", err))
@@ -356,9 +359,9 @@ func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron stri
 		}
 		return func() (err error) {
 			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
-				err = fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
+				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
 			}
-			return
+			return nil
 		}, err
 	}
 	dp.moverElectron = func(ctx context.Context, p Paths) (closeFunc func() error, err error) {
@@ -367,9 +370,9 @@ func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron stri
 		}
 		return func() (err error) {
 			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
-				err = fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
+				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
 			}
-			return
+			return nil
 		}, err
 	}
 	return dp
