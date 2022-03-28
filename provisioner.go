@@ -47,6 +47,7 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
 			}
+			dp.l.Debugf("Remove download file: %s", p.AstilectronDownloadDst())
 			return nil
 		}, err
 	}
@@ -58,6 +59,7 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
 			}
+			dp.l.Debugf("Remove download file: %s", p.ElectronDownloadDst())
 			return nil
 		}, err
 	}
@@ -361,6 +363,7 @@ func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron stri
 			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
 			}
+			dp.l.Debugf("Remove download file: %s", p.AstilectronDownloadDst())
 			return nil
 		}, err
 	}
@@ -372,6 +375,7 @@ func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron stri
 			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
 			}
+			dp.l.Debugf("Remove download file: %s", p.ElectronDownloadDst())
 			return nil
 		}, err
 	}
