@@ -137,22 +137,17 @@ func TestZipShouldRemove(t *testing.T) {
 	}
 
 	p := a.Paths()
-	astilectronDir := p.astilectronDownloadDst[0 : len(p.astilectronDownloadDst)-len(a.GetVersionAstilectron())-6] // 6: -v.zip // astilectron-v%s.zip => astilectron
-	electronDir := p.electronDownloadDst[0 : len(p.electronDownloadDst)-len(a.GetVersionElectron())-6]             // electron-%s-%s-v%s.zip => electron-%s-%s
-	if err != nil {
-		t.FailNow()
-	}
 
 	if err = a.provision(); err != nil {
 		t.FailNow()
 	}
 
 	// Check UnZip successful
-	if _, err := os.Stat(astilectronDir); os.IsNotExist(err) {
+	if _, err := os.Stat(p.AstilectronDirectory()); os.IsNotExist(err) {
 		t.Fatalf("%v", err)
 	}
 
-	if _, err := os.Stat(electronDir); os.IsNotExist(err) {
+	if _, err := os.Stat(p.ElectronDirectory()); os.IsNotExist(err) {
 		t.Fatalf("%v", err)
 	}
 
