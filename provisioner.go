@@ -44,10 +44,10 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 			return nil, fmt.Errorf("downloading %s into %s failed: %w", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst(), err)
 		}
 		return func() (err error) {
+			dp.l.Debugf("removing %s", p.AstilectronDownloadDst())
 			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
 			}
-			dp.l.Debugf("Remove download file: %s", p.AstilectronDownloadDst())
 			return nil
 		}, err
 	}
@@ -56,10 +56,10 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 			return nil, fmt.Errorf("downloading %s into %s failed: %w", p.ElectronDownloadSrc(), p.ElectronDownloadDst(), err)
 		}
 		return func() (err error) {
+			dp.l.Debugf("removing %s", p.ElectronDownloadDst())
 			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
 			}
-			dp.l.Debugf("Remove download file: %s", p.ElectronDownloadDst())
 			return nil
 		}, err
 	}
@@ -360,10 +360,10 @@ func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron stri
 			return nil, fmt.Errorf("disembedding %s into %s failed: %w", pathAstilectron, p.AstilectronDownloadDst(), err)
 		}
 		return func() (err error) {
+			dp.l.Debugf("removing %s", p.AstilectronDownloadDst())
 			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
 			}
-			dp.l.Debugf("Remove download file: %s", p.AstilectronDownloadDst())
 			return nil
 		}, err
 	}
@@ -372,10 +372,10 @@ func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron stri
 			return nil, fmt.Errorf("disembedding %s into %s failed: %w", pathElectron, p.ElectronDownloadDst(), err)
 		}
 		return func() (err error) {
+			dp.l.Debugf("removing %s", p.ElectronDownloadDst())
 			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
 				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
 			}
-			dp.l.Debugf("Remove download file: %s", p.ElectronDownloadDst())
 			return nil
 		}, err
 	}
