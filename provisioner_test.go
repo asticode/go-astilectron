@@ -120,26 +120,26 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
 }
 
-func TestZipShouldRemove(t *testing.T) {
+func TestRemoveDownloadDst(t *testing.T) {
 	var o = Options{
 		DataDirectoryPath: mockedTempPath(),
 	}
 
 	// Make sure the test directory doesn't exist.
 	if err := os.RemoveAll(o.DataDirectoryPath); err != nil && !os.IsNotExist(err) {
-		t.FailNow()
+		t.Fatalf("main: removing %s failed: %s", o.DataDirectoryPath, err)
 	}
 	defer os.RemoveAll(o.DataDirectoryPath)
 
 	a, err := New(astikit.AdaptTestLogger(t), o)
 	if err != nil {
-		t.Fatalf("main: creating astilectron failed: %s", err.Error())
+		t.Fatalf("main: creating astilectron failed: %s", err)
 	}
 
 	p := a.Paths()
 
 	if err = a.provision(); err != nil {
-		t.FailNow()
+		t.Fatalf("main: provisionning failed: %s", err)
 	}
 
 	// Check UnZip successful
