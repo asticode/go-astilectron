@@ -2,13 +2,13 @@ package astilectron
 
 import (
 	"context"
+	"github.com/asticode/go-astikit"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func testProvisionerSuccessful(t *testing.T, p Paths, osName, arch, versionAstilectron, versionElectron string) {
@@ -118,4 +118,45 @@ func TestNewDisembedderProvisioner(t *testing.T) {
 	err = pvb.Provision(context.Background(), "", "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron, *p)
 	assert.NoError(t, err)
 	testProvisionerSuccessful(t, *p, "linux", "amd64", DefaultVersionAstilectron, DefaultVersionElectron)
+}
+
+func TestRemoveDownloadDst(t *testing.T) {
+	var o = Options{
+		DataDirectoryPath: mockedTempPath(),
+	}
+
+	// Make sure the test directory doesn't exist.
+	if err := os.RemoveAll(o.DataDirectoryPath); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("main: removing %s failed: %s", o.DataDirectoryPath, err)
+	}
+	defer os.RemoveAll(o.DataDirectoryPath)
+
+	a, err := New(astikit.AdaptTestLogger(t), o)
+	if err != nil {
+		t.Fatalf("main: creating astilectron failed: %s", err)
+	}
+
+	p := a.Paths()
+
+	if err = a.provision(); err != nil {
+		t.Fatalf("main: provisionning failed: %s", err)
+	}
+
+	// Check UnZip successful
+	if _, err := os.Stat(p.AstilectronDirectory()); os.IsNotExist(err) {
+		t.Fatalf("%v", err)
+	}
+
+	if _, err := os.Stat(p.ElectronDirectory()); os.IsNotExist(err) {
+		t.Fatalf("%v", err)
+	}
+
+	// Check Zip doesn't exist
+	if _, err := os.Stat(p.AstilectronDownloadDst()); !os.IsNotExist(err) {
+		t.Fatalf("%v", err)
+	}
+
+	if _, err := os.Stat(p.ElectronDownloadDst()); !os.IsNotExist(err) {
+		t.Fatalf("%v", err)
+	}
 }

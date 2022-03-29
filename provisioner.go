@@ -23,7 +23,7 @@ type Provisioner interface {
 }
 
 // mover is a function that moves a package
-type mover func(ctx context.Context, p Paths) error
+type mover func(ctx context.Context, p Paths) (func() error, error)
 
 // defaultProvisioner represents the default provisioner
 type defaultProvisioner struct {
@@ -39,17 +39,29 @@ func newDefaultProvisioner(l astikit.StdLogger) (dp *defaultProvisioner) {
 		},
 	})
 	dp = &defaultProvisioner{l: astikit.AdaptStdLogger(l)}
-	dp.moverAstilectron = func(ctx context.Context, p Paths) (err error) {
+	dp.moverAstilectron = func(ctx context.Context, p Paths) (closeFunc func() error, err error) {
 		if err = Download(ctx, dp.l, d, p.AstilectronDownloadSrc(), p.AstilectronDownloadDst()); err != nil {
-			return fmt.Errorf("downloading %s into %s failed: %w", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst(), err)
+			return nil, fmt.Errorf("downloading %s into %s failed: %w", p.AstilectronDownloadSrc(), p.AstilectronDownloadDst(), err)
 		}
-		return
+		return func() (err error) {
+			dp.l.Debugf("removing %s", p.AstilectronDownloadDst())
+			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
+				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
+			}
+			return nil
+		}, err
 	}
-	dp.moverElectron = func(ctx context.Context, p Paths) (err error) {
+	dp.moverElectron = func(ctx context.Context, p Paths) (closeFunc func() error, err error) {
 		if err = Download(ctx, dp.l, d, p.ElectronDownloadSrc(), p.ElectronDownloadDst()); err != nil {
-			return fmt.Errorf("downloading %s into %s failed: %w", p.ElectronDownloadSrc(), p.ElectronDownloadDst(), err)
+			return nil, fmt.Errorf("downloading %s into %s failed: %w", p.ElectronDownloadSrc(), p.ElectronDownloadDst(), err)
 		}
-		return
+		return func() (err error) {
+			dp.l.Debugf("removing %s", p.ElectronDownloadDst())
+			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
+				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
+			}
+			return nil
+		}, err
 	}
 	return
 }
@@ -183,9 +195,22 @@ func (p *defaultProvisioner) provisionPackage(ctx context.Context, paths Paths, 
 	}
 
 	// Move
-	if err = m(ctx, paths); err != nil {
+	var closeFunc func() error
+	if closeFunc, err = m(ctx, paths); err != nil {
 		return fmt.Errorf("moving %s failed: %w", name, err)
 	}
+
+	// Make sure to close
+	defer func() {
+		if closeFunc == nil {
+			return
+		}
+		if err := closeFunc(); err != nil {
+			// Only log the error
+			p.l.Error(fmt.Errorf("closing failed: %w", err))
+			return
+		}
+	}()
 
 	// Create directory
 	p.l.Debugf("Creating directory %s", pathDirectory)
@@ -330,17 +355,29 @@ type Disembedder func(src string) ([]byte, error)
 // NewDisembedderProvisioner creates a provisioner that can provision based on embedded data
 func NewDisembedderProvisioner(d Disembedder, pathAstilectron, pathElectron string, l astikit.StdLogger) Provisioner {
 	dp := &defaultProvisioner{l: astikit.AdaptStdLogger(l)}
-	dp.moverAstilectron = func(ctx context.Context, p Paths) (err error) {
+	dp.moverAstilectron = func(ctx context.Context, p Paths) (closeFunc func() error, err error) {
 		if err = Disembed(ctx, dp.l, d, pathAstilectron, p.AstilectronDownloadDst()); err != nil {
-			return fmt.Errorf("disembedding %s into %s failed: %w", pathAstilectron, p.AstilectronDownloadDst(), err)
+			return nil, fmt.Errorf("disembedding %s into %s failed: %w", pathAstilectron, p.AstilectronDownloadDst(), err)
 		}
-		return
+		return func() (err error) {
+			dp.l.Debugf("removing %s", p.AstilectronDownloadDst())
+			if err = os.Remove(p.AstilectronDownloadDst()); err != nil {
+				return fmt.Errorf("removing %s failed: %w", p.AstilectronDownloadDst(), err)
+			}
+			return nil
+		}, err
 	}
-	dp.moverElectron = func(ctx context.Context, p Paths) (err error) {
+	dp.moverElectron = func(ctx context.Context, p Paths) (closeFunc func() error, err error) {
 		if err = Disembed(ctx, dp.l, d, pathElectron, p.ElectronDownloadDst()); err != nil {
-			return fmt.Errorf("disembedding %s into %s failed: %w", pathElectron, p.ElectronDownloadDst(), err)
+			return nil, fmt.Errorf("disembedding %s into %s failed: %w", pathElectron, p.ElectronDownloadDst(), err)
 		}
-		return
+		return func() (err error) {
+			dp.l.Debugf("removing %s", p.ElectronDownloadDst())
+			if err = os.Remove(p.ElectronDownloadDst()); err != nil {
+				return fmt.Errorf("removing %s failed: %w", p.ElectronDownloadDst(), err)
+			}
+			return nil
+		}, err
 	}
 	return dp
 }
