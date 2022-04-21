@@ -38,6 +38,7 @@ const (
 	EventNameWindowCmdWebContentsCloseDevTools        = "window.cmd.web.contents.close.dev.tools"
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
+	EventNameWindowCmdSetAlwaysOnTop                  = "window.cmd.set.always.on.top"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
 	EventNameWindowEventContentProtectionSet          = "window.event.content.protection.set"
@@ -60,6 +61,7 @@ const (
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
+	EventNameWindowEventAlwaysOnTopChanged            = "window.event.always.on.top.changed"
 )
 
 // Title bar styles
@@ -457,6 +459,18 @@ func (w *Window) OpenDevTools() (err error) {
 		return
 	}
 	return w.w.write(Event{Name: EventNameWindowCmdWebContentsOpenDevTools, TargetID: w.id})
+}
+
+// SetAlwaysOnTop sets whether the window should show always on top of other windows.
+func (w *Window) SetAlwaysOnTop(flag bool) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	w.m.Lock()
+	w.o.AlwaysOnTop = astikit.BoolPtr(flag)
+	w.m.Unlock()
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetAlwaysOnTop, TargetID: w.id, Enable: astikit.BoolPtr(flag)}, EventNameWindowEventAlwaysOnTopChanged)
+	return
 }
 
 // Resize resizes the window
