@@ -253,10 +253,12 @@ func newWindow(ctx context.Context, l astikit.SeverityLogger, o Options, p Paths
 		return func(e Event) (deleteListener bool) {
 			w.m.Lock()
 			defer w.m.Unlock()
-			w.o.X = e.Bounds.X
-			w.o.Y = e.Bounds.Y
-			w.o.Width = e.Bounds.Width
-			w.o.Height = e.Bounds.Height
+			if w.o != nil && e.Bounds != nil {
+				w.o.X = e.Bounds.X
+				w.o.Y = e.Bounds.Y
+				w.o.Width = e.Bounds.Width
+				w.o.Height = e.Bounds.Height
+			}
 			return
 		}
 	}
