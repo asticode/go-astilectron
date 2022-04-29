@@ -263,6 +263,7 @@ func newWindow(ctx context.Context, l astikit.SeverityLogger, o Options, p Paths
 		}
 	}
 
+	w.On(EventNameWindowEventDidFinishLoad, updateBoundsFunc(w))
 	w.On(EventNameWindowEventMaximize, updateBoundsFunc(w))
 	w.On(EventNameWindowEventMove, updateBoundsFunc(w))
 	w.On(EventNameWindowEventMoved, updateBoundsFunc(w))
