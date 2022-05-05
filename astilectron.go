@@ -13,7 +13,7 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout   = 30 * time.Second
-	DefaultVersionAstilectron = "0.52.0"
+	DefaultVersionAstilectron = "0.53.0"
 	DefaultVersionElectron    = "11.4.3"
 )
 
@@ -222,7 +222,7 @@ func (a *Astilectron) listenTCP() (err error) {
 
 // watchNoAccept checks whether a TCP connection is accepted quickly enough
 func (a *Astilectron) watchNoAccept(timeout time.Duration, chanAccepted chan bool) {
-	//check timeout
+	// check timeout
 	if timeout == 0 {
 		timeout = DefaultAcceptTCPTimeout
 	}
