@@ -25,6 +25,6 @@ func TestNotification_Actions(t *testing.T) {
 	}, true, d, i, w)
 
 	// Actions
-	testObjectAction(t, func() error { return n.Create() }, n.object, wrt, "{\"name\":\""+eventNameNotificationCmdCreate+"\",\"targetID\":\""+n.id+"\",\"notificationOptions\":{\"body\":\"body\",\"hasReply\":true,\"icon\":\"/path/to/icon\",\"replyPlaceholder\":\"placeholder\",\"silent\":true,\"sound\":\"sound\",\"subtitle\":\"subtitle\",\"title\":\"title\"}}\n", EventNameNotificationEventCreated)
-	testObjectAction(t, func() error { return n.Show() }, n.object, wrt, "{\"name\":\""+eventNameNotificationCmdShow+"\",\"targetID\":\""+n.id+"\"}\n", EventNameNotificationEventShown)
+	testObjectAction(t, func() error { return n.Create() }, n.object, wrt, "{\"name\":\""+eventNameNotificationCmdCreate+"\",\"targetID\":\""+n.id+"\",\"notificationOptions\":{\"body\":\"body\",\"hasReply\":true,\"icon\":\"/path/to/icon\",\"replyPlaceholder\":\"placeholder\",\"silent\":true,\"sound\":\"sound\",\"subtitle\":\"subtitle\",\"title\":\"title\"}}\n", EventNameNotificationEventCreated, nil)
+	testObjectAction(t, func() error { return n.Show() }, n.object, wrt, "{\"name\":\""+eventNameNotificationCmdShow+"\",\"targetID\":\""+n.id+"\"}\n", EventNameNotificationEventShown, nil)
 }

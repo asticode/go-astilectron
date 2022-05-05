@@ -92,21 +92,21 @@ func TestSubMenu_Actions(t *testing.T) {
 
 	// Actions
 	var mi = s.NewItem(&MenuItemOptions{Label: astikit.StrPtr("1")})
-	testObjectAction(t, func() error { return s.Append(mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdAppend+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"3\",\"options\":{\"label\":\"1\"},\"rootId\":\""+targetIDApp+"\"}}\n", EventNameSubMenuEventAppended)
+	testObjectAction(t, func() error { return s.Append(mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdAppend+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"3\",\"options\":{\"label\":\"1\"},\"rootId\":\""+targetIDApp+"\"}}\n", EventNameSubMenuEventAppended, nil)
 	assert.Len(t, s.items, 2)
 	assert.Equal(t, "1", *s.items[1].o.Label)
 	mi = s.NewItem(&MenuItemOptions{Label: astikit.StrPtr("2")})
 	err := s.Insert(3, mi)
 	assert.EqualError(t, err, "submenu has 2 items, position 3 is invalid")
-	testObjectAction(t, func() error { return s.Insert(1, mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdInsert+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"4\",\"options\":{\"label\":\"2\"},\"rootId\":\""+targetIDApp+"\"},\"menuItemPosition\":1}\n", EventNameSubMenuEventInserted)
+	testObjectAction(t, func() error { return s.Insert(1, mi) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdInsert+"\",\"targetID\":\""+s.id+"\",\"menuItem\":{\"id\":\"4\",\"options\":{\"label\":\"2\"},\"rootId\":\""+targetIDApp+"\"},\"menuItemPosition\":1}\n", EventNameSubMenuEventInserted, nil)
 	assert.Len(t, s.items, 3)
 	assert.Equal(t, "2", *s.items[1].o.Label)
 	testObjectAction(t, func() error {
 		return s.Popup(&MenuPopupOptions{PositionOptions: PositionOptions{X: astikit.IntPtr(1), Y: astikit.IntPtr(2)}})
-	}, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdPopup+"\",\"targetID\":\""+s.id+"\",\"menuPopupOptions\":{\"x\":1,\"y\":2}}\n", EventNameSubMenuEventPoppedUp)
+	}, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdPopup+"\",\"targetID\":\""+s.id+"\",\"menuPopupOptions\":{\"x\":1,\"y\":2}}\n", EventNameSubMenuEventPoppedUp, nil)
 	testObjectAction(t, func() error {
 		return s.PopupInWindow(&Window{object: &object{id: "2"}}, &MenuPopupOptions{PositionOptions: PositionOptions{X: astikit.IntPtr(1), Y: astikit.IntPtr(2)}})
-	}, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdPopup+"\",\"targetID\":\""+s.id+"\",\"menuPopupOptions\":{\"x\":1,\"y\":2},\"windowId\":\"2\"}\n", EventNameSubMenuEventPoppedUp)
-	testObjectAction(t, func() error { return s.ClosePopup() }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdClosePopup+"\",\"targetID\":\""+s.id+"\"}\n", EventNameSubMenuEventClosedPopup)
-	testObjectAction(t, func() error { return s.ClosePopupInWindow(&Window{object: &object{id: "2"}}) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdClosePopup+"\",\"targetID\":\""+s.id+"\",\"windowId\":\"2\"}\n", EventNameSubMenuEventClosedPopup)
+	}, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdPopup+"\",\"targetID\":\""+s.id+"\",\"menuPopupOptions\":{\"x\":1,\"y\":2},\"windowId\":\"2\"}\n", EventNameSubMenuEventPoppedUp, nil)
+	testObjectAction(t, func() error { return s.ClosePopup() }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdClosePopup+"\",\"targetID\":\""+s.id+"\"}\n", EventNameSubMenuEventClosedPopup, nil)
+	testObjectAction(t, func() error { return s.ClosePopupInWindow(&Window{object: &object{id: "2"}}) }, s.object, wrt, "{\"name\":\""+EventNameSubMenuCmdClosePopup+"\",\"targetID\":\""+s.id+"\",\"windowId\":\"2\"}\n", EventNameSubMenuEventClosedPopup, nil)
 }
