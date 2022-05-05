@@ -441,10 +441,6 @@ func (w *Window) Move(x, y int) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.X = astikit.IntPtr(x)
-	w.o.Y = astikit.IntPtr(y)
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: astikit.IntPtr(x), Y: astikit.IntPtr(y)}}, EventNameWindowEventMove)
 	return
 }
@@ -525,10 +521,6 @@ func (w *Window) Resize(width, height int) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.Height = astikit.IntPtr(height)
-	w.o.Width = astikit.IntPtr(width)
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResize)
 	return
 }
@@ -538,10 +530,6 @@ func (w *Window) ResizeContent(width, height int) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.Height = astikit.IntPtr(height)
-	w.o.Width = astikit.IntPtr(width)
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResizeContent, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResizeContent)
 	return
 }
@@ -551,12 +539,6 @@ func (w *Window) SetBounds(r RectangleOptions) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.Height = r.Height
-	w.o.Width = r.Width
-	w.o.X = r.X
-	w.o.Y = r.Y
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetBounds, TargetID: w.id, Bounds: &r}, EventNameWindowEventResize)
 	return
 }
