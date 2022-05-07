@@ -161,6 +161,11 @@ func (a *Astilectron) On(eventName string, l Listener) {
 	a.dispatcher.addListener(targetIDApp, eventName, l)
 }
 
+// OnPowerEvent implements the Listenable interface for power related events
+func (a *Astilectron) OnPowerEvent(eventName string, l Listener) {
+	a.dispatcher.addListener(targetIDPower, eventName, l)
+}
+
 // Start starts Astilectron
 func (a *Astilectron) Start() (err error) {
 	// Log
