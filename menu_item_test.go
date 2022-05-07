@@ -25,9 +25,9 @@ func TestMenuItem_Actions(t *testing.T) {
 	var mi = newMenuItem(context.Background(), targetIDApp, &MenuItemOptions{Label: astikit.StrPtr("label")}, d, i, w)
 
 	// Actions
-	testObjectAction(t, func() error { return mi.SetChecked(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetChecked+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"checked\":true}}\n", EventNameMenuItemEventCheckedSet)
-	testObjectAction(t, func() error { return mi.SetEnabled(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetEnabled+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"enabled\":true}}\n", EventNameMenuItemEventEnabledSet)
-	testObjectAction(t, func() error { return mi.SetLabel("test") }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetLabel+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"label\":\"test\"}}\n", EventNameMenuItemEventLabelSet)
-	testObjectAction(t, func() error { return mi.SetVisible(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetVisible+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"visible\":true}}\n", EventNameMenuItemEventVisibleSet)
+	testObjectAction(t, func() error { return mi.SetChecked(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetChecked+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"checked\":true}}\n", EventNameMenuItemEventCheckedSet, nil)
+	testObjectAction(t, func() error { return mi.SetEnabled(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetEnabled+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"enabled\":true}}\n", EventNameMenuItemEventEnabledSet, nil)
+	testObjectAction(t, func() error { return mi.SetLabel("test") }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetLabel+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"label\":\"test\"}}\n", EventNameMenuItemEventLabelSet, nil)
+	testObjectAction(t, func() error { return mi.SetVisible(true) }, mi.object, wrt, "{\"name\":\""+EventNameMenuItemCmdSetVisible+"\",\"targetID\":\""+mi.id+"\",\"menuItemOptions\":{\"visible\":true}}\n", EventNameMenuItemEventVisibleSet, nil)
 
 }

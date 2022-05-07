@@ -50,6 +50,7 @@ const (
 	eventNameWindowEventMessageCallback               = "window.event.message.callback"
 	EventNameWindowEventMinimize                      = "window.event.minimize"
 	EventNameWindowEventMove                          = "window.event.move"
+	EventNameWindowEventMoved                         = "window.event.moved"
 	EventNameWindowEventReadyToShow                   = "window.event.ready.to.show"
 	EventNameWindowEventResize                        = "window.event.resize"
 	EventNameWindowEventResizeContent                 = "window.event.resize.content"
@@ -59,6 +60,7 @@ const (
 	EventNameWindowEventUnresponsive                  = "window.event.unresponsive"
 	EventNameWindowEventDidGetRedirectRequest         = "window.event.did.get.redirect.request"
 	EventNameWindowEventWebContentsExecutedJavaScript = "window.event.web.contents.executed.javascript"
+	EventNameWindowEventWillMove                      = "window.event.will.move"
 	EventNameWindowEventWillNavigate                  = "window.event.will.navigate"
 	EventNameWindowEventUpdatedCustomOptions          = "window.event.updated.custom.options"
 	EventNameWindowEventAlwaysOnTopChanged            = "window.event.always.on.top.changed"
@@ -246,6 +248,30 @@ func newWindow(ctx context.Context, l astikit.SeverityLogger, o Options, p Paths
 		return
 	})
 
+	// Bounds change handling, updates the internal WindowOption's bounds
+	updateBoundsFunc := func(w *Window) func(e Event) (deleteListener bool) {
+		return func(e Event) (deleteListener bool) {
+			w.m.Lock()
+			defer w.m.Unlock()
+			if w.o != nil && e.Bounds != nil {
+				w.o.X = e.Bounds.X
+				w.o.Y = e.Bounds.Y
+				w.o.Width = e.Bounds.Width
+				w.o.Height = e.Bounds.Height
+			}
+			return
+		}
+	}
+
+	w.On(EventNameWindowEventDidFinishLoad, updateBoundsFunc(w))
+	w.On(EventNameWindowEventMaximize, updateBoundsFunc(w))
+	w.On(EventNameWindowEventMove, updateBoundsFunc(w))
+	w.On(EventNameWindowEventMoved, updateBoundsFunc(w))
+	w.On(EventNameWindowEventResize, updateBoundsFunc(w))
+	w.On(EventNameWindowEventResizeContent, updateBoundsFunc(w))
+	w.On(EventNameWindowEventUnmaximize, updateBoundsFunc(w))
+	w.On(EventNameWindowEventWillMove, updateBoundsFunc(w))
+
 	// Basic parse
 	if w.url, err = stdUrl.Parse(url); err != nil {
 		err = fmt.Errorf("std parsing of url %s failed: %w", url, err)
@@ -263,6 +289,7 @@ func newWindow(ctx context.Context, l astikit.SeverityLogger, o Options, p Paths
 		// Set url
 		w.url = &stdUrl.URL{Path: filepath.ToSlash(url), Scheme: "file"}
 	}
+
 	return
 }
 
@@ -277,6 +304,26 @@ func (w *Window) Blur() (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdBlur, TargetID: w.id}, EventNameWindowEventBlur)
+	return
+}
+
+// Bounds return the window bounds
+func (w *Window) Bounds() (rect Rectangle, err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	w.m.Lock()
+	defer w.m.Unlock()
+
+	if w.o.Width != nil && w.o.Height != nil {
+		rect.Size.Width = *w.o.Width
+		rect.Size.Height = *w.o.Height
+	}
+
+	if w.o.X != nil && w.o.Y != nil {
+		rect.Position.X = *w.o.X
+		rect.Position.Y = *w.o.Y
+	}
 	return
 }
 
@@ -394,10 +441,6 @@ func (w *Window) Move(x, y int) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.X = astikit.IntPtr(x)
-	w.o.Y = astikit.IntPtr(y)
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: astikit.IntPtr(x), Y: astikit.IntPtr(y)}}, EventNameWindowEventMove)
 	return
 }
@@ -478,10 +521,6 @@ func (w *Window) Resize(width, height int) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.Height = astikit.IntPtr(height)
-	w.o.Width = astikit.IntPtr(width)
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResize, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResize)
 	return
 }
@@ -491,10 +530,6 @@ func (w *Window) ResizeContent(width, height int) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.Height = astikit.IntPtr(height)
-	w.o.Width = astikit.IntPtr(width)
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdResizeContent, TargetID: w.id, WindowOptions: &WindowOptions{Height: astikit.IntPtr(height), Width: astikit.IntPtr(width)}}, EventNameWindowEventResizeContent)
 	return
 }
@@ -504,12 +539,6 @@ func (w *Window) SetBounds(r RectangleOptions) (err error) {
 	if err = w.ctx.Err(); err != nil {
 		return
 	}
-	w.m.Lock()
-	w.o.Height = r.Height
-	w.o.Width = r.Width
-	w.o.X = r.X
-	w.o.Y = r.Y
-	w.m.Unlock()
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetBounds, TargetID: w.id, Bounds: &r}, EventNameWindowEventResize)
 	return
 }

@@ -20,9 +20,9 @@ func TestTray_Actions(t *testing.T) {
 	}, d, i, w)
 
 	// Actions
-	testObjectAction(t, func() error { return tr.Create() }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdCreate+"\",\"targetID\":\""+tr.id+"\",\"trayOptions\":{\"image\":\"/path/to/image\",\"tooltip\":\"tooltip\"}}\n", EventNameTrayEventCreated)
-	testObjectAction(t, func() error { return tr.SetImage("test") }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdSetImage+"\",\"targetID\":\""+tr.id+"\",\"image\":\"test\"}\n", EventNameTrayEventImageSet)
-	testObjectAction(t, func() error { return tr.Destroy() }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdDestroy+"\",\"targetID\":\""+tr.id+"\"}\n", EventNameTrayEventDestroyed)
+	testObjectAction(t, func() error { return tr.Create() }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdCreate+"\",\"targetID\":\""+tr.id+"\",\"trayOptions\":{\"image\":\"/path/to/image\",\"tooltip\":\"tooltip\"}}\n", EventNameTrayEventCreated, nil)
+	testObjectAction(t, func() error { return tr.SetImage("test") }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdSetImage+"\",\"targetID\":\""+tr.id+"\",\"image\":\"test\"}\n", EventNameTrayEventImageSet, nil)
+	testObjectAction(t, func() error { return tr.Destroy() }, tr.object, wrt, "{\"name\":\""+EventNameTrayCmdDestroy+"\",\"targetID\":\""+tr.id+"\"}\n", EventNameTrayEventDestroyed, nil)
 	assert.True(t, tr.ctx.Err() != nil)
 }
 

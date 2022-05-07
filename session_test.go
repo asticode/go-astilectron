@@ -14,6 +14,6 @@ func TestSession_Actions(t *testing.T) {
 	var s = newSession(context.Background(), d, i, w)
 
 	// Actions
-	testObjectAction(t, func() error { return s.ClearCache() }, s.object, wrt, "{\"name\":\"session.cmd.clear.cache\",\"targetID\":\"1\"}\n", EventNameSessionEventClearedCache)
-	testObjectAction(t, func() error { return s.FlushStorage() }, s.object, wrt, "{\"name\":\"session.cmd.flush.storage\",\"targetID\":\"1\"}\n", EventNameSessionEventFlushedStorage)
+	testObjectAction(t, func() error { return s.ClearCache() }, s.object, wrt, "{\"name\":\"session.cmd.clear.cache\",\"targetID\":\"1\"}\n", EventNameSessionEventClearedCache, nil)
+	testObjectAction(t, func() error { return s.FlushStorage() }, s.object, wrt, "{\"name\":\"session.cmd.flush.storage\",\"targetID\":\"1\"}\n", EventNameSessionEventFlushedStorage, nil)
 }
