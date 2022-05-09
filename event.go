@@ -7,9 +7,8 @@ import (
 
 // Target IDs
 const (
-	targetIDApp   = "app"
-	targetIDDock  = "dock"
-	targetIDPower = "power"
+	targetIDApp  = "app"
+	targetIDDock = "dock"
 )
 
 // Event represents an event
