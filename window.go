@@ -39,12 +39,15 @@ const (
 	EventNameWindowCmdWebContentsOpenDevTools         = "window.cmd.web.contents.open.dev.tools"
 	EventNameWindowCmdWebContentsExecuteJavaScript    = "window.cmd.web.contents.execute.javascript"
 	EventNameWindowCmdSetAlwaysOnTop                  = "window.cmd.set.always.on.top"
+	EventNameWindowCmdSetFullScreen                   = "window.cmd.set.full.screen"
 	EventNameWindowEventBlur                          = "window.event.blur"
 	EventNameWindowEventClosed                        = "window.event.closed"
 	EventNameWindowEventContentProtectionSet          = "window.event.content.protection.set"
 	EventNameWindowEventDidFinishLoad                 = "window.event.did.finish.load"
+	EventNameWindowEventEnterFullScreen               = "window.event.enter.full.screen"
 	EventNameWindowEventFocus                         = "window.event.focus"
 	EventNameWindowEventHide                          = "window.event.hide"
+	EventNameWindowEventLeaveFullScreen               = "window.event.leave.full.screen"
 	EventNameWindowEventMaximize                      = "window.event.maximize"
 	eventNameWindowEventMessage                       = "window.event.message"
 	eventNameWindowEventMessageCallback               = "window.event.message.callback"
@@ -234,6 +237,20 @@ func newWindow(ctx context.Context, l astikit.SeverityLogger, o Options, p Paths
 		return true
 	})
 
+	// Fullscreen state
+	w.On(EventNameWindowEventEnterFullScreen, func(e Event) (deleteListener bool) {
+		w.m.Lock()
+		defer w.m.Unlock()
+		w.o.Fullscreen = astikit.BoolPtr(true)
+		return
+	})
+	w.On(EventNameWindowEventLeaveFullScreen, func(e Event) (deleteListener bool) {
+		w.m.Lock()
+		defer w.m.Unlock()
+		w.o.Fullscreen = astikit.BoolPtr(false)
+		return
+	})
+
 	// Show
 	w.On(EventNameWindowEventHide, func(e Event) (deleteListener bool) {
 		w.m.Lock()
@@ -400,6 +417,16 @@ func (w *Window) Hide() (err error) {
 	return
 }
 
+// IsFullScreen returns whether the window is in full screen mode
+func (w *Window) IsFullScreen() bool {
+	if w.ctx.Err() != nil {
+		return false
+	}
+	w.m.Lock()
+	defer w.m.Unlock()
+	return w.o.Fullscreen != nil && *w.o.Fullscreen
+}
+
 // IsShown returns whether the window is shown
 func (w *Window) IsShown() bool {
 	if w.ctx.Err() != nil {
@@ -549,6 +576,23 @@ func (w *Window) SetContentProtection(enable bool) (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetContentProtection, TargetID: w.id, Enable: astikit.BoolPtr(enable)}, EventNameWindowEventContentProtectionSet)
+	return
+}
+
+// SetFullScreen sets the fullscreen flag of the window
+func (w *Window) SetFullScreen(enable bool) (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+
+	var eventNameDone string
+	if enable {
+		eventNameDone = EventNameWindowEventEnterFullScreen
+	} else {
+		eventNameDone = EventNameWindowEventLeaveFullScreen
+	}
+
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdSetFullScreen, TargetID: w.id, Enable: astikit.BoolPtr(enable)}, eventNameDone)
 	return
 }
 
