@@ -114,6 +114,10 @@ func TestWindow_Actions(t *testing.T) {
 	assert.Equal(t, true, w.IsShown())
 	testObjectAction(t, func() error { return w.UpdateCustomOptions(WindowCustomOptions{HideOnClose: astikit.BoolPtr(true)}) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUpdateCustomOptions+"\",\"targetID\":\""+w.id+"\",\"windowOptions\":{\"alwaysOnTop\":true,\"height\":2,\"show\":true,\"width\":1,\"x\":4,\"y\":6,\"custom\":{\"hideOnClose\":true}}}\n", EventNameWindowEventUpdatedCustomOptions, nil)
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize, nil)
+	testObjectAction(t, func() error { return w.SetFullScreen(true) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdSetFullScreen+"\",\"targetID\":\""+w.id+"\",\"enable\":true}\n", EventNameWindowEventEnterFullScreen, &Event{WindowOptions: &WindowOptions{Fullscreen: astikit.BoolPtr(true)}})
+	assert.Equal(t, true, w.IsFullScreen())
+	testObjectAction(t, func() error { return w.SetFullScreen(false) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdSetFullScreen+"\",\"targetID\":\""+w.id+"\",\"enable\":false}\n", EventNameWindowEventLeaveFullScreen, &Event{WindowOptions: &WindowOptions{Fullscreen: astikit.BoolPtr(false)}})
+	assert.Equal(t, false, w.IsFullScreen())
 	testObjectAction(t, func() error { return w.ExecuteJavaScript("console.log('test');") }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdWebContentsExecuteJavaScript+"\",\"targetID\":\""+w.id+"\",\"code\":\"console.log('test');\"}\n", EventNameWindowEventWebContentsExecutedJavaScript, nil)
 }
 
