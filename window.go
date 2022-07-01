@@ -27,6 +27,7 @@ const (
 	eventNameWindowCmdMessageCallback                 = "window.cmd.message.callback"
 	EventNameWindowCmdMinimize                        = "window.cmd.minimize"
 	EventNameWindowCmdMove                            = "window.cmd.move"
+	EventNameWindowCmdMoveTop                         = "window.cmd.move.top"
 	EventNameWindowCmdResize                          = "window.cmd.resize"
 	EventNameWindowCmdResizeContent                   = "window.cmd.resize.content"
 	EventNameWindowCmdSetBounds                       = "window.cmd.set.bounds"
@@ -54,6 +55,7 @@ const (
 	EventNameWindowEventMinimize                      = "window.event.minimize"
 	EventNameWindowEventMove                          = "window.event.move"
 	EventNameWindowEventMoved                         = "window.event.moved"
+	EventNameWindowEventMovedTop                      = "window.event.moved.top"
 	EventNameWindowEventReadyToShow                   = "window.event.ready.to.show"
 	EventNameWindowEventResize                        = "window.event.resize"
 	EventNameWindowEventResizeContent                 = "window.event.resize.content"
@@ -469,6 +471,15 @@ func (w *Window) Move(x, y int) (err error) {
 		return
 	}
 	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMove, TargetID: w.id, WindowOptions: &WindowOptions{X: astikit.IntPtr(x), Y: astikit.IntPtr(y)}}, EventNameWindowEventMove)
+	return
+}
+
+// MoveTop moves window to top (z-order) regardless of focus
+func (w *Window) MoveTop() (err error) {
+	if err = w.ctx.Err(); err != nil {
+		return
+	}
+	_, err = synchronousEvent(w.ctx, w, w.w, Event{Name: EventNameWindowCmdMoveTop, TargetID: w.id}, EventNameWindowEventMovedTop)
 	return
 }
 
