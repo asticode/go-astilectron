@@ -98,41 +98,42 @@ type Window struct {
 // to fill the struct
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/browser-window.md
 type WindowOptions struct {
-	AcceptFirstMouse       *bool           `json:"acceptFirstMouse,omitempty"`
-	AlwaysOnTop            *bool           `json:"alwaysOnTop,omitempty"`
-	AutoHideMenuBar        *bool           `json:"autoHideMenuBar,omitempty"`
-	BackgroundColor        *string         `json:"backgroundColor,omitempty"`
-	Center                 *bool           `json:"center,omitempty"`
-	Closable               *bool           `json:"closable,omitempty"`
-	DisableAutoHideCursor  *bool           `json:"disableAutoHideCursor,omitempty"`
-	EnableLargerThanScreen *bool           `json:"enableLargerThanScreen,omitempty"`
-	Focusable              *bool           `json:"focusable,omitempty"`
-	Frame                  *bool           `json:"frame,omitempty"`
-	Fullscreen             *bool           `json:"fullscreen,omitempty"`
-	Fullscreenable         *bool           `json:"fullscreenable,omitempty"`
-	HasShadow              *bool           `json:"hasShadow,omitempty"`
-	Height                 *int            `json:"height,omitempty"`
-	Icon                   *string         `json:"icon,omitempty"`
-	Kiosk                  *bool           `json:"kiosk,omitempty"`
-	MaxHeight              *int            `json:"maxHeight,omitempty"`
-	Maximizable            *bool           `json:"maximizable,omitempty"`
-	MaxWidth               *int            `json:"maxWidth,omitempty"`
-	MinHeight              *int            `json:"minHeight,omitempty"`
-	Minimizable            *bool           `json:"minimizable,omitempty"`
-	MinWidth               *int            `json:"minWidth,omitempty"`
-	Modal                  *bool           `json:"modal,omitempty"`
-	Movable                *bool           `json:"movable,omitempty"`
-	Resizable              *bool           `json:"resizable,omitempty"`
-	Show                   *bool           `json:"show,omitempty"`
-	SkipTaskbar            *bool           `json:"skipTaskbar,omitempty"`
-	Title                  *string         `json:"title,omitempty"`
-	TitleBarStyle          *string         `json:"titleBarStyle,omitempty"`
-	Transparent            *bool           `json:"transparent,omitempty"`
-	UseContentSize         *bool           `json:"useContentSize,omitempty"`
-	WebPreferences         *WebPreferences `json:"webPreferences,omitempty"`
-	Width                  *int            `json:"width,omitempty"`
-	X                      *int            `json:"x,omitempty"`
-	Y                      *int            `json:"y,omitempty"`
+	AcceptFirstMouse       *bool                 `json:"acceptFirstMouse,omitempty"`
+	AlwaysOnTop            *bool                 `json:"alwaysOnTop,omitempty"`
+	AutoHideMenuBar        *bool                 `json:"autoHideMenuBar,omitempty"`
+	BackgroundColor        *string               `json:"backgroundColor,omitempty"`
+	Center                 *bool                 `json:"center,omitempty"`
+	Closable               *bool                 `json:"closable,omitempty"`
+	DisableAutoHideCursor  *bool                 `json:"disableAutoHideCursor,omitempty"`
+	EnableLargerThanScreen *bool                 `json:"enableLargerThanScreen,omitempty"`
+	Focusable              *bool                 `json:"focusable,omitempty"`
+	Frame                  *bool                 `json:"frame,omitempty"`
+	Fullscreen             *bool                 `json:"fullscreen,omitempty"`
+	Fullscreenable         *bool                 `json:"fullscreenable,omitempty"`
+	HasShadow              *bool                 `json:"hasShadow,omitempty"`
+	Height                 *int                  `json:"height,omitempty"`
+	Icon                   *string               `json:"icon,omitempty"`
+	Kiosk                  *bool                 `json:"kiosk,omitempty"`
+	MaxHeight              *int                  `json:"maxHeight,omitempty"`
+	Maximizable            *bool                 `json:"maximizable,omitempty"`
+	MaxWidth               *int                  `json:"maxWidth,omitempty"`
+	MinHeight              *int                  `json:"minHeight,omitempty"`
+	Minimizable            *bool                 `json:"minimizable,omitempty"`
+	MinWidth               *int                  `json:"minWidth,omitempty"`
+	Modal                  *bool                 `json:"modal,omitempty"`
+	Movable                *bool                 `json:"movable,omitempty"`
+	Resizable              *bool                 `json:"resizable,omitempty"`
+	Show                   *bool                 `json:"show,omitempty"`
+	SkipTaskbar            *bool                 `json:"skipTaskbar,omitempty"`
+	Title                  *string               `json:"title,omitempty"`
+	TitleBarStyle          *string               `json:"titleBarStyle,omitempty"`
+	TrafficLightPosition   *TrafficLightPosition `json:"trafficLightPosition,omitempty"`
+	Transparent            *bool                 `json:"transparent,omitempty"`
+	UseContentSize         *bool                 `json:"useContentSize,omitempty"`
+	WebPreferences         *WebPreferences       `json:"webPreferences,omitempty"`
+	Width                  *int                  `json:"width,omitempty"`
+	X                      *int                  `json:"x,omitempty"`
+	Y                      *int                  `json:"y,omitempty"`
 
 	// Additional options
 	AppDetails *WindowAppDetails    `json:"appDetails,omitempty"`
@@ -212,6 +213,13 @@ type WebPreferences struct {
 	WebSecurity             *bool                  `json:"webSecurity,omitempty"`
 	WebviewTag              *bool                  `json:"webviewTag,omitempty"`
 	ZoomFactor              *float64               `json:"zoomFactor,omitempty"`
+}
+
+// TrafficLightPosition represents traffic light positions (macOS only)
+// https://www.electronjs.org/docs/latest/tutorial/window-customization#create-frameless-windows
+type TrafficLightPosition struct {
+	X *int `json:"x,omitempty"`
+	Y *int `json:"y,omitempty"`
 }
 
 // newWindow creates a new window
