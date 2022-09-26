@@ -21,6 +21,7 @@ type Event struct {
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
 	AuthInfo            *EventAuthInfo       `json:"authInfo,omitempty"`
+	Args                []string             `json:"args,omitempty"`
 	Badge               string               `json:"badge,omitempty"`
 	BounceType          string               `json:"bounceType,omitempty"`
 	Bounds              *RectangleOptions    `json:"bounds,omitempty"`
@@ -41,10 +42,12 @@ type Event struct {
 	NotificationOptions *NotificationOptions `json:"notificationOptions,omitempty"`
 	Password            string               `json:"password,omitempty"`
 	Path                string               `json:"path,omitempty"`
+	Protocol            string               `json:"protocol,omitempty"`
 	Reply               string               `json:"reply,omitempty"`
 	Request             *EventRequest        `json:"request,omitempty"`
 	SecondInstance      *EventSecondInstance `json:"secondInstance,omitempty"`
 	SessionID           string               `json:"sessionId,omitempty"`
+	Success             *bool                `json:"success,omitempty"`
 	Supported           *Supported           `json:"supported,omitempty"`
 	TrayOptions         *TrayOptions         `json:"trayOptions,omitempty"`
 	URL                 string               `json:"url,omitempty"`
