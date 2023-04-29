@@ -8,15 +8,17 @@ import (
 
 // Tray event names
 const (
-	EventNameTrayCmdCreate          = "tray.cmd.create"
-	EventNameTrayCmdDestroy         = "tray.cmd.destroy"
-	EventNameTrayCmdSetImage        = "tray.cmd.set.image"
-	EventNameTrayEventClicked       = "tray.event.clicked"
-	EventNameTrayEventCreated       = "tray.event.created"
-	EventNameTrayEventDestroyed     = "tray.event.destroyed"
-	EventNameTrayEventDoubleClicked = "tray.event.double.clicked"
-	EventNameTrayEventImageSet      = "tray.event.image.set"
-	EventNameTrayEventRightClicked  = "tray.event.right.clicked"
+	EventNameTrayCmdCreate                = "tray.cmd.create"
+	EventNameTrayCmdDestroy               = "tray.cmd.destroy"
+	EventNameTrayCmdSetImage              = "tray.cmd.set.image"
+	EventNameTrayCmdPopUpContextMenu      = "tray.cmd.popup.contextmenu"
+	EventNameTrayEventClicked             = "tray.event.clicked"
+	EventNameTrayEventCreated             = "tray.event.created"
+	EventNameTrayEventDestroyed           = "tray.event.destroyed"
+	EventNameTrayEventDoubleClicked       = "tray.event.double.clicked"
+	EventNameTrayEventImageSet            = "tray.event.image.set"
+	EventNameTrayEventRightClicked        = "tray.event.right.clicked"
+	EventNameTrayEventPoppedUpContextMenu = "tray.event.poppedup.contextmenu"
 )
 
 // Tray represents a tray
@@ -32,6 +34,12 @@ type Tray struct {
 type TrayOptions struct {
 	Image   *string `json:"image,omitempty"`
 	Tooltip *string `json:"tooltip,omitempty"`
+}
+
+// TrayPopUpOptions represents Tray PopUpContextMenu options
+type TrayPopUpOptions struct {
+	Menu     *Menu
+	Position PositionOptions
 }
 
 // newTray creates a new tray
@@ -81,5 +89,22 @@ func (t *Tray) SetImage(image string) (err error) {
 	}
 	t.o.Image = astikit.StrPtr(image)
 	_, err = synchronousEvent(t.ctx, t, t.w, Event{Name: EventNameTrayCmdSetImage, Image: image, TargetID: t.id}, EventNameTrayEventImageSet)
+	return
+}
+
+// PopUpContextMenu pops up the context menu of the tray icon.
+// When menu is passed, the menu will be shown instead of the tray icon's context menu.
+// The position is only available on Windows, and it is (0, 0) by default.
+// https://www.electronjs.org/docs/latest/api/tray#traypopupcontextmenumenu-position-macos-windows
+func (t *Tray) PopUpContextMenu(p *TrayPopUpOptions) (err error) {
+	var em *EventMenu
+	if err = t.ctx.Err(); err != nil {
+		return
+	}
+	if p.Menu != nil {
+		em = p.Menu.toEvent()
+	}
+	var e = Event{Name: EventNameTrayCmdPopUpContextMenu, TargetID: t.id, Menu: em, MenuPopupOptions: &MenuPopupOptions{PositionOptions: p.Position}}
+	_, err = synchronousEvent(t.ctx, t, t.w, e, EventNameTrayEventPoppedUpContextMenu)
 	return
 }
