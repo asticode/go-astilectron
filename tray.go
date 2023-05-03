@@ -11,14 +11,14 @@ const (
 	EventNameTrayCmdCreate                = "tray.cmd.create"
 	EventNameTrayCmdDestroy               = "tray.cmd.destroy"
 	EventNameTrayCmdSetImage              = "tray.cmd.set.image"
-	EventNameTrayCmdPopUpContextMenu      = "tray.cmd.popup.contextmenu"
+	EventNameTrayCmdPopupContextMenu      = "tray.cmd.popup.context.menu"
 	EventNameTrayEventClicked             = "tray.event.clicked"
 	EventNameTrayEventCreated             = "tray.event.created"
 	EventNameTrayEventDestroyed           = "tray.event.destroyed"
 	EventNameTrayEventDoubleClicked       = "tray.event.double.clicked"
 	EventNameTrayEventImageSet            = "tray.event.image.set"
 	EventNameTrayEventRightClicked        = "tray.event.right.clicked"
-	EventNameTrayEventPoppedUpContextMenu = "tray.event.poppedup.contextmenu"
+	EventNameTrayEventContextMenuPoppedUp = "tray.event.context.menu.popped.up"
 )
 
 // Tray represents a tray
@@ -39,7 +39,7 @@ type TrayOptions struct {
 // TrayPopUpOptions represents Tray PopUpContextMenu options
 type TrayPopUpOptions struct {
 	Menu     *Menu
-	Position PositionOptions
+	Position *PositionOptions
 }
 
 // newTray creates a new tray
@@ -98,13 +98,17 @@ func (t *Tray) SetImage(image string) (err error) {
 // https://www.electronjs.org/docs/latest/api/tray#traypopupcontextmenumenu-position-macos-windows
 func (t *Tray) PopUpContextMenu(p *TrayPopUpOptions) (err error) {
 	var em *EventMenu
+	var mp *MenuPopupOptions
 	if err = t.ctx.Err(); err != nil {
 		return
 	}
 	if p.Menu != nil {
 		em = p.Menu.toEvent()
 	}
-	var e = Event{Name: EventNameTrayCmdPopUpContextMenu, TargetID: t.id, Menu: em, MenuPopupOptions: &MenuPopupOptions{PositionOptions: p.Position}}
-	_, err = synchronousEvent(t.ctx, t, t.w, e, EventNameTrayEventPoppedUpContextMenu)
+	if p.Position != nil {
+		mp = &MenuPopupOptions{PositionOptions: *p.Position}
+	}
+	var e = Event{Name: EventNameTrayCmdPopupContextMenu, TargetID: t.id, Menu: em, MenuPopupOptions: mp}
+	_, err = synchronousEvent(t.ctx, t, t.w, e, EventNameTrayEventContextMenuPoppedUp)
 	return
 }
