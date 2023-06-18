@@ -187,6 +187,10 @@ func (a *Astilectron) Start() (err error) {
 	} else {
 		synchronousFunc(a.worker.Context(), a, nil, "app.event.ready")
 	}
+
+	// Initialize global Shortcuts
+	InitGlobalShortcuts(a.worker.Context(), a.dispatcher, a.identifier, a.writer)
+
 	return nil
 }
 
