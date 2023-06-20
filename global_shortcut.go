@@ -36,6 +36,10 @@ func InitGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *w
 // GlobalShortcutRegister Register global shortcuts
 func GlobalShortcutRegister(accelerator string, callback callback) (isRegistered bool, err error) {
 
+	if err = obj.ctx.Err(); err != nil {
+		return
+	}
+
 	var gs = GlobalShortcut{Accelerator: accelerator, object: obj}
 
 	// Send an event to astilectron to register the global shortcut
@@ -58,6 +62,10 @@ func GlobalShortcutRegister(accelerator string, callback callback) (isRegistered
 // GlobalShortcutIsRegistered Check if a global shortcut is registered
 func GlobalShortcutIsRegistered(accelerator string) (isRegistered bool, err error) {
 
+	if err = obj.ctx.Err(); err != nil {
+		return
+	}
+
 	var gs = GlobalShortcut{Accelerator: accelerator, object: obj}
 
 	// Send an event to astilectron to check if global shortcut is registered
@@ -74,6 +82,10 @@ func GlobalShortcutIsRegistered(accelerator string) (isRegistered bool, err erro
 
 // GlobalShortcutUnregister Unregister a global shortcut
 func GlobalShortcutUnregister(accelerator string) (err error) {
+
+	if err = obj.ctx.Err(); err != nil {
+		return
+	}
 
 	var gs = GlobalShortcut{Accelerator: accelerator, object: obj}
 
@@ -94,6 +106,10 @@ func GlobalShortcutUnregister(accelerator string) (err error) {
 
 // GlobalShortcutUnregisterAll Unregister all global shortcuts
 func GlobalShortcutUnregisterAll() (err error) {
+
+	if err = obj.ctx.Err(); err != nil {
+		return
+	}
 
 	// Send an event to astilectron to unregister all global shortcuts
 	var event = Event{Name: EventNameGlobalShortcutCmdUnregisterAll, TargetID: obj.id}

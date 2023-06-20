@@ -446,6 +446,27 @@ var m = d.NewMenu([]*astilectron.MenuItemOptions{
 m.Create()
 ```
 
+## Global Shortcuts
+
+Registering a global shortcut.
+
+```go
+// Register a new global shortcut
+isRegistered, _ := astilectron.GlobalShortcutRegister("CmdOrCtrl+x", func() {
+    fmt.Println("CmdOrCtrl+x is pressed")
+})
+fmt.Println("CmdOrCtrl+x is registered:", isRegistered)  // true
+
+// Check if a global shortcut is registered
+isRegistered, _ = astilectron.GlobalShortcutIsRegistered("Shift+Y") // false
+
+// Unregister a global shortcut
+astilectron.GlobalShortcutUnregister("CmdOrCtrl+x")
+
+// Unregister all global shortcuts
+astilectron.GlobalShortcutUnregisterAll()
+```
+
 ## Dialogs
 
 Add the following line at the top of your javascript file :
