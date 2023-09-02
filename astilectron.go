@@ -2,12 +2,11 @@ package astilectron
 
 import (
 	"fmt"
+	"github.com/asticode/go-astikit"
 	"net"
 	"os/exec"
 	"runtime"
 	"time"
-
-	"github.com/asticode/go-astikit"
 )
 
 // Versions
@@ -41,22 +40,23 @@ const (
 
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
-	dispatcher   *dispatcher
-	displayPool  *displayPool
-	dock         *Dock
-	executer     Executer
-	identifier   *identifier
-	l            astikit.SeverityLogger
-	listener     net.Listener
-	options      Options
-	paths        *Paths
-	provisioner  Provisioner
-	reader       *reader
-	stderrWriter *astikit.WriterAdapter
-	stdoutWriter *astikit.WriterAdapter
-	supported    *Supported
-	worker       *astikit.Worker
-	writer       *writer
+	dispatcher      *dispatcher
+	displayPool     *displayPool
+	dock            *Dock
+	executer        Executer
+	globalShortcuts *GlobalShortcuts
+	identifier      *identifier
+	l               astikit.SeverityLogger
+	listener        net.Listener
+	options         Options
+	paths           *Paths
+	provisioner     Provisioner
+	reader          *reader
+	stderrWriter    *astikit.WriterAdapter
+	stdoutWriter    *astikit.WriterAdapter
+	supported       *Supported
+	worker          *astikit.Worker
+	writer          *writer
 }
 
 // Options represents Astilectron options
@@ -156,6 +156,11 @@ func (a *Astilectron) SetExecuter(e Executer) *Astilectron {
 	return a
 }
 
+// GlobalShortcuts gets the global shortcuts
+func (a *Astilectron) GlobalShortcuts() *GlobalShortcuts {
+	return a.globalShortcuts
+}
+
 // On implements the Listenable interface
 func (a *Astilectron) On(eventName string, l Listener) {
 	a.dispatcher.addListener(targetIDApp, eventName, l)
@@ -187,9 +192,6 @@ func (a *Astilectron) Start() (err error) {
 	} else {
 		synchronousFunc(a.worker.Context(), a, nil, "app.event.ready")
 	}
-
-	// Initialize global Shortcuts
-	InitGlobalShortcuts(a.worker.Context(), a.dispatcher, a.identifier, a.writer)
 
 	return nil
 }
@@ -325,6 +327,9 @@ func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 
 	// Create dock
 	a.dock = newDock(a.worker.Context(), a.dispatcher, a.identifier, a.writer)
+
+	// Create global shortcuts
+	a.globalShortcuts = newGlobalShortcuts(a.worker.Context(), a.dispatcher, a.identifier, a.writer)
 
 	// Update supported features
 	a.supported = e.Supported

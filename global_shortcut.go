@@ -1,49 +1,44 @@
 package astilectron
 
-import (
-	"context"
-)
+import "context"
 
 const (
-	EventNameGlobalShortcutCmdRegister          = "global.shortcut.cmd.register"
-	EventNameGlobalShortcutCmdIsRegistered      = "global.shortcut.cmd.is.register"
-	EventNameGlobalShortcutCmdUnregister        = "global.shortcut.cmd.unregister"
-	EventNameGlobalShortcutCmdUnregisterAll     = "global.shortcut.cmd.unregister.all"
-	EventNameGlobalShortcutEventProcessFinished = "global.shortcut.event.process.finished" // Register or Unregister process is finished
-	EventNameGlobalShortcutEventTriggered       = "global.shortcut.event.triggered"
+	EventNameGlobalShortcutCmdRegister          = "global.shortcuts.event.registered"
+	EventNameGlobalShortcutCmdIsRegistered      = "global.shortcuts.event.is.registered"
+	EventNameGlobalShortcutCmdUnregister        = "global.shortcuts.event.unregistered"
+	EventNameGlobalShortcutCmdUnregisterAll     = "global.shortcuts.event.unregistered.all"
+	EventNameGlobalShortcutEventProcessFinished = "global.shortcuts.event.process.finished" // Register or Unregister process is finished
+	EventNameGlobalShortcutEventTriggered       = "global.shortcuts.event.triggered"
 )
 
-// GlobalShortcut represents a global shortcut
-type GlobalShortcut struct {
-	*object
-	Accelerator  string `json:"accelerator,omitempty"`  // Accelerator of the global globalShortcuts
-	IsRegistered bool   `json:"isRegistered,omitempty"` // Whether the global shortcut is registered
-}
 type callback func()
 
-var gss = make(map[string]*callback) // Store all registered Global Shortcuts
-var obj *object
-
-// InitGlobalShortcuts initializes the globalShortcuts
-func InitGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *writer) {
-	obj = newObject(ctx, d, i, w, i.new())
-	obj.On(EventNameGlobalShortcutEventTriggered, func(e Event) (deleteListener bool) { // Register the listener for the triggered event
-		globalShortcutHandler(e.GlobalShortcut.Accelerator)
-		return
-	})
+// GlobalShortcuts represents a global shortcut
+type GlobalShortcuts struct {
+	*object
+	callbacks map[string]*callback // Store all registered Global Shortcuts
 }
 
-// GlobalShortcutRegister Register global shortcuts
-func GlobalShortcutRegister(accelerator string, callback callback) (isRegistered bool, err error) {
+func newGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *writer) (gs *GlobalShortcuts) {
+	var obj = newObject(ctx, d, i, w, i.new())
+	gs = &GlobalShortcuts{object: obj, callbacks: make(map[string]*callback)}
 
-	if err = obj.ctx.Err(); err != nil {
+	obj.On(EventNameGlobalShortcutEventTriggered, func(e Event) (deleteListener bool) { // Register the listener for the triggered event
+		globalShortcutHandler(gs, e.GlobalShortcuts.Accelerator)
+		return
+	})
+	return
+}
+
+// Register Register global shortcuts
+func (gs *GlobalShortcuts) Register(accelerator string, callback callback) (isRegistered bool, err error) {
+
+	if err = gs.ctx.Err(); err != nil {
 		return
 	}
 
-	var gs = GlobalShortcut{Accelerator: accelerator, object: obj}
-
 	// Send an event to astilectron to register the global shortcut
-	var event = Event{Name: EventNameGlobalShortcutCmdRegister, TargetID: gs.id, GlobalShortcut: &gs}
+	var event = Event{Name: EventNameGlobalShortcutCmdRegister, TargetID: gs.id, GlobalShortcuts: &EventGlobalShortcuts{Accelerator: accelerator}}
 	result, err := synchronousEvent(gs.ctx, gs, gs.w, event, EventNameGlobalShortcutEventProcessFinished)
 
 	if err != nil {
@@ -51,46 +46,42 @@ func GlobalShortcutRegister(accelerator string, callback callback) (isRegistered
 	}
 
 	// If registered successfully, add the callback to the map
-	if result.GlobalShortcut.IsRegistered {
-		gss[accelerator] = &callback
+	if result.GlobalShortcuts.IsRegistered {
+		gs.callbacks[accelerator] = &callback
 	}
 
-	isRegistered = result.GlobalShortcut.IsRegistered
+	isRegistered = result.GlobalShortcuts.IsRegistered
 	return
 }
 
-// GlobalShortcutIsRegistered Check if a global shortcut is registered
-func GlobalShortcutIsRegistered(accelerator string) (isRegistered bool, err error) {
+// IsRegistered Check if a global shortcut is registered
+func (gs *GlobalShortcuts) IsRegistered(accelerator string) (isRegistered bool, err error) {
 
-	if err = obj.ctx.Err(); err != nil {
+	if err = gs.ctx.Err(); err != nil {
 		return
 	}
 
-	var gs = GlobalShortcut{Accelerator: accelerator, object: obj}
-
 	// Send an event to astilectron to check if global shortcut is registered
-	var event = Event{Name: EventNameGlobalShortcutCmdIsRegistered, TargetID: gs.id, GlobalShortcut: &gs}
+	var event = Event{Name: EventNameGlobalShortcutCmdIsRegistered, TargetID: gs.id, GlobalShortcuts: &EventGlobalShortcuts{Accelerator: accelerator}}
 	result, err := synchronousEvent(gs.ctx, gs, gs.w, event, EventNameGlobalShortcutEventProcessFinished)
 
 	if err != nil {
 		return
 	}
 
-	isRegistered = result.GlobalShortcut.IsRegistered
+	isRegistered = result.GlobalShortcuts.IsRegistered
 	return
 }
 
-// GlobalShortcutUnregister Unregister a global shortcut
-func GlobalShortcutUnregister(accelerator string) (err error) {
+// Unregister Unregister a global shortcut
+func (gs *GlobalShortcuts) Unregister(accelerator string) (err error) {
 
-	if err = obj.ctx.Err(); err != nil {
+	if err = gs.ctx.Err(); err != nil {
 		return
 	}
 
-	var gs = GlobalShortcut{Accelerator: accelerator, object: obj}
-
 	// Send an event to astilectron to unregister the global shortcut
-	var event = Event{Name: EventNameGlobalShortcutCmdUnregister, TargetID: gs.id, GlobalShortcut: &gs}
+	var event = Event{Name: EventNameGlobalShortcutCmdUnregister, TargetID: gs.id, GlobalShortcuts: &EventGlobalShortcuts{Accelerator: accelerator}}
 	_, err = synchronousEvent(gs.ctx, gs, gs.w, event, EventNameGlobalShortcutEventProcessFinished)
 
 	if err != nil {
@@ -104,29 +95,29 @@ func GlobalShortcutUnregister(accelerator string) (err error) {
 	return
 }
 
-// GlobalShortcutUnregisterAll Unregister all global shortcuts
-func GlobalShortcutUnregisterAll() (err error) {
+// UnregisterAll Unregister all global shortcuts
+func (gs *GlobalShortcuts) UnregisterAll() (err error) {
 
-	if err = obj.ctx.Err(); err != nil {
+	if err = gs.ctx.Err(); err != nil {
 		return
 	}
 
 	// Send an event to astilectron to unregister all global shortcuts
-	var event = Event{Name: EventNameGlobalShortcutCmdUnregisterAll, TargetID: obj.id}
-	_, err = synchronousEvent(obj.ctx, obj, obj.w, event, EventNameGlobalShortcutEventProcessFinished)
+	var event = Event{Name: EventNameGlobalShortcutCmdUnregisterAll, TargetID: gs.id}
+	_, err = synchronousEvent(gs.ctx, gs, gs.w, event, EventNameGlobalShortcutEventProcessFinished)
 
 	if err != nil {
 		return
 	}
 
-	gss = make(map[string]*callback) // Clear the map
+	gs.callbacks = make(map[string]*callback) // Clear the map
 
 	return
 }
 
-// globalShortcutHandler Handle the GlobalShortcut event triggered from astilectron
-func globalShortcutHandler(accelerator string) {
-	if callback, ok := gss[accelerator]; ok {
+// globalShortcutHandler Handle the GlobalShortcuts event triggered from astilectron
+func globalShortcutHandler(gs *GlobalShortcuts, accelerator string) {
+	if callback, ok := gs.callbacks[accelerator]; ok {
 		(*callback)()
 	}
 }
