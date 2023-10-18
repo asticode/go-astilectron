@@ -92,7 +92,7 @@ func (d *Dock) SetBadge(badge string) (err error) {
 	if err = d.ctx.Err(); err != nil {
 		return
 	}
-	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdSetBadge, TargetID: d.id, Badge: badge}, eventNameDockEventBadgeSet)
+	_, err = synchronousEvent(d.ctx, d, d.w, Event{Name: eventNameDockCmdSetBadge, TargetID: d.id, Badge: &badge}, eventNameDockEventBadgeSet)
 	return
 }
 
