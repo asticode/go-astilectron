@@ -1,6 +1,7 @@
 package astilectron
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
@@ -28,15 +29,17 @@ var (
 
 // App event names
 const (
-	EventNameAppClose               = "app.close"
-	EventNameAppCmdQuit             = "app.cmd.quit" // Sends an event to Electron to properly quit the app
-	EventNameAppCmdStop             = "app.cmd.stop" // Cancel the context which results in exiting abruptly Electron's app
-	EventNameAppCrash               = "app.crash"
-	EventNameAppErrorAccept         = "app.error.accept"
-	EventNameAppEventReady          = "app.event.ready"
-	EventNameAppEventSecondInstance = "app.event.second.instance"
-	EventNameAppNoAccept            = "app.no.accept"
-	EventNameAppTooManyAccept       = "app.too.many.accept"
+	EventNameAppClose                     = "app.close"
+	EventNameAppCmdQuit                   = "app.cmd.quit" // Sends an event to Electron to properly quit the app
+	EventNameAppCmdStop                   = "app.cmd.stop" // Cancel the context which results in exiting abruptly Electron's app
+	EventNameAppCrash                     = "app.crash"
+	EventNameAppErrorAccept               = "app.error.accept"
+	EventNameAppEventReady                = "app.event.ready"
+	EventNameAppEventSecondInstance       = "app.event.second.instance"
+	EventNameAppExecuteJavaScript         = "app.execute.javascript"
+	EventNameAppExecuteJavaScriptCallback = "app.execute.javascript.callback"
+	EventNameAppNoAccept                  = "app.no.accept"
+	EventNameAppTooManyAccept             = "app.too.many.accept"
 )
 
 // Astilectron represents an object capable of interacting with Astilectron
@@ -443,4 +446,36 @@ func (a *Astilectron) NewTray(o *TrayOptions) *Tray {
 // NewNotification creates a new notification
 func (a *Astilectron) NewNotification(o *NotificationOptions) *Notification {
 	return newNotification(a.worker.Context(), o, a.supported != nil && a.supported.Notification != nil && *a.supported.Notification, a.dispatcher, a.identifier, a.writer)
+}
+
+type eventProxy struct {
+	id         string
+	dispatcher *dispatcher
+	logger     astikit.SeverityLogger
+}
+
+func (g *eventProxy) On(eventName string, l Listener) {
+	g.dispatcher.addListener(g.id, eventName, l)
+}
+
+func (a *Astilectron) ExecuteJavascript(code string, response interface{}) error {
+	ep := &eventProxy{
+		id:         a.identifier.new(),
+		dispatcher: a.dispatcher,
+		logger:     a.l,
+	}
+	event, err := synchronousEvent(
+		a.worker.Context(), ep, a.writer,
+		Event{Name: EventNameAppExecuteJavaScript, TargetID: ep.id, Code: code},
+		EventNameAppExecuteJavaScriptCallback)
+	if err != nil {
+		return fmt.Errorf("sending ExecuteJavascript event failed: %w", err)
+	}
+	if event.Error != nil && *event.Error != "" {
+		return fmt.Errorf("ExecuteJavascript failed: %s", *event.Error)
+	}
+	if err := json.Unmarshal([]byte(event.Reply), response); err != nil {
+		return fmt.Errorf("unmarshalling ExecuteJavascript response failed: %w", err)
+	}
+	return nil
 }

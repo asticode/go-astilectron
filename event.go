@@ -28,6 +28,7 @@ type Event struct {
 	Code                string               `json:"code,omitempty"`
 	Displays            *EventDisplays       `json:"displays,omitempty"`
 	Enable              *bool                `json:"enable,omitempty"`
+	Error               *string              `json:"error,omitempty"`
 	FilePath            string               `json:"filePath,omitempty"`
 	ID                  *int                 `json:"id,omitempty"`
 	Image               string               `json:"image,omitempty"`
