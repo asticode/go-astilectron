@@ -21,7 +21,7 @@ type Event struct {
 	// A choice was made not to use interfaces since it's a pain in the ass asserting each an every payload afterwards
 	// We use pointers so that omitempty works
 	AuthInfo            *EventAuthInfo        `json:"authInfo,omitempty"`
-	Badge               string                `json:"badge,omitempty"`
+	Badge               *string               `json:"badge,omitempty"`
 	BounceType          string                `json:"bounceType,omitempty"`
 	Bounds              *RectangleOptions     `json:"bounds,omitempty"`
 	CallbackID          string                `json:"callbackId,omitempty"`
