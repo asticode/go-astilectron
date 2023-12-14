@@ -192,7 +192,6 @@ func (a *Astilectron) Start() (err error) {
 	} else {
 		synchronousFunc(a.worker.Context(), a, nil, "app.event.ready")
 	}
-
 	return nil
 }
 
