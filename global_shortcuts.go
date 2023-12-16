@@ -25,7 +25,7 @@ type GlobalShortcuts struct {
 	m *sync.Mutex
 }
 
-var callbacks map[string]*globalShortcutsCallback
+var callbacks map[string]globalShortcutsCallback
 
 func newGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *writer) (gs *GlobalShortcuts) {
 	gs = &GlobalShortcuts{
@@ -37,11 +37,11 @@ func newGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *wr
 		callback, ok := callbacks[e.GlobalShortcuts.Accelerator]
 		gs.m.Unlock()
 		if ok {
-			(*callback)()
+			(callback)()
 		}
 		return
 	})
-	callbacks = make(map[string]*globalShortcutsCallback)
+	callbacks = make(map[string]globalShortcutsCallback)
 	return
 }
 
@@ -61,7 +61,7 @@ func (gs *GlobalShortcuts) Register(accelerator string, callback globalShortcuts
 	if result.GlobalShortcuts != nil {
 		if result.GlobalShortcuts.IsRegistered {
 			gs.m.Lock()
-			callbacks[accelerator] = &callback
+			callbacks[accelerator] = callback
 			gs.m.Unlock()
 		}
 		isRegistered = result.GlobalShortcuts.IsRegistered
@@ -96,13 +96,11 @@ func (gs *GlobalShortcuts) Unregister(accelerator string) (err error) {
 	// Send an event to astilectron to unregister the global shortcut
 	_, err = synchronousEvent(gs.ctx, gs, gs.w, Event{Name: EventNameGlobalShortcutsCmdUnregister, TargetID: gs.id, GlobalShortcuts: &EventGlobalShortcuts{Accelerator: accelerator}}, EventNameGlobalShortcutsEventUnregistered)
 	if err != nil {
+		gs.m.Lock()
+		delete(callbacks, accelerator)
+		gs.m.Unlock()
 		return
 	}
-
-	// No need to find the callback from the map and delete it
-	//  because that event will no longer be triggerred
-	// If the same global shortcut is registered again, the original callback will be replaced with the new one
-
 	return
 }
 
@@ -119,7 +117,7 @@ func (gs *GlobalShortcuts) UnregisterAll() (err error) {
 	}
 
 	gs.m.Lock()
-	callbacks = make(map[string]*globalShortcutsCallback) // Clear the map
+	callbacks = make(map[string]globalShortcutsCallback) // Clear the map
 	gs.m.Unlock()
 
 	return
