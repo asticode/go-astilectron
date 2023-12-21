@@ -2,18 +2,17 @@ package astilectron
 
 import (
 	"fmt"
+	"github.com/asticode/go-astikit"
 	"net"
 	"os/exec"
 	"runtime"
 	"time"
-
-	"github.com/asticode/go-astikit"
 )
 
 // Versions
 const (
 	DefaultAcceptTCPTimeout   = 30 * time.Second
-	DefaultVersionAstilectron = "0.57.0"
+	DefaultVersionAstilectron = "0.58.0"
 	DefaultVersionElectron    = "11.4.3"
 )
 
@@ -41,22 +40,23 @@ const (
 
 // Astilectron represents an object capable of interacting with Astilectron
 type Astilectron struct {
-	dispatcher   *dispatcher
-	displayPool  *displayPool
-	dock         *Dock
-	executer     Executer
-	identifier   *identifier
-	l            astikit.SeverityLogger
-	listener     net.Listener
-	options      Options
-	paths        *Paths
-	provisioner  Provisioner
-	reader       *reader
-	stderrWriter *astikit.WriterAdapter
-	stdoutWriter *astikit.WriterAdapter
-	supported    *Supported
-	worker       *astikit.Worker
-	writer       *writer
+	dispatcher      *dispatcher
+	displayPool     *displayPool
+	dock            *Dock
+	executer        Executer
+	globalShortcuts *GlobalShortcuts
+	identifier      *identifier
+	l               astikit.SeverityLogger
+	listener        net.Listener
+	options         Options
+	paths           *Paths
+	provisioner     Provisioner
+	reader          *reader
+	stderrWriter    *astikit.WriterAdapter
+	stdoutWriter    *astikit.WriterAdapter
+	supported       *Supported
+	worker          *astikit.Worker
+	writer          *writer
 }
 
 // Options represents Astilectron options
@@ -154,6 +154,11 @@ func (a *Astilectron) SetProvisioner(p Provisioner) *Astilectron {
 func (a *Astilectron) SetExecuter(e Executer) *Astilectron {
 	a.executer = e
 	return a
+}
+
+// GlobalShortcuts gets the global shortcuts
+func (a *Astilectron) GlobalShortcuts() *GlobalShortcuts {
+	return a.globalShortcuts
 }
 
 // On implements the Listenable interface
@@ -321,6 +326,9 @@ func (a *Astilectron) executeCmd(cmd *exec.Cmd) (err error) {
 
 	// Create dock
 	a.dock = newDock(a.worker.Context(), a.dispatcher, a.identifier, a.writer)
+
+	// Create global shortcuts
+	a.globalShortcuts = newGlobalShortcuts(a.worker.Context(), a.dispatcher, a.identifier, a.writer)
 
 	// Update supported features
 	a.supported = e.Supported
