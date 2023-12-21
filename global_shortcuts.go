@@ -22,26 +22,26 @@ type globalShortcutsCallback func()
 // GlobalShortcuts represents global shortcuts
 type GlobalShortcuts struct {
 	*object
-	m *sync.Mutex
+	m         *sync.Mutex
+	callbacks map[string]globalShortcutsCallback
 }
-
-var callbacks map[string]globalShortcutsCallback
 
 func newGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *writer) (gs *GlobalShortcuts) {
 	gs = &GlobalShortcuts{
-		object: newObject(ctx, d, i, w, i.new()),
-		m:      new(sync.Mutex),
+		object:    newObject(ctx, d, i, w, i.new()),
+		m:         new(sync.Mutex),
+		callbacks: make(map[string]globalShortcutsCallback),
 	}
 	gs.On(EventNameGlobalShortcutEventTriggered, func(e Event) (deleteListener bool) { // Register the listener for the triggered event
 		gs.m.Lock()
-		callback, ok := callbacks[e.GlobalShortcuts.Accelerator]
+		callback, ok := gs.callbacks[e.GlobalShortcuts.Accelerator]
 		gs.m.Unlock()
 		if ok {
 			(callback)()
 		}
 		return
 	})
-	callbacks = make(map[string]globalShortcutsCallback)
+	gs.callbacks = make(map[string]globalShortcutsCallback)
 	return
 }
 
@@ -61,7 +61,7 @@ func (gs *GlobalShortcuts) Register(accelerator string, callback globalShortcuts
 	if result.GlobalShortcuts != nil {
 		if result.GlobalShortcuts.IsRegistered {
 			gs.m.Lock()
-			callbacks[accelerator] = callback
+			gs.callbacks[accelerator] = callback
 			gs.m.Unlock()
 		}
 		isRegistered = result.GlobalShortcuts.IsRegistered
@@ -96,11 +96,11 @@ func (gs *GlobalShortcuts) Unregister(accelerator string) (err error) {
 	// Send an event to astilectron to unregister the global shortcut
 	_, err = synchronousEvent(gs.ctx, gs, gs.w, Event{Name: EventNameGlobalShortcutsCmdUnregister, TargetID: gs.id, GlobalShortcuts: &EventGlobalShortcuts{Accelerator: accelerator}}, EventNameGlobalShortcutsEventUnregistered)
 	if err != nil {
-		gs.m.Lock()
-		delete(callbacks, accelerator)
-		gs.m.Unlock()
 		return
 	}
+	gs.m.Lock()
+	delete(gs.callbacks, accelerator)
+	gs.m.Unlock()
 	return
 }
 
@@ -117,7 +117,7 @@ func (gs *GlobalShortcuts) UnregisterAll() (err error) {
 	}
 
 	gs.m.Lock()
-	callbacks = make(map[string]globalShortcutsCallback) // Clear the map
+	gs.callbacks = make(map[string]globalShortcutsCallback) // Clear the map
 	gs.m.Unlock()
 
 	return
