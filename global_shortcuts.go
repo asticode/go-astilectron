@@ -41,7 +41,6 @@ func newGlobalShortcuts(ctx context.Context, d *dispatcher, i *identifier, w *wr
 		}
 		return
 	})
-	gs.callbacks = make(map[string]globalShortcutsCallback)
 	return
 }
 

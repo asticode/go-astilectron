@@ -12,7 +12,7 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout   = 30 * time.Second
-	DefaultVersionAstilectron = "0.57.0"
+	DefaultVersionAstilectron = "0.58.0"
 	DefaultVersionElectron    = "11.4.3"
 )
 
