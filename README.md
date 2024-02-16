@@ -5,6 +5,10 @@
 
 Thanks to `go-astilectron` build cross platform GUI apps with GO and HTML/JS/CSS. It is the official GO bindings of [astilectron](https://github.com/asticode/astilectron) and is powered by [Electron](https://github.com/electron/electron).
 
+# Warning
+
+This project is not maintained anymore.
+
 # Demo
 
 To see a minimal Astilectron app, checkout out the [demo](https://github.com/asticode/go-astilectron-demo).
